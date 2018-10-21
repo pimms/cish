@@ -18,6 +18,39 @@ SET(CISH_LIBRARY "cish")
 SET(CISH_HEADER_PATH "${CMAKE_SOURCE_DIR}/src/")
 
 
+
+
+# -- Find ANTLR4 runtime -- #
+find_library(ANTLR_LIBRARY NAMES "antlr4-runtime")
+if ("${ANTLR_LIBRARY}" STREQUAL "ANTLR_LIBRARY-NOTFOUND")
+    message(SEND_ERROR "Failed to find antlr4-runtime library")
+endif()
+
+# The generated antlr-sources include "antlr4-runtime.h", so we need to find
+# the parent directory and make sure that the root header actually exists.
+find_path(ANTLR_INCLUDE_ROOT_DIR NAMES "antlr4-runtime")
+if ("${ANTLR_INCLUDE_ROOT_DIR}" STREQUAL "ANTLR_INCLUDE_ROOT_DIR-NOTFOUND")
+    message(SEND_ERROR "Failed to find antlr4-runtime header directory")
+endif()
+
+set(ANTLR_INCLUDE_DIR "${ANTLR_INCLUDE_ROOT_DIR}/antlr4-runtime")
+if (NOT EXISTS "${ANTLR_INCLUDE_DIR}/antlr4-runtime.h")
+    message(SEND_ERROR "Failed to locate 'antlr4-runtime.h' (${ANTLR_INCLUDE_ROOT_DIR}, ${ANTLR_INCLUDE_DIR})")
+endif()
+
+target_link_libraries(cish ${ANTLR_LIBRARY})
+include_directories(${ANTLR_INCLUDE_DIR})
+
+
+
+
+# -- Run ANTLR4 Generation -- #
+execute_process(COMMAND antlr4 "${CMAKE_CURRENT_SOURCE_DIR}/grammar/c99.g4" -o src/antlr -visitor -Dlanguage=Cpp
+                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+
+
+
+# -- Add tests -- #
 if (test)
     add_subdirectory(test)
 endif()
