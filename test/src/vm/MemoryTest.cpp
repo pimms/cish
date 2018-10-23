@@ -57,19 +57,31 @@ TEST(MemoryTest, TooLargeAllocationThrows)
 
 TEST(MemoryTest, UnalignedHeapSize)
 {
+    // Of the total 5, only 4 are available because of misalignment
     Memory memory(5, 4);
+    ASSERT_EQ(4, memory.getFreeSize());
+
     auto alloc = memory.allocate(4);
+    ASSERT_EQ(0, memory.getFreeSize());
+
     ASSERT_THROW(memory.allocate(4), OutOfMemoryException);
 }
 
 TEST(MemoryTest, DeallocatingMakesMemoryAvailableAgain)
 {
     Memory memory(8, 4);
+    ASSERT_EQ(8, memory.getFreeSize());
+
     auto alloc1 = memory.allocate(4);
+    ASSERT_EQ(4, memory.getFreeSize());
+
     auto alloc2 = memory.allocate(4);
+    ASSERT_EQ(0, memory.getFreeSize());
 
     ASSERT_THROW(memory.allocate(4), OutOfMemoryException);
     alloc1 = nullptr;
+    ASSERT_EQ(4, memory.getFreeSize());
+
     ASSERT_NO_THROW(memory.allocate(4));
 }
 

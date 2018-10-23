@@ -10,7 +10,8 @@ namespace vm
 
 Memory::Memory(uint32_t heapSize, uint32_t minAllocSize):
     _heapSize(heapSize),
-    _allocationSize(minAllocSize)
+    _allocationSize(minAllocSize),
+    _numAllocationUnits(heapSize / minAllocSize)
 {
     assert(_heapSize >= 0);
     assert(_allocationSize >= 0);
@@ -29,9 +30,30 @@ Memory::~Memory()
 }
 
 
-AllocationUnit::Ptr Memory::allocate(uint32_t size)
+uint32_t Memory::getTotalSize() const
 {
-    const uint32_t allocationUnits = bytesToAllocationUnits(size);
+    return _heapSize;
+}
+
+uint32_t Memory::getFreeSize() const
+{
+    uint32_t free = 0;
+
+    for (int i=0; i<_numAllocationUnits; i++) {
+        const uint32_t byte = i / 8;
+        const uint32_t bit = i % 8;
+
+        if ((_allocationMap[byte] & (1 << bit)) == 0) {
+            free += _allocationSize;
+        }
+    }
+
+    return free;
+}
+
+Allocation::Ptr Memory::allocate(uint32_t size)
+{
+    const uint32_t allocationUnits = bytesToAllocations(size);
     const uint32_t unitIndex = findUnallocatedRun(allocationUnits);
 
     markAsAllocated(unitIndex, allocationUnits);
@@ -39,7 +61,7 @@ AllocationUnit::Ptr Memory::allocate(uint32_t size)
     const uint32_t byteOffset = unitIndex * _allocationSize;
     const uint32_t byteSize = allocationUnits * _allocationSize;
 
-    return AllocationUnit::create(byteOffset, byteSize, this);
+    return Allocation::create(byteOffset, byteSize, this);
 }
 
 
@@ -48,13 +70,11 @@ uint32_t Memory::findUnallocatedRun(uint32_t requiredUnits)
     // TODO: This can be optimized a boatload - there's no need to run through
     // the whole memory space, lol
 
-    const uint32_t numUnits = _heapSize / _allocationSize;
-
     uint32_t cur = 0;
     uint32_t runLenght = 0;
 
     // Find the first unoccupied run of 'length' bytes in the memory space.
-    for (int i=0; i<numUnits; i++) {
+    for (int i=0; i<_numAllocationUnits; i++) {
         const uint32_t byte = i / 8;
         const uint32_t bit = i % 8;
 
@@ -96,7 +116,7 @@ void Memory::markAsFree(uint32_t startUnit, uint32_t numUnits)
     }
 }
 
-uint32_t Memory::bytesToAllocationUnits(uint32_t byteCount) const
+uint32_t Memory::bytesToAllocations(uint32_t byteCount) const
 {
     const uint32_t remainder = byteCount % _allocationSize;
     uint32_t units = byteCount / _allocationSize;
@@ -115,10 +135,10 @@ uint8_t* Memory::getHeap()
     return _heap;
 }
 
-void Memory::onDeallocation(AllocationUnit *allocation)
+void Memory::onDeallocation(Allocation *allocation)
 {
     const uint32_t startUnit = allocation->getOffset() / _allocationSize;
-    const uint32_t numUnits = bytesToAllocationUnits(allocation->getSize());
+    const uint32_t numUnits = bytesToAllocations(allocation->getSize());
 
     markAsFree(startUnit, numUnits);
 }

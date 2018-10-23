@@ -16,27 +16,27 @@ public:
 };
 
 
-class AllocationUnit;
+class Allocation;
 class MemoryAccess
 {
 public:
     virtual uint8_t* getHeap() = 0;
-    virtual void onDeallocation(AllocationUnit *allocation) = 0;
+    virtual void onDeallocation(Allocation *allocation) = 0;
 };
 
 
-class AllocationUnit
+class Allocation
 {
 public:
-    typedef std::unique_ptr<AllocationUnit> Ptr;
+    typedef std::unique_ptr<Allocation> Ptr;
 
     static Ptr create(uint32_t offset, uint32_t len, MemoryAccess *memAccess);
-    ~AllocationUnit();
+    ~Allocation();
 
     uint32_t getOffset() const;
     uint32_t getSize() const;
 
-    AllocationUnit::Ptr read(uint32_t offset, uint32_t len) const;
+    Allocation::Ptr read(uint32_t offset, uint32_t len) const;
 
     template<typename T>
     T read() const;
@@ -50,12 +50,12 @@ private:
     const bool _owner;
     MemoryAccess *_memoryAccess;
 
-    AllocationUnit(uint32_t offset, uint32_t len, MemoryAccess *memAccess, bool owner);
+    Allocation(uint32_t offset, uint32_t len, MemoryAccess *memAccess, bool owner);
 };
 
 
 template<typename T>
-T AllocationUnit::read() const
+T Allocation::read() const
 {
     const size_t size = sizeof(T);
     if (size > _length) {
@@ -67,7 +67,7 @@ T AllocationUnit::read() const
 }
 
 template<typename T>
-void AllocationUnit::write(T value, uint32_t offset)
+void Allocation::write(T value, uint32_t offset)
 {
     const size_t size = sizeof(T);
     if (size > offset + _length) {
