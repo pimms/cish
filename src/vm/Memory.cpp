@@ -39,7 +39,7 @@ AllocationUnit::Ptr Memory::allocate(uint32_t size)
     const uint32_t byteOffset = unitIndex * _allocationSize;
     const uint32_t byteSize = allocationUnits * _allocationSize;
 
-    return AllocationUnit::create(_heap + byteOffset, byteSize, this);
+    return AllocationUnit::create(byteOffset, byteSize, this);
 }
 
 
@@ -109,12 +109,15 @@ uint32_t Memory::bytesToAllocationUnits(uint32_t byteCount) const
 }
 
 
-/* DeallocationDelegate */
+/* MemoryAccess */
+uint8_t* Memory::getHeap()
+{
+    return _heap;
+}
+
 void Memory::onDeallocation(AllocationUnit *allocation)
 {
-    // TODO: This might be dangerous
-    const uint32_t offset = (uint32_t)(allocation->getPointer() - _heap);
-    const uint32_t startUnit = offset / _allocationSize;
+    const uint32_t startUnit = allocation->getOffset() / _allocationSize;
     const uint32_t numUnits = bytesToAllocationUnits(allocation->getSize());
 
     markAsFree(startUnit, numUnits);

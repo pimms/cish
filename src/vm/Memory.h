@@ -17,7 +17,7 @@ public:
 };
 
 
-class Memory : private DeallocationDelegate
+class Memory : private MemoryAccess
 {
 public:
     Memory(uint32_t heapSize, uint32_t minAllocSize);
@@ -37,7 +37,8 @@ private:
     void markAsFree(uint32_t offset, uint32_t len);
     uint32_t bytesToAllocationUnits(uint32_t byteCount) const;
 
-    /* DeallocationDelegate */
+    /* MemoryAccess */
+    uint8_t* getHeap() override;
     void onDeallocation(AllocationUnit *allocation) override;
 };
 

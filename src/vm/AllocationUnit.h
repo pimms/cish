@@ -17,10 +17,11 @@ public:
 
 
 class AllocationUnit;
-class DeallocationDelegate
+class MemoryAccess
 {
 public:
-    virtual void onDeallocation(AllocationUnit *unit) = 0;
+    virtual uint8_t* getHeap() = 0;
+    virtual void onDeallocation(AllocationUnit *allocation) = 0;
 };
 
 
@@ -29,12 +30,11 @@ class AllocationUnit
 public:
     typedef std::unique_ptr<AllocationUnit> Ptr;
 
-    static Ptr create(uint8_t const *ptr, uint32_t len, DeallocationDelegate *delegate);
-    AllocationUnit(uint8_t const *ptr, uint32_t len, DeallocationDelegate *delegate);
+    static Ptr create(uint32_t offset, uint32_t len, MemoryAccess *memAccess);
     ~AllocationUnit();
 
+    uint32_t getOffset() const;
     uint32_t getSize() const;
-    const uint8_t * const getPointer() const;
 
     AllocationUnit::Ptr read(uint32_t offset, uint32_t len) const;
 
@@ -45,9 +45,12 @@ public:
     void write(T value, uint32_t offset = 0);
 
 private:
-    uint8_t const *_ptr;
+    const uint32_t _offset;
     const uint32_t _length;
-    DeallocationDelegate *_delegate;
+    const bool _owner;
+    MemoryAccess *_memoryAccess;
+
+    AllocationUnit(uint32_t offset, uint32_t len, MemoryAccess *memAccess, bool owner);
 };
 
 
@@ -59,7 +62,7 @@ T AllocationUnit::read() const
         throw InvalidAccessException("Read access out of bounds");
     }
 
-    T* castedPtr = (T*)_ptr;
+    T* castedPtr = (T*)_memoryAccess->getHeap() + _offset;
     return *castedPtr;
 }
 
@@ -71,7 +74,7 @@ void AllocationUnit::write(T value, uint32_t offset)
         throw InvalidAccessException("Write access out of bounds");
     }
 
-    T* castedPtr = (T*)(_ptr + offset);
+    T* castedPtr = (T*)(_memoryAccess->getHeap() + offset);
     *castedPtr = value;
 }
 
