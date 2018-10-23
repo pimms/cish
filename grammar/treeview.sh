@@ -9,8 +9,8 @@ fi
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
-antlr4 -o "$DIR/tmp/" c99.g4 || (echo "antlr generation failed" && exit 1)
-cp c99.g4 "$DIR/tmp/"
-cd "$DIR/tmp/" && javac -cp "$ANTLR_PATH" *.java || (echo "parser compilation failed" && exit 1)
+antlr4 -o "$DIR/tmp/" CM.g4 || (exit 1)
+cp CM.g4 "$DIR/tmp/"
+cd "$DIR/tmp/" && javac -cp "$ANTLR_PATH" *.java || (exit 1)
 
-cd "$DIR/tmp/" && java -cp ".:$ANTLR_PATH" org.antlr.v4.gui.TestRig c99 functionDefinition -gui "$@"
+cd "$DIR/tmp/" && java -cp ".:$ANTLR_PATH" org.antlr.v4.gui.TestRig CM root -gui "$@"

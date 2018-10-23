@@ -45,8 +45,15 @@ include_directories(${ANTLR_INCLUDE_DIR})
 
 
 # -- Run ANTLR4 Generation -- #
-execute_process(COMMAND antlr4 "${CMAKE_CURRENT_SOURCE_DIR}/grammar/c99.g4" -o src/antlr -visitor -Dlanguage=Cpp
-                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+execute_process(
+    RESULT_VARIABLE antlr_result
+	OUTPUT_VARIABLE antlr_stdout
+	ERROR_VARIABLE antlr_stderr
+    COMMAND antlr4 "${CMAKE_CURRENT_SOURCE_DIR}/grammar/CM.g4" -o src/ast/antlr -visitor -Dlanguage=Cpp
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+if(NOT antlr_result STREQUAL "0")
+	message(FATAL_ERROR "antlr generation failed: ${antlr_stdout}\n${antlr_stderr}")
+endif()
 
 
 
