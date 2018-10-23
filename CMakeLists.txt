@@ -7,6 +7,20 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
+
+# -- Run ANTLR4 Generation -- #
+execute_process(
+    RESULT_VARIABLE antlr_result
+	OUTPUT_VARIABLE antlr_stdout
+	ERROR_VARIABLE antlr_stderr
+    COMMAND antlr4 "${CMAKE_CURRENT_SOURCE_DIR}/grammar/CM.g4" -o src/ast/antlr -visitor -Dlanguage=Cpp
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+if(NOT antlr_result STREQUAL "0")
+	message(FATAL_ERROR "antlr generation failed: ${antlr_stdout}\n${antlr_stderr}")
+endif()
+
+
+
 file(GLOB_RECURSE CISH_SRCS src/**.cpp)
 file(GLOB_RECURSE CISH_HDRS src/**.h)
 
@@ -40,20 +54,6 @@ endif()
 
 target_link_libraries(cish ${ANTLR_LIBRARY})
 include_directories(${ANTLR_INCLUDE_DIR})
-
-
-
-
-# -- Run ANTLR4 Generation -- #
-execute_process(
-    RESULT_VARIABLE antlr_result
-	OUTPUT_VARIABLE antlr_stdout
-	ERROR_VARIABLE antlr_stderr
-    COMMAND antlr4 "${CMAKE_CURRENT_SOURCE_DIR}/grammar/CM.g4" -o src/ast/antlr -visitor -Dlanguage=Cpp
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-if(NOT antlr_result STREQUAL "0")
-	message(FATAL_ERROR "antlr generation failed: ${antlr_stdout}\n${antlr_stderr}")
-endif()
 
 
 
