@@ -16,12 +16,15 @@ Allocation::Allocation(uint32_t offset, uint32_t len, MemoryAccess *memAccess, b
     _memoryAccess(memAccess),
     _owner(owner)
 {
-
+    assert(len > 0);
+    assert(_memoryAccess != nullptr);
 }
 
 Allocation::~Allocation()
 {
-    _memoryAccess->onDeallocation(this);
+    if (_owner) {
+        _memoryAccess->onDeallocation(this);
+    }
 }
 
 uint32_t Allocation::getOffset() const
@@ -40,7 +43,7 @@ Allocation::Ptr Allocation::read(uint32_t offset, uint32_t len) const
         throw InvalidAccessException("Read access out of bounds");
     }
 
-    return Allocation::Ptr(new Allocation(_offset + offset, len, nullptr, false));
+    return Allocation::Ptr(new Allocation(_offset + offset, len, _memoryAccess, false));
 }
 
 

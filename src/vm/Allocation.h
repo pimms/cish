@@ -39,7 +39,7 @@ public:
     Allocation::Ptr read(uint32_t offset, uint32_t len) const;
 
     template<typename T>
-    T read() const;
+    T read(uint32_t offset = 0) const;
 
     template<typename T>
     void write(T value, uint32_t offset = 0);
@@ -55,14 +55,14 @@ private:
 
 
 template<typename T>
-T Allocation::read() const
+T Allocation::read(uint32_t offset) const
 {
     const size_t size = sizeof(T);
-    if (size > _length) {
+    if (size + offset > _length) {
         throw InvalidAccessException("Read access out of bounds");
     }
 
-    T* castedPtr = (T*)_memoryAccess->getHeap() + _offset;
+    T* castedPtr = (T*)(_memoryAccess->getHeap() + offset + _offset);
     return *castedPtr;
 }
 
@@ -70,14 +70,13 @@ template<typename T>
 void Allocation::write(T value, uint32_t offset)
 {
     const size_t size = sizeof(T);
-    if (size > offset + _length) {
+    if (size + offset > _length) {
         throw InvalidAccessException("Write access out of bounds");
     }
 
     T* castedPtr = (T*)(_memoryAccess->getHeap() + offset);
     *castedPtr = value;
 }
-
 
 
 }
