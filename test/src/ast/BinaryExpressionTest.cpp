@@ -317,3 +317,22 @@ TEST(BinaryExpressionTest, testLogicalOperators)
     testLogicalOperators<double>();
 }
 
+
+TEST(BinaryExpressionTest, simpleTestOfNestedBinaryExpressions)
+{
+    // int(100) * float(2) = float(200)
+    auto i100 = expr<int>(100);
+    auto f2 = expr<float>(2);
+    BinaryExpression left(BinaryExpression::MULTIPLY, &i100, &f2);
+
+    // char(-5) + int(295) = int(290)
+    auto cm5 = expr<char>(-5);
+    auto i295 = expr<int>(295);
+    BinaryExpression right(BinaryExpression::PLUS, &cm5, &i295);
+
+    // float(200) - int(290) = float(-90)
+    BinaryExpression expr(BinaryExpression::MINUS, &left, &right);
+    ASSERT_EQ(TypeDecl::FLOAT, expr.getType().getType());
+    ASSERT_NEAR(-90.f, expr.evaluate().get<float>(), 0.001);
+}
+
