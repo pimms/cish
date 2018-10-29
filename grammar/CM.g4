@@ -16,28 +16,19 @@ rootItem
 
 
 expression
-    : expression op=( '*' | '/' | '%' ) expression
-    | expression op=( '+' | '-' ) expression
-    | expression op=( '>=' | '<=' | '>' | '<' ) expression
-    | expression op=( '==' | '!=' ) expression
-    | expression '&&' expression
-    | expression '||' expression
-    | String
-    | Integer
-    | Floating
-    | Boolean
-    | Null
-    | Identifier
-    | functionCall
-    | '(' expression op=( '+' | '-' ) expression ')'
-    | '(' expression op=( '>=' | '<=' | '>' | '<' ) expression ')'
-    | '(' expression op=( '==' | '!=' ) expression ')'
-    | '(' expression '&&' expression ')'
-    | '(' expression '||' expression ')'
-    | '(' String ')'
-    | '(' Integer ')'
-    | '(' Floating ')'
-    | '(' Boolean ')'
+    : expr
+    | '(' expr ')'
+    ;
+
+expr
+    : expr op=( '*' | '/' | '%' ) expr          # MULT_EXPR
+    | expr op=( '+' | '-' ) expr                # ADD_EXPR
+    | expr op=( '>=' | '<=' | '>' | '<' ) expr  # COMPARE_EXPR
+    | expr op=( '==' | '!=' ) expr              # EQUALITY_EXPR
+    | expr op=( '&&' | '||' ) expr              # AND_EXPR
+    | (String|Integer|Floating|Boolean|Null)    #LITERAL_EXPR
+    | Identifier                                # VAR_REF_EXPR
+    | functionCall                              # FUNC_CALL_EXPR
     ;
 
 statement
@@ -63,23 +54,23 @@ elseStatement
     ;
 
 assignment
-    : (typeIdentifier)? Identifier '=' expression ';'
+    : (typeIdentifier)? identifier '=' expression ';'
     ;
 
 variableDeclaration
-    : typeIdentifier Identifier ('=' expression)? ';'
+    : typeIdentifier identifier ('=' expression)? ';'
     ;
 
 functionDeclaration
-    : typeIdentifier Identifier '(' identifierList ')' ';'
+    : typeIdentifier identifier '(' identifierList ')' ';'
     ;
 
 functionDefinition
-    : typeIdentifier Identifier '(' identifierList ')' '{' statement* '}'
+    : typeIdentifier identifier '(' identifierList ')' '{' statement* '}'
     ;
 
 functionCall
-    : Identifier '(' expressionList ')'
+    : identifier '(' expressionList ')'
     ;
 
 expressionList
@@ -87,9 +78,25 @@ expressionList
     ;
 
 identifierList
-    : ( typeIdentifier Identifier? ( ',' typeIdentifier Identifier? )* )?
+    : ( typeIdentifier identifier? ( ',' typeIdentifier identifier? )* )?
     ;
 
+
+identifier
+    : Identifier
+    ;
+
+typeIdentifier
+    : mutableTypeIdentifier
+    | constTypeIdentifier
+    | 'void'
+    ;
+mutableTypeIdentifier
+    : identifier ('*')?
+    ;
+constTypeIdentifier
+    : 'const' identifier ('*')?
+    ;
 
 
 
@@ -133,11 +140,6 @@ String
 
 Identifier
     : [_a-zA-Z][_a-zA-Z0-9]*
-    ;
-
-typeIdentifier
-    : ('const')? Identifier ('*')?
-    | 'void'
     ;
 
 
