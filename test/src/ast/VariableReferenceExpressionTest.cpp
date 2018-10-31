@@ -36,6 +36,32 @@ TEST(VariableReferenceExpressionTest, declaredVariableTypeIsInheritedByExpressio
     ASSERT_EQ(TypeDecl(TypeDecl::FLOAT), fexpr.getType());
 }
 
+TEST(VariableReferenceExpressionTest, undefinedVariableEvaluationAttemptThrows)
+{
+    DeclarationContext dc;
+    ExecutionContext ec;
+
+    dc.declareVariable("var", TypeDecl::INT);
+
+    VariableReferenceExpression expr(&dc, "var");
+
+    ASSERT_THROW(expr.evaluate(&ec), VariableNotDefinedException);
+}
+
+TEST(VariableReferenceExpressionTest, typeMismatchDuringEvaluationThrows)
+{
+    DeclarationContext dc;
+    ExecutionContext ec;
+
+    dc.declareVariable("var", TypeDecl::INT);
+
+    Memory memory(100, 1);
+    ec.getStackFrame()->addVariable("var", new Variable(TypeDecl::SHORT, memory.allocate(2)));
+
+    VariableReferenceExpression expr(&dc, "var");
+    ASSERT_THROW(expr.evaluate(&ec), InvalidTypeException);
+}
+
 
 template<typename T>
 void testSimpleVariableReferenceEvaluation()
