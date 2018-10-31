@@ -74,7 +74,7 @@ void Allocation::write(T value, uint32_t offset)
         throw InvalidAccessException("Write access out of bounds");
     }
 
-    T* castedPtr = (T*)(_memoryAccess->getHeap() + offset);
+    T* castedPtr = (T*)(_memoryAccess->getHeap() + offset + _offset);
     *castedPtr = value;
 }
 

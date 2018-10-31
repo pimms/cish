@@ -85,3 +85,24 @@ TEST(MemoryTest, DeallocatingMakesMemoryAvailableAgain)
     ASSERT_NO_THROW(memory.allocate(4));
 }
 
+
+TEST(MemoryTest, WritesDoesNotAffectOtherVariables)
+{
+    Memory memory(100, 1);
+
+    auto alloc1 = memory.allocate(1);
+    auto alloc2 = memory.allocate(2);
+    auto alloc3 = memory.allocate(4);
+    auto alloc4 = memory.allocate(8);
+
+    alloc1->write<char>(1);
+    alloc2->write<short>(2);
+    alloc3->write<int>(3);
+    alloc4->write<long>(4);
+
+    ASSERT_EQ(1, alloc1->read<char>());
+    ASSERT_EQ(2, alloc2->read<short>());
+    ASSERT_EQ(3, alloc3->read<int>());
+    ASSERT_EQ(4, alloc4->read<long>());
+}
+

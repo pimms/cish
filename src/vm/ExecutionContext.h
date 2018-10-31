@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "StackFrame.h"
+#include "Memory.h"
 #include "../Exception.h"
 
 
