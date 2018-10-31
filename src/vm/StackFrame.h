@@ -19,7 +19,6 @@ public:
     ~StackFrame();
 
     void addVariable(const std::string &name, Variable *var);
-
     Variable* getVariable(const std::string &name) const;
 
 private:

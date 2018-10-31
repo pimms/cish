@@ -9,6 +9,9 @@
 
 namespace cish
 {
+
+namespace vm { class ExecutionContext; }
+
 namespace ast
 {
 
@@ -23,7 +26,7 @@ class Expression: public AstNode
 {
 public:
     virtual TypeDecl getType() const = 0;
-    virtual ExpressionValue evaluate() = 0;
+    virtual ExpressionValue evaluate(vm::ExecutionContext*) = 0;
 };
 
 
@@ -34,7 +37,7 @@ public:
     LiteralExpression(ExpressionValue value);
 
     virtual TypeDecl getType() const override;
-    virtual ExpressionValue evaluate() override;
+    virtual ExpressionValue evaluate(vm::ExecutionContext*) override;
 
 private:
     ExpressionValue _value;

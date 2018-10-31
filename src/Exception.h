@@ -4,12 +4,6 @@
 #include <sstream>
 #include <stdarg.h>
 
-namespace cish
-{
-
-typedef ::std::exception Exception;
-
-}
 
 
 #if defined(__APPLE__) || defined(__GNUC__)
@@ -17,7 +11,7 @@ typedef ::std::exception Exception;
 #endif
 
 #define DECLARE_EXCEPTION(name)                     \
-    class name : ::cish::Exception                  \
+    class name : ::std::exception                   \
     {                                               \
     public:                                         \
         name(std::string file, std::string func,    \
@@ -50,3 +44,9 @@ typedef ::std::exception Exception;
 
 #define Throw(_TYPE, ...) { throw _TYPE(__FILE__, __FUNCTION__, __LINE__, __VA_ARGS__); }
 
+namespace cish
+{
+
+DECLARE_EXCEPTION(Exception);
+
+}

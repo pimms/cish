@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include "ast/BinaryExpression.h"
+#include "vm/ExecutionContext.h"
 
 using namespace cish::ast;
 
@@ -119,11 +120,12 @@ TEST(BinaryExpressionTest, type_folding)
 template<typename LHST, typename RHST, typename ResT>
 static void testBinaryExpr(BinaryExpression::Operator op, LHST lval, RHST rval, ResT expected)
 {
+    cish::vm::ExecutionContext econtext;
     auto left = expr<LHST>(lval);
     auto right = expr<RHST>(rval);
 
     BinaryExpression expr(op, &left, &right);
-    ExpressionValue result = expr.evaluate();
+    ExpressionValue result = expr.evaluate(&econtext);
 
     ASSERT_EQ(TypeDecl::getFromNative<ResT>(), result.getIntrinsicType());
 
@@ -333,6 +335,8 @@ TEST(BinaryExpressionTest, simpleTestOfNestedBinaryExpressions)
     // float(200) - int(290) = float(-90)
     BinaryExpression expr(BinaryExpression::MINUS, &left, &right);
     ASSERT_EQ(TypeDecl::FLOAT, expr.getType().getType());
-    ASSERT_NEAR(-90.f, expr.evaluate().get<float>(), 0.001);
+
+    cish::vm::ExecutionContext econtext;
+    ASSERT_NEAR(-90.f, expr.evaluate(&econtext).get<float>(), 0.001);
 }
 

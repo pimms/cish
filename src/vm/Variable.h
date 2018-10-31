@@ -3,23 +3,30 @@
 #include <memory>
 
 #include "Allocation.h"
+#include "../ast/Type.h"
+#include "../Exception.h"
 
 
 namespace cish
 {
+
 namespace vm
 {
+
+DECLARE_EXCEPTION(InvalidAllocationException);
 
 
 class Variable
 {
 public:
-    Variable(Allocation::Ptr allocation);
+    Variable(ast::TypeDecl type, Allocation::Ptr allocation);
 
-    uint32_t getSize() const;
+    cish::ast::TypeDecl getType() const;
+    Allocation* getAllocation() const;
     uint32_t getHeapAddress() const;
 
 private:
+    ast::TypeDecl _type;
     Allocation::Ptr _allocation;
 };
 

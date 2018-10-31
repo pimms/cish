@@ -12,7 +12,7 @@ using namespace cish::vm;
 Variable* createVariable(Memory &mem, uint32_t len)
 {
     auto alloc = mem.allocate(len);
-    return new Variable(std::move(alloc));
+    return new Variable(cish::ast::TypeDecl(cish::ast::TypeDecl::VOID), std::move(alloc));
 }
 
 
@@ -31,7 +31,7 @@ TEST(StackFrameTest, StoredVariablesAreRetrievable)
     frame.addVariable("var", var);
 
     ASSERT_NE(nullptr, frame.getVariable("var"));
-    ASSERT_EQ(4, frame.getVariable("var")->getSize());
+    ASSERT_EQ(4, frame.getVariable("var")->getAllocation()->getSize());
 }
 
 TEST(StackFrameTest, ParentsVariablesAreAvailableInChildren)
@@ -58,8 +58,8 @@ TEST(StackFrameTest, ChildVariablesOvershadowParents)
     parent.addVariable("var", v1);
     child.addVariable("var", v2);
 
-    ASSERT_EQ(4, parent.getVariable("var")->getSize());
-    ASSERT_EQ(8, child.getVariable("var")->getSize());
+    ASSERT_EQ(4, parent.getVariable("var")->getAllocation()->getSize());
+    ASSERT_EQ(8, child.getVariable("var")->getAllocation()->getSize());
 }
 
 

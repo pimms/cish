@@ -35,7 +35,7 @@ public:
     BinaryExpression(Operator op, Expression *left, Expression *right);
 
     virtual TypeDecl getType() const override;
-    virtual ExpressionValue evaluate() override;
+    virtual ExpressionValue evaluate(vm::ExecutionContext *ctx) override;
 
 private:
     Operator _operator;
@@ -45,17 +45,17 @@ private:
     Expression *_right;
 
     template<typename T>
-    ExpressionValue evaluateT();
+    ExpressionValue evaluateT(vm::ExecutionContext *ctx);
 
     template<typename T>
     std::function<T(T,T)> getFunction();
 };
 
 template<typename T>
-ExpressionValue BinaryExpression::evaluateT()
+ExpressionValue BinaryExpression::evaluateT(vm::ExecutionContext *ctx)
 {
-    ExpressionValue lval = _left->evaluate();
-    ExpressionValue rval = _right->evaluate();
+    ExpressionValue lval = _left->evaluate(ctx);
+    ExpressionValue rval = _right->evaluate(ctx);
 
     // TODO: Check the RHS for 0, and throw div/0 VMRE
 

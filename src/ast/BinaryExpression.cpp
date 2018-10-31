@@ -33,17 +33,17 @@ TypeDecl BinaryExpression::getType() const
     return _returnType;
 }
 
-ExpressionValue BinaryExpression::evaluate()
+ExpressionValue BinaryExpression::evaluate(vm::ExecutionContext *ctx)
 {
     // Start by folding the types
     switch (_workingType.getType()) {
-        case TypeDecl::BOOL:    return evaluateT<bool>();
-        case TypeDecl::CHAR:    return evaluateT<char>();
-        case TypeDecl::SHORT:   return evaluateT<short>();
-        case TypeDecl::INT:     return evaluateT<int>();
-        case TypeDecl::LONG:    return evaluateT<long>();
-        case TypeDecl::FLOAT:   return evaluateT<float>();
-        case TypeDecl::DOUBLE:  return evaluateT<double>();
+        case TypeDecl::BOOL:    return evaluateT<bool>(ctx);
+        case TypeDecl::CHAR:    return evaluateT<char>(ctx);
+        case TypeDecl::SHORT:   return evaluateT<short>(ctx);
+        case TypeDecl::INT:     return evaluateT<int>(ctx);
+        case TypeDecl::LONG:    return evaluateT<long>(ctx);
+        case TypeDecl::FLOAT:   return evaluateT<float>(ctx);
+        case TypeDecl::DOUBLE:  return evaluateT<double>(ctx);
 
         default:
             Throw(ExpressionTypeException, "Unable to handle type in binary expression '%d'", _workingType.getType());

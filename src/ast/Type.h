@@ -1,5 +1,9 @@
 #pragma once
 
+#include <stdint.h>
+#include <string>
+
+
 namespace cish
 {
 namespace ast
@@ -32,9 +36,14 @@ public:
     TypeDecl(Type t);
 
     Type getType() const;
+    uint32_t getSize() const;
+    const char* getName() const;
 
     bool operator==(const TypeDecl &o) const;
     bool operator==(const TypeDecl::Type &o) const;
+
+    bool operator!=(const TypeDecl &o) const { return !(*this == o); }
+    bool operator!=(const TypeDecl::Type &o) const { return !(*this == o); }
 
     bool castableTo(const TypeDecl &o) const;
     bool castableTo(const TypeDecl::Type &o) const;

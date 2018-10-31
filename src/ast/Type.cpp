@@ -1,4 +1,5 @@
 #include "Type.h"
+#include "../Exception.h"
 
 namespace cish
 {
@@ -14,6 +15,54 @@ TypeDecl::TypeDecl(Type t): _type(t) {}
 TypeDecl::Type TypeDecl::getType() const
 {
     return _type;
+}
+
+uint32_t TypeDecl::getSize() const
+{
+    switch (_type) {
+        case VOID:
+            return 0;
+        case BOOL:
+            return 1;
+        case CHAR:
+            return 1;
+        case SHORT:
+            return 2;
+        case INT:
+            return 4;
+        case LONG:
+            return 8;
+        case FLOAT:
+            return 4;
+        case DOUBLE:
+            return 8;
+    }
+
+    Throw(Exception, "Type '%d' has undefined size", (int)_type);
+}
+
+const char* TypeDecl::getName() const
+{
+    switch (_type) {
+        case VOID:
+            return "void";
+        case BOOL:
+            return "bool";
+        case CHAR:
+            return "char";
+        case SHORT:
+            return "short";
+        case INT:
+            return "int";
+        case LONG:
+            return "long";
+        case FLOAT:
+            return "float";
+        case DOUBLE:
+            return "double";
+    }
+
+    return "<undef>";
 }
 
 bool TypeDecl::operator==(const TypeDecl &o) const
