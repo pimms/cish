@@ -28,6 +28,5 @@ ExpressionValue LiteralExpression::evaluate(vm::ExecutionContext*)
 }
 
 
-
 }
 }

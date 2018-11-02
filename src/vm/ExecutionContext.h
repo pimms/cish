@@ -20,15 +20,18 @@ DECLARE_EXCEPTION(StackOverflowException);
 class ExecutionContext
 {
 public:
-    ExecutionContext();
+    ExecutionContext(Memory *memory);
     ~ExecutionContext();
 
     void pushStackFrame();
     void popStackFrame();
     StackFrame* getStackFrame() const;
 
+    Memory* getMemory() const;
+
 private:
     std::vector<StackFrame*> _stackFrames;
+    Memory *_memory;
 };
 
 

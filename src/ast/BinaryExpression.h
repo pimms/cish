@@ -33,6 +33,7 @@ public:
     };
 
     BinaryExpression(Operator op, Expression *left, Expression *right);
+    ~BinaryExpression();
 
     virtual TypeDecl getType() const override;
     virtual ExpressionValue evaluate(vm::ExecutionContext *ctx) override;

@@ -38,8 +38,9 @@ TEST(VariableReferenceExpressionTest, declaredVariableTypeIsInheritedByExpressio
 
 TEST(VariableReferenceExpressionTest, undefinedVariableEvaluationAttemptThrows)
 {
+    Memory memory(100, 1);
     DeclarationContext dc;
-    ExecutionContext ec;
+    ExecutionContext ec(&memory);
 
     dc.declareVariable("var", TypeDecl::INT);
 
@@ -50,12 +51,12 @@ TEST(VariableReferenceExpressionTest, undefinedVariableEvaluationAttemptThrows)
 
 TEST(VariableReferenceExpressionTest, typeMismatchDuringEvaluationThrows)
 {
+    Memory memory(100, 1);
     DeclarationContext dc;
-    ExecutionContext ec;
+    ExecutionContext ec(&memory);
 
     dc.declareVariable("var", TypeDecl::INT);
 
-    Memory memory(100, 1);
     ec.getStackFrame()->addVariable("var", new Variable(TypeDecl::SHORT, memory.allocate(2)));
 
     VariableReferenceExpression expr(&dc, "var");
@@ -83,7 +84,7 @@ void testSimpleVariableReferenceEvaluation()
         Variable *var = new Variable(type, std::move(allocation));
 
         DeclarationContext dc;
-        ExecutionContext ec;
+        ExecutionContext ec(&memory);
 
         dc.declareVariable("var", type);
         ec.getStackFrame()->addVariable("var", var);
@@ -118,7 +119,7 @@ TEST(VariableReferenceExpressionTest, shadowingWorksAsExpected)
 {
     Memory memory(100, 1);
     DeclarationContext dc;
-    ExecutionContext ec;
+    ExecutionContext ec(&memory);
 
 
     Allocation::Ptr alloc1 = memory.allocate(4);

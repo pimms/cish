@@ -9,13 +9,15 @@ using namespace cish::ast;
 
 TEST(ExecutionContextTest, rootStackFrameExists)
 {
-    ExecutionContext context;
+    Memory memory(100, 1);
+    ExecutionContext context(&memory);
     ASSERT_NE(nullptr, context.getStackFrame());
 }
 
 TEST(ExecutionContextTest, poppingRootStackFrameThrows)
 {
-    ExecutionContext context;
+    Memory memory(100, 1);
+    ExecutionContext context(&memory);
     ASSERT_THROW(context.popStackFrame(), StackUnderflowException);
 
     context.pushStackFrame();
@@ -25,7 +27,8 @@ TEST(ExecutionContextTest, poppingRootStackFrameThrows)
 
 TEST(ExecutionContextTest, excessivePushingEventuallyThrows)
 {
-    ExecutionContext context;
+    Memory memory(100, 1);
+    ExecutionContext context(&memory);
 
     ASSERT_THROW({
         // Here's to hoping this throws! *cheers*

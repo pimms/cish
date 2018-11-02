@@ -28,6 +28,12 @@ BinaryExpression::BinaryExpression(Operator op, Expression *left, Expression *ri
 	}
 }
 
+BinaryExpression::~BinaryExpression()
+{
+    delete _left;
+    delete _right;
+}
+
 TypeDecl BinaryExpression::getType() const
 {
     return _returnType;

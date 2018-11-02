@@ -10,10 +10,6 @@ namespace ast
 
 class DeclarationContext;
 
-DECLARE_EXCEPTION(VariableNotDeclaredException);
-DECLARE_EXCEPTION(VariableNotDefinedException);
-DECLARE_EXCEPTION(InvalidTypeException);
-
 class VariableReferenceExpression: public Expression
 {
 public:

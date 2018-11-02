@@ -9,7 +9,8 @@ namespace vm
 const int MAX_STACK_FRAMES = 100;
 
 
-ExecutionContext::ExecutionContext()
+ExecutionContext::ExecutionContext(Memory *memory):
+    _memory(memory)
 {
     _stackFrames.push_back(new StackFrame());
 }
@@ -45,6 +46,11 @@ void ExecutionContext::popStackFrame()
 StackFrame* ExecutionContext::getStackFrame() const
 {
     return _stackFrames.back();
+}
+
+Memory* ExecutionContext::getMemory() const
+{
+    return _memory;
 }
 
 

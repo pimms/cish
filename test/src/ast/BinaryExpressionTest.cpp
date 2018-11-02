@@ -7,11 +7,11 @@ using namespace cish::ast;
 
 
 template<typename T>
-static LiteralExpression expr(T value)
+static LiteralExpression* expr(T value)
 {
     TypeDecl type = TypeDecl::getFromNative<T>();
     ExpressionValue exprValue(type, value);
-    return LiteralExpression(exprValue);
+    return new LiteralExpression(exprValue);
 }
 
 template<typename LHST, typename RHST, typename ResT>
@@ -21,7 +21,7 @@ static void testTypeFolding()
     auto right = expr<RHST>(0);
 
     // Addition has no impact on type, and works for all types
-    BinaryExpression expr(BinaryExpression::PLUS, &left, &right);
+    BinaryExpression expr(BinaryExpression::PLUS, left, right);
 
     ASSERT_EQ(TypeDecl::getFromNative<ResT>(), expr.getType());
 }
@@ -120,11 +120,12 @@ TEST(BinaryExpressionTest, type_folding)
 template<typename LHST, typename RHST, typename ResT>
 static void testBinaryExpr(BinaryExpression::Operator op, LHST lval, RHST rval, ResT expected)
 {
-    cish::vm::ExecutionContext econtext;
+    cish::vm::Memory memory(100, 1);
+    cish::vm::ExecutionContext econtext(&memory);
     auto left = expr<LHST>(lval);
     auto right = expr<RHST>(rval);
 
-    BinaryExpression expr(op, &left, &right);
+    BinaryExpression expr(op, left, right);
     ExpressionValue result = expr.evaluate(&econtext);
 
     ASSERT_EQ(TypeDecl::getFromNative<ResT>(), result.getIntrinsicType());
@@ -325,18 +326,19 @@ TEST(BinaryExpressionTest, simpleTestOfNestedBinaryExpressions)
     // int(100) * float(2) = float(200)
     auto i100 = expr<int>(100);
     auto f2 = expr<float>(2);
-    BinaryExpression left(BinaryExpression::MULTIPLY, &i100, &f2);
+    BinaryExpression *left = new BinaryExpression(BinaryExpression::MULTIPLY, i100, f2);
 
     // char(-5) + int(295) = int(290)
     auto cm5 = expr<char>(-5);
     auto i295 = expr<int>(295);
-    BinaryExpression right(BinaryExpression::PLUS, &cm5, &i295);
+    BinaryExpression *right = new BinaryExpression(BinaryExpression::PLUS, cm5, i295);
 
     // float(200) - int(290) = float(-90)
-    BinaryExpression expr(BinaryExpression::MINUS, &left, &right);
+    BinaryExpression expr(BinaryExpression::MINUS, left, right);
     ASSERT_EQ(TypeDecl::FLOAT, expr.getType().getType());
 
-    cish::vm::ExecutionContext econtext;
+    cish::vm::Memory memory(100, 1);
+    cish::vm::ExecutionContext econtext(&memory);
     ASSERT_NEAR(-90.f, expr.evaluate(&econtext).get<float>(), 0.001);
 }
 
