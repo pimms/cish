@@ -26,6 +26,27 @@ BinaryExpression::BinaryExpression(Operator op, Expression *left, Expression *ri
 	} else {
         _returnType = _workingType;
 	}
+
+    // Make sure that both sub-expressions are castable to both working and return type
+    if (!_left->getType().castableTo(_workingType)) {
+        Throw(InvalidCastException, "Type '%s' is not convertible to '%s'",
+                _left->getType().getName(), _workingType.getName());
+    }
+
+    if (!_left->getType().castableTo(_returnType)) {
+        Throw(InvalidCastException, "Type '%s' is not convertible to '%s'",
+                _left->getType().getName(), _returnType.getName());
+    }
+
+    if (!_right->getType().castableTo(_workingType)) {
+        Throw(InvalidCastException, "Type '%s' is not convertible to '%s'",
+                _right->getType().getName(), _workingType.getName());
+    }
+
+    if (!_right->getType().castableTo(_returnType)) {
+        Throw(InvalidCastException, "Type '%s' is not convertible to '%s'",
+                _right->getType().getName(), _returnType.getName());
+    }
 }
 
 BinaryExpression::~BinaryExpression()

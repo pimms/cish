@@ -26,6 +26,11 @@ VariableAssignmentStatement::VariableAssignmentStatement(
     if (var == nullptr) {
         Throw(VariableNotDeclaredException, "Variable '%s' not declared in current context", _varName.c_str());
     }
+
+    if (!value->getType().castableTo(var->type)) {
+        Throw(InvalidCastException, "Cannot cast value of '%s' into variable '%s' of type '%s'",
+                value->getType().getName(), var->name.c_str(), var->type.getName());
+    }
 }
 
 VariableAssignmentStatement::~VariableAssignmentStatement()

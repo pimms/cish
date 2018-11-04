@@ -18,6 +18,7 @@ namespace ast
 DECLARE_EXCEPTION(VariableNotDeclaredException);
 DECLARE_EXCEPTION(VariableNotDefinedException);
 DECLARE_EXCEPTION(InvalidTypeException);
+DECLARE_EXCEPTION(InvalidCastException);
 
 
 class AstNode {
