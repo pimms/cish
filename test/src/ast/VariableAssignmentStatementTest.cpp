@@ -13,7 +13,7 @@ using namespace cish::ast;
 
 void declareVariable(DeclarationContext &context, TypeDecl type, std::string name)
 {
-    context.declareVariable(name, type);
+    context.declareVariable(type, name);
 }
 
 void defineVariable(ExecutionContext &context, TypeDecl type, std::string name)

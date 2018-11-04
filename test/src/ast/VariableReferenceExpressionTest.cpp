@@ -19,15 +19,15 @@ TEST(VariableReferenceExpressionTest, undeclaredVariableReferenceThrows)
 TEST(VariableReferenceExpressionTest, declaredVariableReferenceDoesNotThrow)
 {
     DeclarationContext dc;
-    dc.declareVariable("var", TypeDecl::INT);
+    dc.declareVariable(TypeDecl::INT, "var");
     ASSERT_NO_THROW(VariableReferenceExpression(&dc, "var"));
 }
 
 TEST(VariableReferenceExpressionTest, declaredVariableTypeIsInheritedByExpression)
 {
     DeclarationContext dc;
-    dc.declareVariable("intVar", TypeDecl::INT);
-    dc.declareVariable("floatVar", TypeDecl::FLOAT);
+    dc.declareVariable(TypeDecl::INT, "intVar");
+    dc.declareVariable(TypeDecl::FLOAT, "floatVar");
 
     VariableReferenceExpression iexpr(&dc, "intVar");
     ASSERT_EQ(TypeDecl(TypeDecl::INT), iexpr.getType());
@@ -42,7 +42,7 @@ TEST(VariableReferenceExpressionTest, undefinedVariableEvaluationAttemptThrows)
     DeclarationContext dc;
     ExecutionContext ec(&memory);
 
-    dc.declareVariable("var", TypeDecl::INT);
+    dc.declareVariable(TypeDecl::INT, "var");
 
     VariableReferenceExpression expr(&dc, "var");
 
@@ -55,7 +55,7 @@ TEST(VariableReferenceExpressionTest, typeMismatchDuringEvaluationThrows)
     DeclarationContext dc;
     ExecutionContext ec(&memory);
 
-    dc.declareVariable("var", TypeDecl::INT);
+    dc.declareVariable(TypeDecl::INT, "var");
 
     ec.getStackFrame()->addVariable("var", new Variable(TypeDecl::SHORT, memory.allocate(2)));
 
@@ -86,7 +86,7 @@ void testSimpleVariableReferenceEvaluation()
         DeclarationContext dc;
         ExecutionContext ec(&memory);
 
-        dc.declareVariable("var", type);
+        dc.declareVariable(type, "var");
         ec.getStackFrame()->addVariable("var", var);
 
         VariableReferenceExpression expr(&dc, "var");
@@ -131,11 +131,11 @@ TEST(VariableReferenceExpressionTest, shadowingWorksAsExpected)
     Variable *var1 = new Variable(TypeDecl::INT, std::move(alloc1));
     Variable *var2 = new Variable(TypeDecl::SHORT, std::move(alloc2));
 
-    dc.declareVariable("var", TypeDecl::INT);
+    dc.declareVariable(TypeDecl::INT, "var");
     VariableReferenceExpression ref1(&dc, "var");
 
     dc.pushVariableScope();
-    dc.declareVariable("var", TypeDecl::SHORT);
+    dc.declareVariable(TypeDecl::SHORT, "var");
     VariableReferenceExpression ref2(&dc, "var");
 
     // Evaluate reference 1

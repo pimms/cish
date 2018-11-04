@@ -26,7 +26,7 @@ VariableDeclarationStatement::VariableDeclarationStatement(
     _varName(varName),
     _assignment(nullptr)
 {
-    declContext->declareVariable(_varName, type);
+    declContext->declareVariable(type, _varName);
 
     if (value != nullptr) {
         _assignment = new VariableAssignmentStatement(declContext, _varName, value);

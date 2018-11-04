@@ -12,7 +12,7 @@ DeclarationContext::DeclarationContext()
     _varScope.push_back(VariableScope());
 }
 
-void DeclarationContext::declareVariable(const std::string &name, TypeDecl type)
+void DeclarationContext::declareVariable(TypeDecl type, const std::string &name)
 {
     for (const auto &var: _varScope.back()) {
         if (var.name == name) {
@@ -24,7 +24,7 @@ void DeclarationContext::declareVariable(const std::string &name, TypeDecl type)
     _varScope.back().push_back(VarDeclaration { name, type });
 }
 
-const DeclarationContext::VarDeclaration* DeclarationContext::getVariableDeclaration(const std::string &name) const
+const VarDeclaration* DeclarationContext::getVariableDeclaration(const std::string &name) const
 {
     for (int i=_varScope.size() - 1; i >= 0; i--) {
         const VariableScope &scope = _varScope[i];
