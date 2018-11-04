@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <map>
 
 #include "Type.h"
 #include "../Exception.h"
@@ -12,12 +13,13 @@ namespace ast
 {
 
 DECLARE_EXCEPTION(VariableAlreadyDeclaredException);
+DECLARE_EXCEPTION(FunctionAlreadyDeclaredException);
 
 
 struct VarDeclaration
 {
-    std::string name;
     TypeDecl type;
+    std::string name;
 };
 
 
@@ -44,10 +46,14 @@ public:
 
     void pushVariableScope();
     void popVariableScope();
+    
+    void declareFunction(FuncDeclaration decl);
+    const FuncDeclaration* getFunctionDeclaration(const std::string &name) const;
 
 private:
     typedef std::vector<VarDeclaration> VariableScope;
     std::vector<VariableScope> _varScope;
+    std::map<std::string, FuncDeclaration> _funcs;
 };
 
 

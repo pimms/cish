@@ -39,8 +39,6 @@ private:
     /* used for late private init */
     ExpressionValue();
 
-    /* Used for template initialization */
-
     TypeDecl _type;
     union {
         int ival;

@@ -21,7 +21,7 @@ void DeclarationContext::declareVariable(TypeDecl type, const std::string &name)
         }
     }
 
-    _varScope.back().push_back(VarDeclaration { name, type });
+    _varScope.back().push_back(VarDeclaration { type, name });
 }
 
 const VarDeclaration* DeclarationContext::getVariableDeclaration(const std::string &name) const
@@ -46,6 +46,22 @@ void DeclarationContext::pushVariableScope()
 void DeclarationContext::popVariableScope()
 {
     _varScope.pop_back();
+}
+    
+void DeclarationContext::declareFunction(FuncDeclaration func)
+{
+    if (_funcs.count(func.name) != 0) {
+        Throw(FunctionAlreadyDeclaredException, "Function '%s' has already been declared", func.name.c_str());
+    }
+    
+    _funcs[func.name] = func;
+}
+
+const FuncDeclaration* DeclarationContext::getFunctionDeclaration(const std::string &name) const
+{
+    if (_funcs.count(name) == 0)
+        return nullptr;
+    return &_funcs.at(name);
 }
 
 
