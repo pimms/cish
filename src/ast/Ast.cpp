@@ -22,6 +22,7 @@ Ast::~Ast()
     
 void Ast::addRootStatement(Statement *statement)
 {
+    assert(statement != nullptr);
     _rootStatements.push_back(statement);
 }
     

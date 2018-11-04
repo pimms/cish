@@ -19,8 +19,6 @@ AntlrContext::AntlrContext(const std::string &source):
     _tokenStream = new antlr4::CommonTokenStream(_lexer);
     _parser = new CMParser(_tokenStream);
     _tree = _parser->root();
-    
-    printf("Tree: %s\n", _tree->toStringTree(_parser).c_str());
 }
 
 AntlrContext::~AntlrContext()

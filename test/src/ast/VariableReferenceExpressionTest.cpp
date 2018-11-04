@@ -125,9 +125,6 @@ TEST(VariableReferenceExpressionTest, shadowingWorksAsExpected)
     Allocation::Ptr alloc1 = memory.allocate(4);
     Allocation::Ptr alloc2 = memory.allocate(2);
 
-    printf("alloc1 offset: %d\n", alloc1->getOffset());
-    printf("alloc2 offset: %d\n", alloc2->getOffset());
-
     alloc1->write<int>(1);
     alloc2->write<short>(2);
 

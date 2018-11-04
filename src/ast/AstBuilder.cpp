@@ -28,6 +28,11 @@ class TreeConverter: public CMBaseVisitor
     typedef std::vector<AstNode*> Result;
     DeclarationContext _declContext;
     
+    Result createResult(AstNode *node)
+    {
+        return Result { node };
+    }
+
 public:
     Ast::Ptr convertTree(const AntlrContext *antlrContext)
     {
@@ -41,7 +46,7 @@ public:
         Result result;
         
         for (auto child: node->children) {
-            antlrcpp::Any childResult = visitChildren(child);
+            antlrcpp::Any childResult = child->accept(this);
             if (childResult.isNotNull()) {
                 Result childResultNodes = childResult.as<Result>();
                 result.insert(result.end(), childResultNodes.begin(), childResultNodes.end());
@@ -73,7 +78,8 @@ public:
             assert(varDecl || funcDef || funcDecl);
             
             if (varDecl != nullptr) {
-                ast->addRootStatement(visitVariableDeclaration(varDecl).as<VariableDeclarationStatement*>());
+                Result res = visitVariableDeclaration(varDecl).as<Result>();
+                ast->addRootStatement(dynamic_cast<VariableDeclarationStatement*>(res[0]));
             } else if (funcDef != nullptr) {
                 Throw(AstNodeNotImplementedException, "No way of handling function definitions yet");
             } else if (funcDecl != nullptr) {
@@ -89,20 +95,32 @@ public:
         // We parse the RootBlock's children explicitly, so this method should never get hit
         Throw(AstConversionException, "Internal conversion exception - should never visit RootItem");
     }
+    
+    Expression* manuallyVisitExpression(CMParser::ExpressionContext *ctx)
+    {
+        antlrcpp::Any any = visitExpression(ctx);
+        assert(any.isNotNull());
+        
+        Result result = any.as<Result>();
+        assert(result.size() == 1);
+        assert(dynamic_cast<Expression*>(result[0]) != nullptr);
+        
+        return (Expression*)result[0];
+    }
 
     virtual antlrcpp::Any visitExpression(CMParser::ExpressionContext *ctx) override
     {
         return visitChildren(ctx);
     }
     
-    BinaryExpression* buildBinaryExpression(BinaryExpression::Operator op, antlr4::tree::ParseTree *tree)
+    Result buildBinaryExpression(BinaryExpression::Operator op, antlr4::tree::ParseTree *tree)
     {
         Result result = visitChildren(tree).as<Result>();
         assert(result.size() == 2);
         assert(dynamic_cast<Expression*>(result[0]) != nullptr);
         assert(dynamic_cast<Expression*>(result[1]) != nullptr);
         
-        return new BinaryExpression(op, (Expression*)result[0], (Expression*)result[1]);
+        return createResult(new BinaryExpression(op, (Expression*)result[0], (Expression*)result[1]));
     }
 
     virtual antlrcpp::Any visitMULT_EXPR(CMParser::MULT_EXPRContext *ctx) override
@@ -138,7 +156,7 @@ public:
     virtual antlrcpp::Any visitLITERAL_EXPR(CMParser::LITERAL_EXPRContext *ctx) override
     {
         const std::string literal = ctx->getText();
-        return new LiteralExpression(literal);
+        return createResult(new LiteralExpression(literal));
     }
 
     virtual antlrcpp::Any visitFUNC_CALL_EXPR(CMParser::FUNC_CALL_EXPRContext *ctx) override
@@ -177,7 +195,7 @@ public:
     virtual antlrcpp::Any visitVAR_REF_EXPR(CMParser::VAR_REF_EXPRContext *ctx) override
     {
         const std::string varName = ctx->Identifier()->getText();
-        return new VariableReferenceExpression(&_declContext, varName);
+        return createResult(new VariableReferenceExpression(&_declContext, varName));
     }
 
     virtual antlrcpp::Any visitCOMPARE_EXPR(CMParser::COMPARE_EXPRContext *ctx) override
@@ -227,7 +245,7 @@ public:
         assert(dynamic_cast<Expression*>(result[0]) != nullptr);
         Expression *expression = (Expression*)result[0];
         
-        return new VariableAssignmentStatement(&_declContext, varName, expression);
+        return createResult(new VariableAssignmentStatement(&_declContext, varName, expression));
     }
 
     virtual antlrcpp::Any visitVariableDeclaration(CMParser::VariableDeclarationContext *ctx) override
@@ -243,7 +261,13 @@ public:
         
         const std::string varName = ctx->identifier()->getText();
         
-        return new VariableDeclarationStatement(&_declContext, type, varName);
+        CMParser::ExpressionContext *exprContext = ctx->expression();
+        if (exprContext) {
+            Expression *expr = manuallyVisitExpression(exprContext);
+            return createResult(new VariableDeclarationStatement(&_declContext, type, varName, expr));
+        } else {
+            return createResult(new VariableDeclarationStatement(&_declContext, type, varName));
+        }
     }
 
     virtual antlrcpp::Any visitFunctionDeclaration(CMParser::FunctionDeclarationContext *ctx) override
