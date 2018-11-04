@@ -15,7 +15,7 @@ VirtualMachine* createVm(const std::string &source)
     AntlrContext *antlrContext = new AntlrContext(source);
     AstBuilder builder(antlrContext);
     Ast::Ptr ast = builder.buildAst();
-    
+
     VmOptions opts;
     opts.heapSize = 512;
     opts.minAllocSize = 4;
@@ -33,17 +33,17 @@ TEST(VirtualMachineTest, globalStatementsAreExecutedOneByOne)
     ASSERT_EQ(nullptr, getVar(vm, "a"));
     ASSERT_EQ(nullptr, getVar(vm, "b"));
     ASSERT_EQ(nullptr, getVar(vm, "c"));
-    
+
     vm->executeNextStatement();
     ASSERT_EQ(15, getVar(vm, "a")->getAllocation()->read<int>());
     ASSERT_EQ(nullptr, getVar(vm, "b"));
     ASSERT_EQ(nullptr, getVar(vm, "c"));
-    
+
     vm->executeNextStatement();
     ASSERT_EQ(15, getVar(vm, "a")->getAllocation()->read<int>());
     ASSERT_EQ(30, getVar(vm, "b")->getAllocation()->read<int>());
     ASSERT_EQ(nullptr, getVar(vm, "c"));
-    
+
     vm->executeNextStatement();
     ASSERT_EQ(15, getVar(vm, "a")->getAllocation()->read<int>());
     ASSERT_EQ(30, getVar(vm, "b")->getAllocation()->read<int>());

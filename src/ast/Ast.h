@@ -19,7 +19,7 @@ public:
 
     Ast();
     ~Ast();
-    
+
     void addRootStatement(Statement *statement);
     const std::vector<Statement*>& getRootStatements() const;
 

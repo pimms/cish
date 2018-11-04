@@ -24,10 +24,10 @@ public:
         int lineNumber;
         int charNumber;
     };
-    
+
     AntlrContext(const std::string &source);
     ~AntlrContext();
-    
+
     bool hasErrors() const;
 
     antlr4::tree::ParseTree* getParseTree() const;
@@ -39,10 +39,10 @@ private:
     antlr4::CommonTokenStream *_tokenStream;
     CMParser *_parser;
     antlr4::tree::ParseTree *_tree;
-    
+
     std::vector<Error> _errors;
-    
-    
+
+
     virtual void syntaxError(antlr4::Recognizer *recognizer,
                              antlr4::Token *offendingSymbol,
                              size_t line,

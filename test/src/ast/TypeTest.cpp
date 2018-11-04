@@ -38,7 +38,7 @@ TEST(TypeTest, resolveFromStringThrowsIfUnrecognized)
     ASSERT_THROW(TypeDecl::getFromString("unsigned long int"), InvalidTypeException);
     ASSERT_THROW(TypeDecl::getFromString("unsigned long long"), InvalidTypeException);
     ASSERT_THROW(TypeDecl::getFromString("long double"), InvalidTypeException);
-    
+
     // These would probably fall under the "user-defined type" umbrella,
     // but we don't support those yet, so expect exceptions.
     ASSERT_THROW(TypeDecl::getFromString("my_struct"), InvalidTypeException);

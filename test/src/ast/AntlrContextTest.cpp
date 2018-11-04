@@ -12,7 +12,7 @@ TEST(AntlrContextTest, invalidSyntaxThrowsException)
         "hei mamma",
         "int a (= 5);"
     };
-    
+
     for (auto source : invalidSyntax) {
         AntlrContext context(source);
         ASSERT_TRUE(context.hasErrors());

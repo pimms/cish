@@ -27,7 +27,7 @@ class TreeConverter: public CMBaseVisitor
 {
     typedef std::vector<AstNode*> Result;
     DeclarationContext _declContext;
-    
+
     Result createResult(AstNode *node)
     {
         return Result { node };
@@ -40,11 +40,11 @@ public:
         Ast *ast = visit(tree);
         return Ast::Ptr(ast);
     }
-    
+
     virtual antlrcpp::Any visitChildren(antlr4::tree::ParseTree *node) override
     {
         Result result;
-        
+
         for (auto child: node->children) {
             antlrcpp::Any childResult = child->accept(this);
             if (childResult.isNotNull()) {
@@ -52,14 +52,14 @@ public:
                 result.insert(result.end(), childResultNodes.begin(), childResultNodes.end());
             }
         }
-        
+
         if (result.empty()) {
             return nullptr;
         }
-        
+
         return result;
     }
-    
+
     virtual antlrcpp::Any visitRoot(CMParser::RootContext *ctx) override
     {
         return visitRootBlock(ctx->rootBlock());
@@ -73,10 +73,10 @@ public:
             CMParser::VariableDeclarationContext *varDecl = rootItem->variableDeclaration();
             CMParser::FunctionDefinitionContext *funcDef = rootItem->functionDefinition();
             CMParser::FunctionDeclarationContext *funcDecl = rootItem->functionDeclaration();
-            
+
             // If this assert ever fails, the grammar has likely changed
             assert(varDecl || funcDef || funcDecl);
-            
+
             if (varDecl != nullptr) {
                 Result res = visitVariableDeclaration(varDecl).as<Result>();
                 ast->addRootStatement(dynamic_cast<VariableDeclarationStatement*>(res[0]));
@@ -86,7 +86,7 @@ public:
                 Throw(AstNodeNotImplementedException, "No way of handling function declarations yet");
             }
         }
-        
+
         return ast;
     }
 
@@ -95,16 +95,16 @@ public:
         // We parse the RootBlock's children explicitly, so this method should never get hit
         Throw(AstConversionException, "Internal conversion exception - should never visit RootItem");
     }
-    
+
     Expression* manuallyVisitExpression(CMParser::ExpressionContext *ctx)
     {
         antlrcpp::Any any = visitExpression(ctx);
         assert(any.isNotNull());
-        
+
         Result result = any.as<Result>();
         assert(result.size() == 1);
         assert(dynamic_cast<Expression*>(result[0]) != nullptr);
-        
+
         return (Expression*)result[0];
     }
 
@@ -112,14 +112,14 @@ public:
     {
         return visitChildren(ctx);
     }
-    
+
     Result buildBinaryExpression(BinaryExpression::Operator op, antlr4::tree::ParseTree *tree)
     {
         Result result = visitChildren(tree).as<Result>();
         assert(result.size() == 2);
         assert(dynamic_cast<Expression*>(result[0]) != nullptr);
         assert(dynamic_cast<Expression*>(result[1]) != nullptr);
-        
+
         return createResult(new BinaryExpression(op, (Expression*)result[0], (Expression*)result[1]));
     }
 
@@ -138,7 +138,7 @@ public:
 
         return buildBinaryExpression(oper, ctx);
     }
-    
+
     virtual antlrcpp::Any visitEQUALITY_EXPR(CMParser::EQUALITY_EXPRContext *ctx) override
     {
         BinaryExpression::Operator oper;
@@ -149,7 +149,7 @@ public:
         } else {
             Throw(AstConversionException, "Unable to handle operand '%s' as EQUALITY_EXPR", ctx->op->getText().c_str());
         }
-        
+
         return buildBinaryExpression(oper, ctx);
     }
 
@@ -174,7 +174,7 @@ public:
         } else {
             Throw(AstConversionException, "Unable to handle operand '%s' as ADD_EXPR", ctx->op->getText().c_str());
         }
-        
+
         return buildBinaryExpression(oper, ctx);
     }
 
@@ -188,7 +188,7 @@ public:
         } else {
             Throw(AstConversionException, "Unable to handle operand '%s' as AND_EXPR", ctx->op->getText().c_str());
         }
-        
+
         return buildBinaryExpression(oper, ctx);
     }
 
@@ -212,7 +212,7 @@ public:
         } else {
             Throw(AstConversionException, "Unable to handle operand '%s' as COMPARE_EXPR", ctx->op->getText().c_str());
         }
-        
+
         return buildBinaryExpression(oper, ctx);
     }
 
@@ -239,28 +239,28 @@ public:
     virtual antlrcpp::Any visitAssignment(CMParser::AssignmentContext *ctx) override
     {
         const std::string varName = ctx->identifier()->Identifier()->getText();
-        
+
         Result result = visitChildren(ctx->expression());
         assert(result.size() == 1);
         assert(dynamic_cast<Expression*>(result[0]) != nullptr);
         Expression *expression = (Expression*)result[0];
-        
+
         return createResult(new VariableAssignmentStatement(&_declContext, varName, expression));
     }
 
     virtual antlrcpp::Any visitVariableDeclaration(CMParser::VariableDeclarationContext *ctx) override
     {
         CMParser::TypeIdentifierContext *typeContext = ctx->typeIdentifier();
-        
+
         if (typeContext->constTypeIdentifier() != nullptr) {
             Throw(AstConversionException, "Const variable declarations are not yet supported");
         }
-        
+
         const std::string typeName = typeContext->mutableTypeIdentifier()->getText();
         const TypeDecl type = TypeDecl::getFromString(typeName);
-        
+
         const std::string varName = ctx->identifier()->getText();
-        
+
         CMParser::ExpressionContext *exprContext = ctx->expression();
         if (exprContext) {
             Expression *expr = manuallyVisitExpression(exprContext);

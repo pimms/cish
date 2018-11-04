@@ -22,11 +22,11 @@ TypeDecl TypeDecl::getFromString(const std::string &str)
         {"float", FLOAT},
         {"double", DOUBLE},
     };
-    
+
     if (!map.count(str)) {
         Throw(InvalidTypeException, "Cannot resolve type '%s'", str.c_str());
     }
-    
+
     return TypeDecl(map.at(str));
 }
 

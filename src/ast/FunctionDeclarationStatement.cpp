@@ -11,7 +11,7 @@ FunctionDeclarationStatement::FunctionDeclarationStatement(DeclarationContext *c
 {
     context->declareFunction(_decl);
 }
-    
+
 void FunctionDeclarationStatement::execute(vm::ExecutionContext*)
 {
     // Nothing to do, lol

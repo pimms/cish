@@ -2,12 +2,12 @@
 
 namespace cish
 {
-    
+
 using ast::Ast;
 
 namespace vm
 {
-    
+
 
 VirtualMachine::VirtualMachine(const VmOptions &opts, Ast::Ptr ast):
     _memory(new Memory(opts.heapSize, opts.minAllocSize)),
@@ -21,7 +21,7 @@ VirtualMachine::~VirtualMachine()
     delete _executionContext;
     delete _memory;
 }
-    
+
 const ExecutionContext* VirtualMachine::getExecutionContext() const
 {
     return _executionContext;

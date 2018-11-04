@@ -47,13 +47,13 @@ void DeclarationContext::popVariableScope()
 {
     _varScope.pop_back();
 }
-    
+
 void DeclarationContext::declareFunction(FuncDeclaration func)
 {
     if (_funcs.count(func.name) != 0) {
         Throw(FunctionAlreadyDeclaredException, "Function '%s' has already been declared", func.name.c_str());
     }
-    
+
     _funcs[func.name] = func;
 }
 

@@ -46,7 +46,7 @@ public:
 
     void pushVariableScope();
     void popVariableScope();
-    
+
     void declareFunction(FuncDeclaration decl);
     const FuncDeclaration* getFunctionDeclaration(const std::string &name) const;
 

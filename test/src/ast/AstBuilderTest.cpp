@@ -30,7 +30,7 @@ TEST(AstBuilderTest, semiComplexGlobalVariables)
         "float b = 15.3; "
         "int c = a + b * 4;"
     );
-    
+
     auto statements = ast->getRootStatements();
     ASSERT_EQ(3, statements.size());
     ASSERT_NE(nullptr, dynamic_cast<VariableDeclarationStatement*>(statements[0]));
