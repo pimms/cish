@@ -21,7 +21,7 @@ class Memory : private MemoryAccess
 {
 public:
     Memory(uint32_t heapSize, uint32_t minAllocSize);
-    ~Memory();
+    virtual ~Memory();
 
     uint32_t getTotalSize() const;
     uint32_t getFreeSize() const;

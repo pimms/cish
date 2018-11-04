@@ -26,16 +26,24 @@ ExternalProject_Get_Property(gtest source_dir binary_dir)
 add_library(libgtest IMPORTED STATIC GLOBAL)
 add_dependencies(libgtest gtest)
 
+if ("${CMAKE_GENERATOR}" STREQUAL "Xcode")
+    set(LIBGTESTA "${binary_dir}/lib/Debug/libgtestd.a")
+    set(LIBGTESTMAINA "${binary_dir}/lib/Debug/libgtest_maind.a")
+else()
+    set(LIBGTESTA "${binary_dir}/lib/libgtest.a")
+    set(LIBGTESTMAINA "${binary_dir}/lib/libgtest_main.a")
+endif()
+
 # Set libgtest properties
 set_target_properties(libgtest PROPERTIES
-    "IMPORTED_LOCATION" "${binary_dir}/lib/libgtest.a"
+    "IMPORTED_LOCATION" "${LIBGTESTA}"
     "IMPORTED_LINK_INTERFACE_LIBRARIES" "${CMAKE_THREAD_LIBS_INIT}"
 )
 
 add_library(libgtest_main IMPORTED STATIC GLOBAL)
 add_dependencies(libgtest_main gtest_main)
 set_target_properties(libgtest_main PROPERTIES
-    "IMPORTED_LOCATION" "${binary_dir}/lib/libgtest_main.a"
+    "IMPORTED_LOCATION" "${LIBGTESTMAINA}"
     "IMPORTED_LINK_INTERFACE_LIBRARIES" "${CMAKE_THREAD_LIBS_INIT}"
 )
 

@@ -1,10 +1,34 @@
 #include "Type.h"
 #include "../Exception.h"
 
+#include "AstNodes.h"   // InvalidTypeException
+
+#include <map>
+
 namespace cish
 {
 namespace ast
 {
+
+TypeDecl TypeDecl::getFromString(const std::string &str)
+{
+    static const std::map<std::string,Type> map = {
+        {"void", VOID},
+        {"bool", BOOL},
+        {"char", CHAR},
+        {"short", SHORT},
+        {"int", INT},
+        {"long", LONG},
+        {"float", FLOAT},
+        {"double", DOUBLE},
+    };
+    
+    if (!map.count(str)) {
+        Throw(InvalidTypeException, "Cannot resolve type '%s'", str.c_str());
+    }
+    
+    return TypeDecl(map.at(str));
+}
 
 TypeDecl::TypeDecl(): _type(VOID) {}
 

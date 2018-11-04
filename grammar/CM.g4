@@ -26,7 +26,7 @@ expr
     | expr op=( '>=' | '<=' | '>' | '<' ) expr  # COMPARE_EXPR
     | expr op=( '==' | '!=' ) expr              # EQUALITY_EXPR
     | expr op=( '&&' | '||' ) expr              # AND_EXPR
-    | (String|Integer|Floating|Boolean|Null)    #LITERAL_EXPR
+    | (String|Integer|Floating|Boolean|Null)    # LITERAL_EXPR
     | Identifier                                # VAR_REF_EXPR
     | functionCall                              # FUNC_CALL_EXPR
     ;
@@ -54,7 +54,7 @@ elseStatement
     ;
 
 assignment
-    : (typeIdentifier)? identifier '=' expression ';'
+    : identifier '=' expression ';'
     ;
 
 variableDeclaration

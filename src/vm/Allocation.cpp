@@ -13,8 +13,8 @@ Allocation::Ptr Allocation::create(uint32_t offset, uint32_t len, MemoryAccess *
 Allocation::Allocation(uint32_t offset, uint32_t len, MemoryAccess *memAccess, bool owner):
     _offset(offset),
     _length(len),
-    _memoryAccess(memAccess),
-    _owner(owner)
+    _owner(owner),
+    _memoryAccess(memAccess)
 {
     assert(len > 0);
     assert(_memoryAccess != nullptr);

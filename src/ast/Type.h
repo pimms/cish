@@ -9,7 +9,6 @@ namespace cish
 namespace ast
 {
 
-
 class TypeDecl
 {
 public:
@@ -29,6 +28,7 @@ public:
 
     template<typename T>
     static TypeDecl getFromNative();
+    static TypeDecl getFromString(const std::string &str);
 
 
     TypeDecl();

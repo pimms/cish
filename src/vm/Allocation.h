@@ -20,6 +20,7 @@ class Allocation;
 class MemoryAccess
 {
 public:
+    virtual ~MemoryAccess() = default;
     virtual uint8_t* getHeap() = 0;
     virtual void onDeallocation(Allocation *allocation) = 0;
 };
