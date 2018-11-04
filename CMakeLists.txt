@@ -31,6 +31,19 @@ set_property(TARGET cish PROPERTY CXX_STANDARD_REQUIRED ON)
 SET(CISH_LIBRARY "cish")
 SET(CISH_HEADER_PATH "${CMAKE_SOURCE_DIR}/src/")
 
+foreach(source IN LISTS CISH_SRCS)
+    get_filename_component(source_path "${source}" PATH)
+    string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/src" "" source_path "${source_path}")
+    string(REPLACE "/" "\\" source_path_xcode "${source_path}")
+    source_group("${source_path_xcode}" FILES "${source}")
+endforeach()
+foreach(source IN LISTS CISH_HDRS)
+    get_filename_component(source_path "${source}" PATH)
+    string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/src" "" source_path "${source_path}")
+    string(REPLACE "/" "\\" source_path_xcode "${source_path}")
+    source_group("${source_path_xcode}" FILES "${source}")
+endforeach()
+
 
 
 

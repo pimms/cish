@@ -62,3 +62,17 @@ include_directories(SYSTEM ${CISH_HEADER_PATH} "${source_dir}/googletest/include
 
 add_test(unit_tests "cishtest")
 add_custom_target(check COMMAND cishtest)
+
+
+foreach(source IN LISTS TEST_SRCS)
+    get_filename_component(source_path "${source}" PATH)
+    string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/src" "" source_path "${source_path}")
+    string(REPLACE "/" "\\" source_path_xcode "${source_path}")
+    source_group("${source_path_xcode}" FILES "${source}")
+endforeach()
+foreach(source IN LISTS TEST_HDRS)
+    get_filename_component(source_path "${source}" PATH)
+    string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/src" "" source_path "${source_path}")
+    string(REPLACE "/" "\\" source_path_xcode "${source_path}")
+    source_group("${source_path_xcode}" FILES "${source}")
+endforeach()
