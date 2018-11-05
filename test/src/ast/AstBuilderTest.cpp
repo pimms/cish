@@ -37,3 +37,18 @@ TEST(AstBuilderTest, semiComplexGlobalVariables)
     ASSERT_NE(nullptr, dynamic_cast<VariableDeclarationStatement*>(statements[1]));
     ASSERT_NE(nullptr, dynamic_cast<VariableDeclarationStatement*>(statements[2]));
 }
+
+
+
+TEST(AstBuilderTest, compilationPassingSmokeTest)
+{
+    // Not really checking anything of significance here, but
+    // all of these programs should be AST'd correctly.
+    EXPECT_NO_THROW(
+        buildAst(
+            "int global = 99; \n"
+            "void foo(int x) { int y = x * 5 + global; } \n"
+            "void bar() { foo(45); } \n"
+        );
+    );
+}

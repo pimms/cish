@@ -14,6 +14,9 @@ namespace ast
 
 DECLARE_EXCEPTION(VariableAlreadyDeclaredException);
 DECLARE_EXCEPTION(FunctionAlreadyDeclaredException);
+DECLARE_EXCEPTION(FunctionAlreadyDefinedException);
+
+DECLARE_EXCEPTION(InvalidDeclarationScope);
 
 
 struct VarDeclaration
@@ -46,6 +49,9 @@ public:
 
     void pushVariableScope();
     void popVariableScope();
+    
+    void enterFunction();
+    void exitFunction();
 
     void declareFunction(FuncDeclaration decl);
     const FuncDeclaration* getFunctionDeclaration(const std::string &name) const;
@@ -53,9 +59,11 @@ public:
 private:
     typedef std::vector<VarDeclaration> VariableScope;
     std::vector<VariableScope> _varScope;
+    bool _insideFunction;
+    
     std::map<std::string, FuncDeclaration> _funcs;
 
-
+    VarDeclaration* findInScope(const std::string &name, VariableScope *scope);
     void verifyIdenticalDeclarations(const FuncDeclaration *existing, const FuncDeclaration *redecl);
 };
 

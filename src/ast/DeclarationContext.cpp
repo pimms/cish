@@ -7,7 +7,8 @@ namespace ast
 {
 
 
-DeclarationContext::DeclarationContext()
+DeclarationContext::DeclarationContext():
+    _insideFunction(false)
 {
     _varScope.push_back(VariableScope());
 }
@@ -40,12 +41,46 @@ const VarDeclaration* DeclarationContext::getVariableDeclaration(const std::stri
 
 void DeclarationContext::pushVariableScope()
 {
+    if (!_insideFunction) {
+        Throw(InvalidDeclarationScope, "Cannot push a variable scope outside a function");
+    }
+
     _varScope.push_back(VariableScope());
+
 }
 
 void DeclarationContext::popVariableScope()
 {
+    const int minScopes = 1 + (_insideFunction ? 1 : 0);
+    if (_varScope.size() <= minScopes) {
+        Throw(InvalidDeclarationScope, "Cannot pop past root scope of context");
+    }
+
     _varScope.pop_back();
+}
+    
+void DeclarationContext::enterFunction()
+{
+    if (_insideFunction) {
+        Throw(InvalidDeclarationScope, "Cannot enter a function while inside a function");
+    }
+
+    _insideFunction = true;
+    _varScope.push_back(VariableScope());
+}
+
+void DeclarationContext::exitFunction()
+{
+    if (!_insideFunction) {
+        Throw(InvalidDeclarationScope, "Cannot exit function when not inside a function");
+    }
+
+    if (_varScope.size() != 2) {
+        Throw(InvalidDeclarationScope, "Cannot exit function - there are stacked scopes");
+    }
+
+    _varScope.pop_back();
+    _insideFunction = false;
 }
 
 void DeclarationContext::declareFunction(FuncDeclaration func)

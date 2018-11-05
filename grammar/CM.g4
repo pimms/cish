@@ -34,10 +34,14 @@ expr
 statement
     : ifStatement
     | assignment
-    | functionCall ';'
+    | functionCallStatement
     | variableDeclaration
     | returnStatement
     | ';'
+    ;
+
+functionCallStatement
+    : functionCall ';'
     ;
 
 returnStatement
@@ -78,9 +82,12 @@ expressionList
     ;
 
 identifierList
-    : ( typeIdentifier identifier? ( ',' typeIdentifier identifier? )* )?
+    : ( functionParameter ( ',' functionParameter )* )?
     ;
 
+functionParameter
+    : typeIdentifier identifier?
+    ;
 
 identifier
     : Identifier

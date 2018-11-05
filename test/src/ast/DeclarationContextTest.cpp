@@ -33,6 +33,7 @@ TEST(DeclarationContextTest, declaringAlreadyDeclaredVariableThrows)
 TEST(DeclarationContextTest, shadowingAllowedInNewScopes)
 {
     DeclarationContext context;
+    context.enterFunction();
 
     // At first it's an int
     context.declareVariable(TypeDecl::INT, "var");
@@ -46,6 +47,8 @@ TEST(DeclarationContextTest, shadowingAllowedInNewScopes)
     // Pop it, and it's once again an int
     context.popVariableScope();
     ASSERT_EQ(TypeDecl::INT, context.getVariableDeclaration("var")->type.getType());
+
+    context.exitFunction();
 }
 
 
@@ -98,3 +101,62 @@ TEST(DeclarationContextTest, redeclarationWithDifferentSignatureThrows)
         ASSERT_ANY_THROW(context.declareFunction(redeclWithExtraParams));
     }
 }
+
+
+TEST(DeclarationContextTest, canOnlyBeInOneFunctionScope)
+{
+    DeclarationContext context;
+    ASSERT_NO_THROW(context.enterFunction());
+    ASSERT_THROW(context.enterFunction(), InvalidDeclarationScope);
+}
+
+TEST(DeclarationContextTest, excessiveFunctionPoppingThrows)
+{
+    DeclarationContext context;
+    ASSERT_THROW(context.exitFunction(), InvalidDeclarationScope);
+
+    ASSERT_NO_THROW(context.enterFunction());
+    ASSERT_NO_THROW(context.exitFunction());
+
+    ASSERT_THROW(context.exitFunction(), InvalidDeclarationScope);
+}
+
+TEST(DeclarationContextTest, globalVariablesAreDeclaredInFunctions)
+{
+    DeclarationContext context;
+    context.declareVariable(TypeDecl::INT, "global");
+
+    context.enterFunction();
+    ASSERT_NE(nullptr, context.getVariableDeclaration("global"));
+}
+
+TEST(DeclarationContextTest, varScopesAreNotGloballyAvailable)
+{
+    DeclarationContext context;
+    ASSERT_THROW(context.pushVariableScope(), InvalidDeclarationScope);
+}
+
+TEST(DeclarationContextTest, varScopesMustBeBalancedWithinFunction)
+{
+    DeclarationContext context;
+    context.enterFunction();
+    context.pushVariableScope();
+    context.pushVariableScope();
+    context.popVariableScope();
+    ASSERT_THROW(context.exitFunction(), InvalidDeclarationScope) << "Cannot exit with stacked scopes";
+    context.popVariableScope();
+    ASSERT_THROW(context.popVariableScope(), InvalidDeclarationScope) << "Cannot pop root scope";
+    context.exitFunction();
+}
+
+TEST(DeclarationContextTest, functionRootVariablesAreNotGloballyDeclared)
+{
+    DeclarationContext context;
+
+    context.enterFunction();
+    context.declareVariable(TypeDecl::INT, "var");
+    ASSERT_NE(nullptr, context.getVariableDeclaration("var"));
+    context.exitFunction();
+    ASSERT_EQ(nullptr, context.getVariableDeclaration("var"));
+}
+

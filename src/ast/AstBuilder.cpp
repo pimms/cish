@@ -4,10 +4,16 @@
 #include "AntlrContext.h"
 
 #include "AstNodes.h"
+
 #include "BinaryExpression.h"
 #include "VariableReferenceExpression.h"
+#include "FunctionCallExpression.h"
+
 #include "VariableAssignmentStatement.h"
 #include "VariableDeclarationStatement.h"
+#include "FunctionDeclarationStatement.h"
+#include "FunctionDefinition.h"
+#include "FunctionCallStatement.h"
 
 #include <cassert>
 
@@ -31,6 +37,61 @@ class TreeConverter: public CMBaseVisitor
     Result createResult(AstNode *node)
     {
         return Result { node };
+    }
+
+    Expression* manuallyVisitExpression(CMParser::ExpressionContext *ctx)
+    {
+        antlrcpp::Any any = visitExpression(ctx);
+        assert(any.isNotNull());
+
+        Result result = any.as<Result>();
+        assert(result.size() == 1);
+        assert(dynamic_cast<Expression*>(result[0]) != nullptr);
+
+        return (Expression*)result[0];
+    }
+
+    Statement* manuallyVisitStatement(CMParser::StatementContext *ctx)
+    {
+        antlrcpp::Any any = visitStatement(ctx);
+        assert(any.isNotNull());
+
+        Result result = any.as<Result>();
+        assert(result.size() == 1);
+        assert(dynamic_cast<Statement*>(result[0]) != nullptr);
+
+        return (Statement*)result[0];
+    }
+
+    Result buildBinaryExpression(BinaryExpression::Operator op, antlr4::tree::ParseTree *tree)
+    {
+        Result result = visitChildren(tree).as<Result>();
+        assert(result.size() == 2);
+        assert(dynamic_cast<Expression*>(result[0]) != nullptr);
+        assert(dynamic_cast<Expression*>(result[1]) != nullptr);
+
+        return createResult(new BinaryExpression(op, (Expression*)result[0], (Expression*)result[1]));
+    }
+
+    std::vector<VarDeclaration> manuallyVisitIdentifierList(CMParser::IdentifierListContext *ctx)
+    {
+        std::vector<VarDeclaration> identifierList;
+        for (auto funcParam: ctx->functionParameter()) {
+            identifierList.push_back(manuallyVisitFunctionParameter(funcParam));
+        }
+
+        return identifierList;
+    }
+
+    VarDeclaration manuallyVisitFunctionParameter(CMParser::FunctionParameterContext *ctx)
+    {
+        const std::string typeName = ctx->typeIdentifier()->getText();
+        const std::string varName = ctx->identifier()->getText();
+
+        VarDeclaration decl;
+        decl.type = TypeDecl::getFromString(typeName);
+        decl.name = varName;
+        return decl;
     }
 
 public:
@@ -79,11 +140,19 @@ public:
 
             if (varDecl != nullptr) {
                 Result res = visitVariableDeclaration(varDecl).as<Result>();
-                ast->addRootStatement(dynamic_cast<VariableDeclarationStatement*>(res[0]));
+                assert(res.size() == 1);
+                assert(dynamic_cast<VariableDeclarationStatement*>(res[0]) != nullptr);
+                ast->addRootStatement((VariableDeclarationStatement*)res[0]);
             } else if (funcDef != nullptr) {
-                Throw(AstNodeNotImplementedException, "No way of handling function definitions yet");
+                Result res = visitFunctionDefinition(funcDef).as<Result>();
+                assert(res.size() == 1);
+                assert(dynamic_cast<FunctionDefinition*>(res[0]) != nullptr);
+                ast->addFunctionDefinition((FunctionDefinition*)res[0]);
             } else if (funcDecl != nullptr) {
-                Throw(AstNodeNotImplementedException, "No way of handling function declarations yet");
+                Result res = visitFunctionDeclaration(funcDecl);
+                assert(res.size() == 1);
+                assert(dynamic_cast<FunctionDeclarationStatement*>(res[0]) != nullptr);
+                ast->addRootStatement((FunctionDeclarationStatement*)res[0]);
             }
         }
 
@@ -96,31 +165,9 @@ public:
         Throw(AstConversionException, "Internal conversion exception - should never visit RootItem");
     }
 
-    Expression* manuallyVisitExpression(CMParser::ExpressionContext *ctx)
-    {
-        antlrcpp::Any any = visitExpression(ctx);
-        assert(any.isNotNull());
-
-        Result result = any.as<Result>();
-        assert(result.size() == 1);
-        assert(dynamic_cast<Expression*>(result[0]) != nullptr);
-
-        return (Expression*)result[0];
-    }
-
     virtual antlrcpp::Any visitExpression(CMParser::ExpressionContext *ctx) override
     {
         return visitChildren(ctx);
-    }
-
-    Result buildBinaryExpression(BinaryExpression::Operator op, antlr4::tree::ParseTree *tree)
-    {
-        Result result = visitChildren(tree).as<Result>();
-        assert(result.size() == 2);
-        assert(dynamic_cast<Expression*>(result[0]) != nullptr);
-        assert(dynamic_cast<Expression*>(result[1]) != nullptr);
-
-        return createResult(new BinaryExpression(op, (Expression*)result[0], (Expression*)result[1]));
     }
 
     virtual antlrcpp::Any visitMULT_EXPR(CMParser::MULT_EXPRContext *ctx) override
@@ -147,7 +194,7 @@ public:
         } else if (ctx->op->getText() == "!=") {
             oper = BinaryExpression::NE;
         } else {
-            Throw(AstConversionException, "Unable to handle operand '%s' as EQUALITY_EXPR", ctx->op->getText().c_str());
+            Throw(AstConversionException, "Unable to handle operator '%s' as EQUALITY_EXPR", ctx->op->getText().c_str());
         }
 
         return buildBinaryExpression(oper, ctx);
@@ -161,7 +208,7 @@ public:
 
     virtual antlrcpp::Any visitFUNC_CALL_EXPR(CMParser::FUNC_CALL_EXPRContext *ctx) override
     {
-        Throw(AstNodeNotImplementedException, "Node of type 'FUNC_CALL_EXPR' is not yet supported as an AST-node!");
+        return visitFunctionCall(ctx->functionCall());
     }
 
     virtual antlrcpp::Any visitADD_EXPR(CMParser::ADD_EXPRContext *ctx) override
@@ -172,7 +219,7 @@ public:
         } else if (ctx->op->getText() == "-") {
             oper = BinaryExpression::MINUS;
         } else {
-            Throw(AstConversionException, "Unable to handle operand '%s' as ADD_EXPR", ctx->op->getText().c_str());
+            Throw(AstConversionException, "Unable to handle operator '%s' as ADD_EXPR", ctx->op->getText().c_str());
         }
 
         return buildBinaryExpression(oper, ctx);
@@ -186,7 +233,7 @@ public:
         } else if (ctx->op->getText() == "||") {
             oper = BinaryExpression::LOGICAL_OR;
         } else {
-            Throw(AstConversionException, "Unable to handle operand '%s' as AND_EXPR", ctx->op->getText().c_str());
+            Throw(AstConversionException, "Unable to handle operator '%s' as AND_EXPR", ctx->op->getText().c_str());
         }
 
         return buildBinaryExpression(oper, ctx);
@@ -210,7 +257,7 @@ public:
         } else if (ctx->op->getText() == "<") {
             oper = BinaryExpression::LT;
         } else {
-            Throw(AstConversionException, "Unable to handle operand '%s' as COMPARE_EXPR", ctx->op->getText().c_str());
+            Throw(AstConversionException, "Unable to handle operator '%s' as COMPARE_EXPR", ctx->op->getText().c_str());
         }
 
         return buildBinaryExpression(oper, ctx);
@@ -218,7 +265,15 @@ public:
 
     virtual antlrcpp::Any visitStatement(CMParser::StatementContext *ctx) override
     {
-        return visitChildren(ctx);
+        return visitChildren(ctx).as<Result>();
+    }
+
+    virtual antlrcpp::Any visitFunctionCallStatement(CMParser::FunctionCallStatementContext *ctx) override
+    {
+        Result res = visitChildren(ctx);
+        assert(res.size() == 1);
+        assert(dynamic_cast<FunctionCallExpression*>(res[0]) != nullptr);
+        return createResult(new FunctionCallStatement((FunctionCallExpression*)res[0]));
     }
 
     virtual antlrcpp::Any visitReturnStatement(CMParser::ReturnStatementContext *ctx) override
@@ -272,27 +327,83 @@ public:
 
     virtual antlrcpp::Any visitFunctionDeclaration(CMParser::FunctionDeclarationContext *ctx) override
     {
-        Throw(AstNodeNotImplementedException, "Node of type 'FunctionDeclaration' is not yet supported as an AST-node!");
+        const std::string typeName = ctx->typeIdentifier()->getText();
+        const std::string funcName = ctx->identifier()->getText();
+        std::vector<VarDeclaration> params = manuallyVisitIdentifierList(ctx->identifierList());
+
+        FuncDeclaration funcDecl;
+        funcDecl.returnType = TypeDecl::getFromString(typeName);
+        funcDecl.name = funcName;
+        funcDecl.params = params;
+
+        return createResult(new FunctionDeclarationStatement(&_declContext, funcDecl));
     }
 
     virtual antlrcpp::Any visitFunctionDefinition(CMParser::FunctionDefinitionContext *ctx) override
     {
-        Throw(AstNodeNotImplementedException, "Node of type 'FunctionDefinition' is not yet supported as an AST-node!");
+        const std::string typeName = ctx->typeIdentifier()->getText();
+        const std::string funcName = ctx->identifier()->getText();
+        std::vector<VarDeclaration> params = manuallyVisitIdentifierList(ctx->identifierList());
+
+        FuncDeclaration funcDecl;
+        funcDecl.returnType = TypeDecl::getFromString(typeName);
+        funcDecl.name = funcName;
+        funcDecl.params = params;
+
+        // Potentially dirty - we need to perform all the logic related to the DeclarationContext
+        // and variable declaration in a very specific order, and this is the best - if somewhat
+        // awkward - place to do that.
+        _declContext.enterFunction();
+        for (const VarDeclaration &varDecl: params) {
+            _declContext.declareVariable(varDecl.type, varDecl.name);
+        }
+
+        std::vector<Statement*> statements;
+        for (CMParser::StatementContext *stmtContext: ctx->statement()) {
+            Statement *statement = manuallyVisitStatement(stmtContext);
+            statements.push_back(statement);
+        }
+
+        _declContext.exitFunction();
+
+        return createResult(new FunctionDefinition(&_declContext, funcDecl, statements));
     }
 
     virtual antlrcpp::Any visitFunctionCall(CMParser::FunctionCallContext *ctx) override
     {
-        Throw(AstNodeNotImplementedException, "Node of type 'FunctionCall' is not yet supported as an AST-node!");
+        Result paramsResult = visitExpressionList(ctx->expressionList());
+        const std::string funcName = ctx->identifier()->getText();
+
+        std::vector<Expression*> params;
+        for (AstNode *node: paramsResult) {
+            assert(dynamic_cast<Expression*>(node) != nullptr);
+            params.push_back((Expression*)node);
+        }
+
+        FunctionCallExpression *expr = new FunctionCallExpression(&_declContext, funcName, params);
+        return createResult(expr);
     }
 
     virtual antlrcpp::Any visitExpressionList(CMParser::ExpressionListContext *ctx) override
     {
-        Throw(AstNodeNotImplementedException, "Node of type 'ExpressionList' is not yet supported as an AST-node!");
+        Result result;
+        for (CMParser::ExpressionContext *exprContext: ctx->expression()) {
+            Expression *expr = manuallyVisitExpression(exprContext);
+            result.push_back(expr);
+        }
+
+        return result;
     }
 
     virtual antlrcpp::Any visitIdentifierList(CMParser::IdentifierListContext *ctx) override
     {
         Throw(AstNodeNotImplementedException, "Node of type 'IdentifierList' is not yet supported as an AST-node!");
+    }
+
+    virtual antlrcpp::Any visitFunctionParameter(CMParser::FunctionParameterContext *ctx) override
+    {
+        // Will never be implemented! Use 'manuallyVisitFunctionParameter' instead!
+        Throw(AstConversionException, "Internal conversion exception - should never visit FunctionParameter");
     }
 
     virtual antlrcpp::Any visitIdentifier(CMParser::IdentifierContext *ctx) override

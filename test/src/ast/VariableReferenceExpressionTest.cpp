@@ -119,6 +119,8 @@ TEST(VariableReferenceExpressionTest, shadowingWorksAsExpected)
 {
     Memory memory(100, 1);
     DeclarationContext dc;
+    dc.enterFunction();
+
     ExecutionContext ec(&memory);
 
 
