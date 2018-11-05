@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include "ast/BinaryExpression.h"
+#include "ast/LiteralExpression.h"
 #include "vm/ExecutionContext.h"
 
 using namespace cish::ast;

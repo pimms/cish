@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include "ast/FunctionCallExpression.h"
+#include "ast/LiteralExpression.h"
 
 using namespace cish::ast;
 

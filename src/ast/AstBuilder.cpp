@@ -8,6 +8,7 @@
 #include "BinaryExpression.h"
 #include "VariableReferenceExpression.h"
 #include "FunctionCallExpression.h"
+#include "LiteralExpression.h"
 
 #include "VariableAssignmentStatement.h"
 #include "VariableDeclarationStatement.h"

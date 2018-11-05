@@ -3,6 +3,7 @@
 #include "vm/VirtualMachine.h"
 #include "ast/AntlrContext.h"
 #include "ast/AstBuilder.h"
+#include "ast/LiteralExpression.h"
 #include "ast/Ast.h"
 
 

@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include "ast/VariableDeclarationStatement.h"
+#include "ast/LiteralExpression.h"
 #include "vm/Memory.h"
 #include "vm/ExecutionContext.h"
 

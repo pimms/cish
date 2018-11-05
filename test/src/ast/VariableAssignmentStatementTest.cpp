@@ -2,6 +2,7 @@
 
 #include "ast/VariableAssignmentStatement.h"
 #include "ast/DeclarationContext.h"
+#include "ast/LiteralExpression.h"
 #include "ast/AstNodes.h"
 
 #include "vm/Memory.h"
