@@ -22,3 +22,4 @@ TEST(FunctionDeclarationStatementTest, functionsAreDeclaredInContext)
     ASSERT_EQ(decl.name, context.getFunctionDeclaration("foo")->name);
     ASSERT_EQ(decl.returnType, context.getFunctionDeclaration("foo")->returnType);
 }
+

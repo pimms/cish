@@ -30,7 +30,7 @@ TEST(DeclarationContextTest, declaringAlreadyDeclaredVariableThrows)
     ASSERT_THROW(context.declareVariable(TypeDecl::FLOAT, "var"), VariableAlreadyDeclaredException);
 }
 
-TEST(DeclarationContext, shadowingAllowedInNewScopes)
+TEST(DeclarationContextTest, shadowingAllowedInNewScopes)
 {
     DeclarationContext context;
 
@@ -48,3 +48,53 @@ TEST(DeclarationContext, shadowingAllowedInNewScopes)
     ASSERT_EQ(TypeDecl::INT, context.getVariableDeclaration("var")->type.getType());
 }
 
+
+TEST(DeclarationContextTest, redeclarationWithIdenticalSignatureIsAllowed)
+{
+    FuncDeclaration decl;
+    decl.name = "foo";
+    decl.returnType = TypeDecl::INT;
+    decl.params = { VarDeclaration { TypeDecl::FLOAT, "x" } };
+
+    DeclarationContext context;
+    ASSERT_EQ(nullptr, context.getFunctionDeclaration("foo"));
+
+    context.declareFunction(decl);
+    ASSERT_NE(nullptr, context.getFunctionDeclaration("foo"));
+    ASSERT_EQ(decl.name, context.getFunctionDeclaration("foo")->name);
+    ASSERT_EQ(decl.returnType, context.getFunctionDeclaration("foo")->returnType);
+
+    context.declareFunction(decl);
+    ASSERT_NE(nullptr, context.getFunctionDeclaration("foo"));
+    ASSERT_EQ(decl.name, context.getFunctionDeclaration("foo")->name);
+    ASSERT_EQ(decl.returnType, context.getFunctionDeclaration("foo")->returnType);
+}
+
+TEST(DeclarationContextTest, redeclarationWithDifferentSignatureThrows)
+{
+    FuncDeclaration original;
+    original.name = "foo";
+    original.returnType = TypeDecl::INT;
+    original.params = { VarDeclaration { TypeDecl::FLOAT, "x" } };
+
+    DeclarationContext context;
+    context.declareFunction(original);
+
+    {
+        FuncDeclaration redeclAsFloat = original;
+        redeclAsFloat.returnType = TypeDecl::FLOAT;
+        ASSERT_ANY_THROW(context.declareFunction(redeclAsFloat));
+    }
+
+    {
+        FuncDeclaration redeclWithoutParams = original;
+        redeclWithoutParams.params.clear();
+        ASSERT_ANY_THROW(context.declareFunction(redeclWithoutParams));
+    }
+
+    {
+        FuncDeclaration redeclWithExtraParams = original;
+        redeclWithExtraParams.params.push_back(VarDeclaration {TypeDecl::INT, "n"});
+        ASSERT_ANY_THROW(context.declareFunction(redeclWithExtraParams));
+    }
+}

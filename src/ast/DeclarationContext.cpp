@@ -50,8 +50,9 @@ void DeclarationContext::popVariableScope()
 
 void DeclarationContext::declareFunction(FuncDeclaration func)
 {
-    if (_funcs.count(func.name) != 0) {
-        Throw(FunctionAlreadyDeclaredException, "Function '%s' has already been declared", func.name.c_str());
+    const FuncDeclaration *existing = getFunctionDeclaration(func.name);
+    if (existing != nullptr) {
+        verifyIdenticalDeclarations(existing, &func);
     }
 
     _funcs[func.name] = func;
@@ -62,6 +63,36 @@ const FuncDeclaration* DeclarationContext::getFunctionDeclaration(const std::str
     if (_funcs.count(name) == 0)
         return nullptr;
     return &_funcs.at(name);
+}
+
+void DeclarationContext::verifyIdenticalDeclarations(const FuncDeclaration *existing, const FuncDeclaration *redecl)
+{
+    if (existing->returnType != redecl->returnType) {
+        Throw(FunctionAlreadyDeclaredException,
+              "Redeclaration of return-type of function '%s'. "
+              "Already declared type '%s', then redeclared with return type '%s'",
+              redecl->name.c_str(),
+              existing->returnType.getName(),
+              redecl->returnType.getName());
+    }
+
+    if (existing->params.size() != redecl->params.size()) {
+        Throw(FunctionAlreadyDeclaredException,
+              "Function '%s' redeclared with different number of parameters",
+              redecl->name.c_str());
+    }
+
+    for (int i=0; i<(int)redecl->params.size(); i++) {
+        if (redecl->params[i].type != existing->params[i].type) {
+            Throw(FunctionAlreadyDeclaredException,
+                    "Parameter %d ('%s') to function '%s' redeclared as type '%s'",
+                    i+1,
+                    redecl->params[i].type.getName(),
+                    redecl->name.c_str(),
+                    existing->params[i].type.getName());
+        }
+    }
+
 }
 
 

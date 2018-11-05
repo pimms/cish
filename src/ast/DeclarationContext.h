@@ -54,6 +54,9 @@ private:
     typedef std::vector<VarDeclaration> VariableScope;
     std::vector<VariableScope> _varScope;
     std::map<std::string, FuncDeclaration> _funcs;
+
+
+    void verifyIdenticalDeclarations(const FuncDeclaration *existing, const FuncDeclaration *redecl);
 };
 
 

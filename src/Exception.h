@@ -11,7 +11,7 @@
 #endif
 
 #define DECLARE_EXCEPTION(name)                     \
-    class name : ::std::exception                   \
+    class name : ::cish::Exception                   \
     {                                               \
     public:                                         \
         name(std::string file, std::string func,    \
@@ -47,6 +47,15 @@
 namespace cish
 {
 
-DECLARE_EXCEPTION(Exception);
+class Exception: ::std::exception
+{
+public:
+    Exception(std::string file, std::string func, int line, const char *format, ...);
+    Exception();
+    virtual const char* what() const noexcept override;
+
+private:
+    std::string _what;
+};
 
 }
