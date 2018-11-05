@@ -3,16 +3,15 @@
 #include <stdint.h>
 
 #include "../ast/Ast.h"
+#include "../ast/SuperStatement.h"
 
 #include "Memory.h"
 #include "ExecutionContext.h"
 
 namespace cish
 {
-
 namespace vm
 {
-
 
 struct VmOptions
 {
@@ -37,12 +36,16 @@ public:
     void executeNextStatement();
 
 private:
+    void executeNextGlobalStatement();
+    void executeStatement(const ast::Statement *statement);
+
     Memory *_memory;
     ExecutionContext *_executionContext;
     ast::Ast::Ptr _ast;
 
-    // TODO: This is a trash way of doing this
-    int _nextStatementIdx;
+    bool _globalInitComplete;
+    int _globalStatementIdx;
+    std::vector<const ast::SuperStatement*> _superStack;
 };
 
 
