@@ -58,7 +58,7 @@ void DeclarationContext::popVariableScope()
 
     _varScope.pop_back();
 }
-    
+
 void DeclarationContext::enterFunction()
 {
     if (_insideFunction) {
@@ -100,9 +100,25 @@ const FuncDeclaration* DeclarationContext::getFunctionDeclaration(const std::str
     return &_funcs.at(name);
 }
 
+void DeclarationContext::pushSuperStatement(SuperStatement *super)
+{
+    _superStack.push_back(super);
+}
+
+void DeclarationContext::popSuperStatement()
+{
+    if (_superStack.empty()) {
+        Throw(Exception, "SuperStatement underflow");
+    }
+
+    _superStack.pop_back();
+}
+
 SuperStatement* DeclarationContext::getCurrentSuper() const
 {
-    Throw(Exception, "Method not implemented");
+    if (_superStack.empty())
+        return nullptr;
+    return _superStack.back();
 }
 
 void DeclarationContext::verifyIdenticalDeclarations(const FuncDeclaration *existing, const FuncDeclaration *redecl)

@@ -354,6 +354,8 @@ public:
         // Potentially dirty - we need to perform all the logic related to the DeclarationContext
         // and variable declaration in a very specific order, and this is the best - if somewhat
         // awkward - place to do that.
+        FunctionDefinition *funcDef = new FunctionDefinition(&_declContext, funcDecl);
+        _declContext.pushSuperStatement(funcDef);
         _declContext.enterFunction();
         for (const VarDeclaration &varDecl: params) {
             _declContext.declareVariable(varDecl.type, varDecl.name);
@@ -362,12 +364,13 @@ public:
         std::vector<Statement*> statements;
         for (CMParser::StatementContext *stmtContext: ctx->statement()) {
             Statement *statement = manuallyVisitStatement(stmtContext);
-            statements.push_back(statement);
+            funcDef->addStatement(statement);
         }
 
         _declContext.exitFunction();
+        _declContext.popSuperStatement();
 
-        return createResult(new FunctionDefinition(&_declContext, funcDecl, statements));
+        return createResult(funcDef);
     }
 
     virtual antlrcpp::Any visitFunctionCall(CMParser::FunctionCallContext *ctx) override

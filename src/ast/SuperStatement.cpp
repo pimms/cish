@@ -9,10 +9,11 @@ namespace ast
 {
 
 
-SuperStatement::SuperStatement(StatementList statements):
-    _statements(statements)
-{ }
-
+/*
+==============
+SuperStatement
+==============
+*/
 SuperStatement::~SuperStatement()
 {
     for (Statement *s: _statements) {

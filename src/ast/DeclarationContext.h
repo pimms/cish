@@ -57,14 +57,17 @@ public:
     void declareFunction(FuncDeclaration decl);
     const FuncDeclaration* getFunctionDeclaration(const std::string &name) const;
 
+    void pushSuperStatement(SuperStatement *super);
+    void popSuperStatement();
+
     SuperStatement *getCurrentSuper() const;
 
 private:
     typedef std::vector<VarDeclaration> VariableScope;
     std::vector<VariableScope> _varScope;
     bool _insideFunction;
-
     std::map<std::string, FuncDeclaration> _funcs;
+    std::vector<SuperStatement*> _superStack;
 
     VarDeclaration* findInScope(const std::string &name, VariableScope *scope);
     void verifyIdenticalDeclarations(const FuncDeclaration *existing, const FuncDeclaration *redecl);

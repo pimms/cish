@@ -13,7 +13,7 @@ TEST(FunctionDefinitionTest, definitionImplicitlyDeclares)
     decl.returnType = TypeDecl::INT;
     decl.name = "main";
 
-    FunctionDefinition def(&dc, decl, {});
+    FunctionDefinition def(&dc, decl);
 
     ASSERT_NE(nullptr, dc.getFunctionDeclaration("main"));
 }

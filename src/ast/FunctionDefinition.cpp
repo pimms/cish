@@ -8,9 +8,7 @@ namespace ast
 
 
 FunctionDefinition::FunctionDefinition(DeclarationContext *context,
-                                       FuncDeclaration decl,
-                                       StatementList statements):
-    SuperStatement(statements),
+                                       FuncDeclaration decl):
     _decl(decl)
 {
     context->declareFunction(decl);

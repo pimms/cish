@@ -15,8 +15,7 @@ class FunctionDefinition: public AstNode, public SuperStatement
 {
 public:
     FunctionDefinition(DeclarationContext *context,
-                       FuncDeclaration decl,
-                       StatementList statements);
+                       FuncDeclaration decl);
     ~FunctionDefinition();
 
     const FuncDeclaration* getDeclaration() const;
