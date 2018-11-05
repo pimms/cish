@@ -22,7 +22,7 @@ TypeDecl LiteralExpression::getType() const
     return _value.getIntrinsicType();
 }
 
-ExpressionValue LiteralExpression::evaluate(vm::ExecutionContext*)
+ExpressionValue LiteralExpression::evaluate(vm::ExecutionContext*) const
 {
     return _value;
 }

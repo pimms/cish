@@ -42,7 +42,7 @@ TypeDecl FunctionCallExpression::getType() const
     return _funcDecl.returnType;
 }
 
-ExpressionValue FunctionCallExpression::evaluate(vm::ExecutionContext*)
+ExpressionValue FunctionCallExpression::evaluate(vm::ExecutionContext*) const
 {
     // Figuring out how to do this is the million dollar question, now isn't it?
     Throw(Exception, "FunctionCallExpression::evaluate has not been implemented");

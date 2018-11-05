@@ -26,7 +26,7 @@ TypeDecl VariableReferenceExpression::getType() const
     return _type;
 }
 
-ExpressionValue VariableReferenceExpression::evaluate(vm::ExecutionContext *ctx)
+ExpressionValue VariableReferenceExpression::evaluate(vm::ExecutionContext *ctx) const
 {
     vm::Variable *var = ctx->getStackFrame()->getVariable(_name);
     if (!var) {

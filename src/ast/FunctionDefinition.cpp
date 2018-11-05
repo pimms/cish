@@ -25,7 +25,7 @@ FunctionDefinition::~FunctionDefinition()
         delete s;
     }
 }
-    
+
 const FuncDeclaration* FunctionDefinition::getDeclaration() const
 {
     return &_decl;

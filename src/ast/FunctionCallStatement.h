@@ -14,7 +14,7 @@ class FunctionCallStatement: public Statement
 {
 public:
     FunctionCallStatement(FunctionCallExpression *expr);
-    virtual void execute(vm::ExecutionContext*) override;
+    virtual void execute(vm::ExecutionContext*) const override;
 
 private:
     FunctionCallExpression *_expr;

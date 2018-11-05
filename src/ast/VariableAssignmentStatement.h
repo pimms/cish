@@ -16,7 +16,7 @@ class VariableAssignmentStatement: public Statement
 public:
     VariableAssignmentStatement(DeclarationContext *context, const std::string &varName, Expression *value);
     ~VariableAssignmentStatement();
-    virtual void execute(vm::ExecutionContext *context) override;
+    virtual void execute(vm::ExecutionContext *context) const override;
 
 private:
     const std::string _varName;

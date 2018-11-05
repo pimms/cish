@@ -32,7 +32,7 @@ class Statement: public AstNode
 {
 public:
     virtual ~Statement() {};
-    virtual void execute(vm::ExecutionContext*) = 0;
+    virtual void execute(vm::ExecutionContext*) const = 0;
 };
 
 class Expression: public AstNode
@@ -40,7 +40,7 @@ class Expression: public AstNode
 public:
     virtual ~Expression() {};
     virtual TypeDecl getType() const = 0;
-    virtual ExpressionValue evaluate(vm::ExecutionContext*) = 0;
+    virtual ExpressionValue evaluate(vm::ExecutionContext*) const = 0;
 };
 
 
@@ -52,7 +52,7 @@ public:
     LiteralExpression(ExpressionValue value);
 
     virtual TypeDecl getType() const override;
-    virtual ExpressionValue evaluate(vm::ExecutionContext*) override;
+    virtual ExpressionValue evaluate(vm::ExecutionContext*) const override;
 
 private:
     ExpressionValue _value;

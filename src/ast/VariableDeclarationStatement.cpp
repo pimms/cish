@@ -40,7 +40,7 @@ VariableDeclarationStatement::~VariableDeclarationStatement()
     }
 }
 
-void VariableDeclarationStatement::execute(vm::ExecutionContext *context)
+void VariableDeclarationStatement::execute(vm::ExecutionContext *context) const
 {
     vm::Allocation::Ptr alloc = context->getMemory()->allocate(_type.getSize());
     vm::Variable *var = new vm::Variable(_type, std::move(alloc));

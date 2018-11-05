@@ -17,7 +17,7 @@ public:
                        FuncDeclaration decl,
                        std::vector<Statement*> statements);
     ~FunctionDefinition();
-    
+
     const FuncDeclaration* getDeclaration() const;
 
 private:

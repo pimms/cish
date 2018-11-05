@@ -13,7 +13,7 @@ FunctionCallStatement::FunctionCallStatement(FunctionCallExpression *expr):
 
 }
 
-void FunctionCallStatement::execute(vm::ExecutionContext *context)
+void FunctionCallStatement::execute(vm::ExecutionContext *context) const
 {
     _expr->evaluate(context);
 }

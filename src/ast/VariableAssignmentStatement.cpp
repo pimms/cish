@@ -38,7 +38,7 @@ VariableAssignmentStatement::~VariableAssignmentStatement()
     delete _expression;
 }
 
-void VariableAssignmentStatement::execute(vm::ExecutionContext *context)
+void VariableAssignmentStatement::execute(vm::ExecutionContext *context) const
 {
     vm::Variable *var = context->getStackFrame()->getVariable(_varName);
     if (var == nullptr) {

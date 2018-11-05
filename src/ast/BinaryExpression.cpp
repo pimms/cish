@@ -60,7 +60,7 @@ TypeDecl BinaryExpression::getType() const
     return _returnType;
 }
 
-ExpressionValue BinaryExpression::evaluate(vm::ExecutionContext *ctx)
+ExpressionValue BinaryExpression::evaluate(vm::ExecutionContext *ctx) const
 {
     // Start by folding the types
     switch (_workingType.getType()) {

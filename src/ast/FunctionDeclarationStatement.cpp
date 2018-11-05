@@ -12,7 +12,7 @@ FunctionDeclarationStatement::FunctionDeclarationStatement(DeclarationContext *c
     context->declareFunction(_decl);
 }
 
-void FunctionDeclarationStatement::execute(vm::ExecutionContext*)
+void FunctionDeclarationStatement::execute(vm::ExecutionContext*) const
 {
     // Nothing to do, lol
 }

@@ -36,7 +36,7 @@ public:
     ~BinaryExpression();
 
     virtual TypeDecl getType() const override;
-    virtual ExpressionValue evaluate(vm::ExecutionContext *ctx) override;
+    virtual ExpressionValue evaluate(vm::ExecutionContext *ctx) const override;
 
 private:
     Operator _operator;
@@ -46,14 +46,14 @@ private:
     Expression *_right;
 
     template<typename T>
-    ExpressionValue evaluateT(vm::ExecutionContext *ctx);
+    ExpressionValue evaluateT(vm::ExecutionContext *ctx) const;
 
     template<typename T>
-    std::function<T(T,T)> getFunction();
+    std::function<T(T,T)> getFunction() const;
 };
 
 template<typename T>
-ExpressionValue BinaryExpression::evaluateT(vm::ExecutionContext *ctx)
+ExpressionValue BinaryExpression::evaluateT(vm::ExecutionContext *ctx) const
 {
     ExpressionValue lval = _left->evaluate(ctx);
     ExpressionValue rval = _right->evaluate(ctx);
@@ -72,7 +72,7 @@ ExpressionValue BinaryExpression::evaluateT(vm::ExecutionContext *ctx)
 }
 
 template<typename T>
-std::function<T(T,T)> BinaryExpression::getFunction()
+std::function<T(T,T)> BinaryExpression::getFunction() const
 {
     switch (_operator) {
         case MULTIPLY:      return std::multiplies<T>();

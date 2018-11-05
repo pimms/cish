@@ -25,7 +25,7 @@ public:
             const std::string &varName,
             Expression *value);
     ~VariableDeclarationStatement();
-    virtual void execute(vm::ExecutionContext *context) override;
+    virtual void execute(vm::ExecutionContext *context) const override;
 
 private:
     const TypeDecl _type;

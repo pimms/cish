@@ -21,7 +21,7 @@ public:
     FunctionCallExpression(DeclarationContext *context, const std::string &funName, std::vector<Expression*> params);
 
     virtual TypeDecl getType() const override;
-    virtual ExpressionValue evaluate(vm::ExecutionContext*) override;
+    virtual ExpressionValue evaluate(vm::ExecutionContext*) const override;
 
 private:
     FuncDeclaration _funcDecl;
