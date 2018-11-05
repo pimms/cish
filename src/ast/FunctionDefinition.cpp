@@ -9,9 +9,9 @@ namespace ast
 
 FunctionDefinition::FunctionDefinition(DeclarationContext *context,
                                        FuncDeclaration decl,
-                                       std::vector<Statement*> statements):
-    _decl(decl),
-    _statements(statements)
+                                       StatementList statements):
+    SuperStatement(statements),
+    _decl(decl)
 {
     context->declareFunction(decl);
 
@@ -21,9 +21,6 @@ FunctionDefinition::FunctionDefinition(DeclarationContext *context,
 
 FunctionDefinition::~FunctionDefinition()
 {
-    for (Statement *s: _statements) {
-        delete s;
-    }
 }
 
 const FuncDeclaration* FunctionDefinition::getDeclaration() const

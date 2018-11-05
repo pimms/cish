@@ -25,6 +25,11 @@ const StatementList& SuperStatement::getStatements() const
     return _statements;
 }
 
+void SuperStatement::addStatement(Statement *statement)
+{
+    _statements.push_back(statement);
+}
+
 
 }
 }

@@ -18,10 +18,6 @@ public:
     VariableDeclarationStatement(
             DeclarationContext *declContext,
             TypeDecl type,
-            const std::string &varName);
-    VariableDeclarationStatement(
-            DeclarationContext *declContext,
-            TypeDecl type,
             const std::string &varName,
             Expression *value);
     ~VariableDeclarationStatement();

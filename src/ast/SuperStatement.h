@@ -19,6 +19,9 @@ public:
 
     const StatementList& getStatements() const;
 
+protected:
+    void addStatement(Statement *statement);
+
 private:
     StatementList _statements;
 };

@@ -12,24 +12,19 @@ namespace ast
 {
 
 VariableDeclarationStatement::VariableDeclarationStatement(
-        DeclarationContext *declContext,
-        TypeDecl type,
-        const std::string &varName)
-    : VariableDeclarationStatement(declContext, type, varName, nullptr) { }
-
-VariableDeclarationStatement::VariableDeclarationStatement(
-        DeclarationContext *declContext,
+        DeclarationContext *context,
         TypeDecl type,
         const std::string &varName,
         Expression *value):
+    Statement(context->getCurrentSuper()),
     _type(type),
     _varName(varName),
     _assignment(nullptr)
 {
-    declContext->declareVariable(type, _varName);
+    context->declareVariable(type, _varName);
 
     if (value != nullptr) {
-        _assignment = new VariableAssignmentStatement(declContext, _varName, value);
+        _assignment = new VariableAssignmentStatement(context, _varName, value);
     }
 }
 

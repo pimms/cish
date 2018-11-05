@@ -14,6 +14,8 @@ namespace vm { class ExecutionContext; }
 namespace ast
 {
 
+class SuperStatement;
+
 
 DECLARE_EXCEPTION(VariableNotDeclaredException);
 DECLARE_EXCEPTION(VariableNotDefinedException);
@@ -31,8 +33,14 @@ public:
 class Statement: public AstNode
 {
 public:
+    Statement(SuperStatement *super);
     virtual ~Statement() {};
     virtual void execute(vm::ExecutionContext*) const = 0;
+
+    SuperStatement* getSuperStatement() const;
+
+private:
+    SuperStatement *_superStatement;
 };
 
 class Expression: public AstNode

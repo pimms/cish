@@ -15,7 +15,7 @@ TEST(VariableDeclarationStatementTest, variablesAreDeclaredInDeclarationContext)
     DeclarationContext dc;
     ASSERT_EQ(nullptr, dc.getVariableDeclaration("var"));
 
-    VariableDeclarationStatement stmt(&dc, TypeDecl::INT, "var");
+    VariableDeclarationStatement stmt(&dc, TypeDecl::INT, "var", nullptr);
 
     auto var = dc.getVariableDeclaration("var");
     ASSERT_NE(nullptr, var);
@@ -29,7 +29,7 @@ TEST(VariableDeclarationStatementTest, variablesAreDeclaredInExecutionContext)
     DeclarationContext dc;
     ExecutionContext ec(&memory);
 
-    VariableDeclarationStatement stmt(&dc, TypeDecl::INT, "var");
+    VariableDeclarationStatement stmt(&dc, TypeDecl::INT, "var", nullptr);
 
     ASSERT_EQ(nullptr, ec.getStackFrame()->getVariable("var"));
     stmt.execute(&ec);

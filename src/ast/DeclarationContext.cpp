@@ -100,6 +100,11 @@ const FuncDeclaration* DeclarationContext::getFunctionDeclaration(const std::str
     return &_funcs.at(name);
 }
 
+SuperStatement* DeclarationContext::getCurrentSuper() const
+{
+    Throw(Exception, "Method not implemented");
+}
+
 void DeclarationContext::verifyIdenticalDeclarations(const FuncDeclaration *existing, const FuncDeclaration *redecl)
 {
     if (existing->returnType != redecl->returnType) {

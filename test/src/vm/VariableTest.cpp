@@ -15,7 +15,7 @@ TEST(VariableTest, tooSmallAllocationThrows)
     ASSERT_THROW(Variable(TypeDecl::INT, memory.allocate(3)), InvalidAllocationException);
 }
 
-TEST(VariableTest, gteAllocationDoesNotThrow)
+TEST(VariableTest, getAllocationDoesNotThrow)
 {
     Memory memory(100, 1);
 

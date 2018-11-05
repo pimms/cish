@@ -19,6 +19,7 @@ VariableAssignmentStatement::VariableAssignmentStatement(
         DeclarationContext *context,
         const std::string &varName,
         Expression *value):
+    Statement(context->getCurrentSuper()),
     _varName(varName),
     _expression(value)
 {

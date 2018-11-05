@@ -14,7 +14,9 @@ namespace ast
 class VariableAssignmentStatement: public Statement
 {
 public:
-    VariableAssignmentStatement(DeclarationContext *context, const std::string &varName, Expression *value);
+    VariableAssignmentStatement(DeclarationContext *context,
+                                const std::string &varName,
+                                Expression *value);
     ~VariableAssignmentStatement();
     virtual void execute(vm::ExecutionContext *context) const override;
 

@@ -5,6 +5,7 @@
 
 #include "Type.h"
 #include "../Exception.h"
+#include "SuperStatement.h"
 
 
 namespace cish
@@ -49,18 +50,20 @@ public:
 
     void pushVariableScope();
     void popVariableScope();
-    
+
     void enterFunction();
     void exitFunction();
 
     void declareFunction(FuncDeclaration decl);
     const FuncDeclaration* getFunctionDeclaration(const std::string &name) const;
 
+    SuperStatement *getCurrentSuper() const;
+
 private:
     typedef std::vector<VarDeclaration> VariableScope;
     std::vector<VariableScope> _varScope;
     bool _insideFunction;
-    
+
     std::map<std::string, FuncDeclaration> _funcs;
 
     VarDeclaration* findInScope(const std::string &name, VariableScope *scope);

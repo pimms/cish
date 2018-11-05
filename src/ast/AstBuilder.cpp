@@ -274,7 +274,7 @@ public:
         Result res = visitChildren(ctx);
         assert(res.size() == 1);
         assert(dynamic_cast<FunctionCallExpression*>(res[0]) != nullptr);
-        return createResult(new FunctionCallStatement((FunctionCallExpression*)res[0]));
+        return createResult(new FunctionCallStatement(&_declContext, (FunctionCallExpression*)res[0]));
     }
 
     virtual antlrcpp::Any visitReturnStatement(CMParser::ReturnStatementContext *ctx) override
@@ -322,7 +322,7 @@ public:
             Expression *expr = manuallyVisitExpression(exprContext);
             return createResult(new VariableDeclarationStatement(&_declContext, type, varName, expr));
         } else {
-            return createResult(new VariableDeclarationStatement(&_declContext, type, varName));
+            return createResult(new VariableDeclarationStatement(&_declContext, type, varName, nullptr));
         }
     }
 

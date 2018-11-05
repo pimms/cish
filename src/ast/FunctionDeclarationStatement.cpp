@@ -6,7 +6,9 @@ namespace ast
 {
 
 
-FunctionDeclarationStatement::FunctionDeclarationStatement(DeclarationContext *context, FuncDeclaration decl):
+FunctionDeclarationStatement::FunctionDeclarationStatement(DeclarationContext *context,
+                                                           FuncDeclaration decl):
+    Statement(context->getCurrentSuper()),
     _decl(decl)
 {
     context->declareFunction(_decl);

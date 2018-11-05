@@ -8,6 +8,20 @@ namespace ast
 {
 
 
+/*
+==============
+Statement
+==============
+*/
+Statement::Statement(SuperStatement *super):
+    _superStatement(super)
+{ }
+
+SuperStatement* Statement::getSuperStatement() const
+{
+    return _superStatement;
+}
+
 
 }
 }
