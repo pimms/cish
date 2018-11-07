@@ -95,3 +95,23 @@ TEST(ExecutionThread, terminationWorksWithRunningFree)
     thread.terminate();
 }
 
+TEST(ExecutionThread, resumeDoesNotBlock)
+{
+    CounterThread thread([](){ std::this_thread::sleep_for(std::chrono::milliseconds(100)); });
+    thread.setWaitForResume(true);
+    thread.start();
+
+    thread.resume();
+    ASSERT_EQ(0, thread.getCount());
+}
+
+
+TEST(ExecutionThread, cycleDoesBlock)
+{
+    CounterThread thread([](){ std::this_thread::sleep_for(std::chrono::milliseconds(100)); });
+    thread.setWaitForResume(true);
+    thread.start();
+
+    thread.cycle();
+    ASSERT_EQ(1, thread.getCount());
+}

@@ -38,19 +38,16 @@ TEST(VirtualMachineTest, globalStatementsAreExecutedOneByOne)
     ASSERT_EQ(nullptr, getVar(vm, "c"));
 
     vm->executeNextStatement();
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
     ASSERT_EQ(15, getVar(vm, "a")->getAllocation()->read<int>());
     ASSERT_EQ(nullptr, getVar(vm, "b"));
     ASSERT_EQ(nullptr, getVar(vm, "c"));
 
     vm->executeNextStatement();
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
     ASSERT_EQ(15, getVar(vm, "a")->getAllocation()->read<int>());
     ASSERT_EQ(30, getVar(vm, "b")->getAllocation()->read<int>());
     ASSERT_EQ(nullptr, getVar(vm, "c"));
 
     vm->executeNextStatement();
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
     ASSERT_EQ(15, getVar(vm, "a")->getAllocation()->read<int>());
     ASSERT_EQ(30, getVar(vm, "b")->getAllocation()->read<int>());
     ASSERT_NE(nullptr, getVar(vm, "c"));

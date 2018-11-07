@@ -10,6 +10,31 @@ namespace cish
 namespace vm
 {
 
+namespace internal
+{
+
+Signal::Signal()
+{
+
+}
+
+void Signal::wait(std::function<bool()> cond)
+{
+    std::unique_lock<std::mutex> lk(_mutex);
+    _cvar.wait(lk, cond);
+}
+
+void Signal::signal(std::function<void()> prenotif)
+{
+    std::lock_guard<std::mutex> lk(_mutex);
+    prenotif();
+    _cvar.notify_all();
+}
+
+}
+
+
+
 struct TerminateSignal {
     std::string reason;
 };
@@ -19,7 +44,8 @@ ExecutionThread::ExecutionThread():
     _isRunning(false),
     _execOrder(ExecOrder::RUNNING_FREE),
     _nextRequest(0),
-    _lastHandled(0)
+    _lastRequestReceived(0),
+    _lastRequestHandled(0)
 {
 
 }
@@ -48,31 +74,61 @@ void ExecutionThread::start()
         throw std::runtime_error("ExecutionThread has already been started");
     }
 
-    _isRunning = true;
 
-    _thread = std::thread([this]() {
+    std::mutex mutex;
+    std::condition_variable var;
+    std::atomic_bool ready = false;
+
+    _thread = std::thread([&]() {
+        {
+            std::lock_guard<std::mutex> lock(mutex);
+            ready = true;
+            var.notify_one();
+        }
+
+        // printf("[W] thread started\n");
         backgroundMain();
     });
+
+    std::unique_lock<std::mutex> lock(mutex);
+    var.wait(lock, [&]() { return ready.load(); });
+    _isRunning = true;
 }
 
 void ExecutionThread::resume()
 {
-    std::lock_guard<std::mutex> lk(_mutex);
-    _nextRequest++;
-    _cvar.notify_all();
+    _orgToWorker.signal([this]() {
+        _nextRequest++;
+        // printf("[O] resume/signaling next request (%d)\n", (int)_nextRequest.load());
+    });
+}
+
+void ExecutionThread::cycle()
+{
+    _orgToWorker.signal([this]() {
+        _nextRequest++;
+        // printf("[O] cycle/signaling next request (%d)\n", (int)_nextRequest.load());
+    });
+
+    _workerToOrg.wait([this]() {
+        return _lastRequestHandled == _nextRequest;
+    });
+    // printf("[O] cycle/received process ack (%d)\n", (int)_nextRequest.load());
 }
 
 void ExecutionThread::terminate()
 {
     if (_isRunning) {
-        std::unique_lock<std::mutex> lock(_mutex);
-        _execOrder = ExecOrder::TERMINATE;
-        _cvar.notify_all();
-        lock.unlock();
+        _orgToWorker.signal([this]() {
+            // printf("[O] sending termination request\n");
+            _execOrder = ExecOrder::TERMINATE;
+        });
 
+        // printf("[O] joining...\n");
         if (_thread.joinable()) {
             _thread.join();
         }
+        // printf("[O] joined\n");
     }
 }
 
@@ -88,13 +144,19 @@ void ExecutionThread::await()
     ContinuationState state = ContinuationState::CONTINUE;
 
     if (_execOrder == ExecOrder::WAIT_FOR_RESUME) {
-        std::unique_lock<std::mutex> lk(_mutex);
-        _cvar.wait(lk, [this, &state]() -> bool {
+        // printf("[W] sending process ack (%d)\n", (int)_lastRequestReceived.load());
+        _workerToOrg.signal([this]() {
+            _lastRequestHandled.store(_lastRequestReceived);
+        });
+
+        // printf("[W] awaiting process request\n");
+        _orgToWorker.wait([this, &state]() -> bool {
             state = getContinuationState();
             return state != ContinuationState::SLEEP;
         });
+        // printf("[W] received worker signal\n");
 
-        _lastHandled.store(_nextRequest);
+        _lastRequestReceived.store(_nextRequest);
     } else {
         state = getContinuationState();
     }
@@ -110,7 +172,7 @@ ExecutionThread::ContinuationState ExecutionThread::getContinuationState() const
     ExecOrder order = _execOrder.load();
     switch (order) {
         case ExecOrder::WAIT_FOR_RESUME:
-            return (_nextRequest > _lastHandled)
+            return (_nextRequest > _lastRequestHandled)
                         ? ContinuationState::CONTINUE
                         : ContinuationState::SLEEP;
         case ExecOrder::RUNNING_FREE:

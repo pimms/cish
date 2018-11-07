@@ -36,7 +36,7 @@ void VirtualMachine::executeNextStatement()
         Throw(VmException, "Virtual machine not running");
     }
 
-    _executor->resume();
+    _executor->cycle();
 }
 
 

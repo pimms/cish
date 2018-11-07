@@ -11,6 +11,24 @@ namespace cish
 namespace vm
 {
 
+namespace internal
+{
+
+class Signal
+{
+public:
+    Signal();
+
+    void wait(std::function<bool()> cond);
+    void signal(std::function<void()> prenotif);
+
+private:
+    std::mutex _mutex;
+    std::condition_variable _cvar;
+};
+
+}
+
 
 class ExecutionThread
 {
@@ -21,7 +39,28 @@ public:
     void setWaitForResume(bool waitForResume);
 
     void start();
+
+    /**
+     * Allow the background thread to continue. Has no effect if
+     * 'waitForResume' is false or the worker isn't waiting for
+     * a notification from the organizer thread.
+     */
     void resume();
+
+    /**
+     * Signal the background thread to continue, and also wait for
+     * it to wait for another instruction - effectively waiting a
+     * single cycle.
+     *
+     * A deadlock condition WILL happen if the worker thread never
+     * calls 'await()' again.
+     */
+    void cycle();
+
+    /**
+     * Terminate the background thread. The worker thread will
+     * attempt to terminate its' efforts on the next call to 'await()'.
+     */
     void terminate();
 
     bool isRunning() const;
@@ -54,12 +93,13 @@ private:
     bool _isRunning;
 
     std::thread _thread;
-    std::mutex _mutex;
-    std::condition_variable _cvar;
+    internal::Signal _orgToWorker;
+    internal::Signal _workerToOrg;
 
     std::atomic<ExecOrder> _execOrder;
     std::atomic_long _nextRequest;
-    std::atomic_long _lastHandled;
+    std::atomic_long _lastRequestReceived;
+    std::atomic_long _lastRequestHandled;
 };
 
 

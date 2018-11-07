@@ -31,7 +31,6 @@ void Executor::execute()
 {
     const ast::SuperStatement *main = _ast->getFunctionDefinition("main");
     if (!main) {
-        printf("No main func def\n");
         Throw(NoEntryPointException, "Entrypoint 'main' not found");
     }
 
