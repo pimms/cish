@@ -1,17 +1,18 @@
 #pragma once
 
 #include <stdint.h>
-
 #include "../ast/Ast.h"
-#include "../ast/SuperStatement.h"
-
-#include "Memory.h"
-#include "ExecutionContext.h"
+#include "../Exception.h"
 
 namespace cish
 {
 namespace vm
 {
+
+class Memory;
+class Executor;
+
+DECLARE_EXCEPTION(VmException);
 
 struct VmOptions
 {
@@ -36,16 +37,8 @@ public:
     void executeNextStatement();
 
 private:
-    void executeNextGlobalStatement();
-    void executeStatement(const ast::Statement *statement);
-
     Memory *_memory;
-    ExecutionContext *_executionContext;
-    ast::Ast::Ptr _ast;
-
-    bool _globalInitComplete;
-    int _globalStatementIdx;
-    std::vector<const ast::SuperStatement*> _superStack;
+    Executor *_executor;
 };
 
 

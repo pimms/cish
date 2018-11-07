@@ -57,11 +57,6 @@ public:
     void declareFunction(FuncDeclaration decl);
     const FuncDeclaration* getFunctionDeclaration(const std::string &name) const;
 
-    void pushSuperStatement(SuperStatement *super);
-    void popSuperStatement();
-
-    SuperStatement *getCurrentSuper() const;
-
 private:
     typedef std::vector<VarDeclaration> VariableScope;
     std::vector<VariableScope> _varScope;

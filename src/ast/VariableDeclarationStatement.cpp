@@ -1,5 +1,5 @@
 #include "VariableDeclarationStatement.h"
-
+#include "DeclarationContext.h"
 #include "VariableAssignmentStatement.h"
 
 #include "../vm/ExecutionContext.h"
@@ -16,7 +16,6 @@ VariableDeclarationStatement::VariableDeclarationStatement(
         TypeDecl type,
         const std::string &varName,
         Expression *value):
-    Statement(context->getCurrentSuper()),
     _type(type),
     _varName(varName),
     _assignment(nullptr)
@@ -37,13 +36,15 @@ VariableDeclarationStatement::~VariableDeclarationStatement()
 
 void VariableDeclarationStatement::execute(vm::ExecutionContext *context) const
 {
+    Statement::execute(context);
+
     vm::Allocation::Ptr alloc = context->getMemory()->allocate(_type.getSize());
     vm::Variable *var = new vm::Variable(_type, std::move(alloc));
 
     context->getStackFrame()->addVariable(_varName, var);
 
     if (_assignment != nullptr) {
-        _assignment->execute(context);
+        _assignment->executeAssignment(context);
     }
 }
 

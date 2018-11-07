@@ -53,6 +53,11 @@ Memory* ExecutionContext::getMemory() const
     return _memory;
 }
 
+void ExecutionContext::yieldOnStatement(const ast::Statement *statement)
+{
+    // No body! This method must be overriden to serve any purpose.
+}
+
 
 }
 }

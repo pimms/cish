@@ -1,4 +1,6 @@
 #include "VirtualMachine.h"
+#include "Executor.h"
+#include "Memory.h"
 
 namespace cish
 {
@@ -11,49 +13,30 @@ namespace vm
 
 VirtualMachine::VirtualMachine(const VmOptions &opts, Ast::Ptr ast):
     _memory(new Memory(opts.heapSize, opts.minAllocSize)),
-    _executionContext(new ExecutionContext(_memory)),
-    _ast(std::move(ast)),
-    _globalInitComplete(false),
-    _globalStatementIdx(0)
+    _executor(new Executor(_memory, std::move(ast)))
 {
-
+    _executor->setWaitForResume(true);
+    _executor->start();
 }
 
 VirtualMachine::~VirtualMachine()
 {
-    delete _executionContext;
+    delete _executor;
     delete _memory;
 }
 
 const ExecutionContext* VirtualMachine::getExecutionContext() const
 {
-    return _executionContext;
+    return _executor;
 }
 
 void VirtualMachine::executeNextStatement()
 {
-    if (_globalInitComplete) {
-        Throw(Exception, "Don't know what to do yet lol");
-    } else {
-        executeNextGlobalStatement();
+    if (!_executor->isRunning()) {
+        Throw(VmException, "Virtual machine not running");
     }
-}
 
-void VirtualMachine::executeNextGlobalStatement()
-{
-    auto rootStatements = _ast->getRootStatements();
-    if (_globalStatementIdx >= rootStatements.size()) {
-        _globalInitComplete = true;
-    } else {
-        ast::Statement *statement = rootStatements[_globalStatementIdx];
-        executeStatement(statement);
-        _globalStatementIdx++;
-    }
-}
-
-void VirtualMachine::executeStatement(const ast::Statement *statement)
-{
-    statement->execute(_executionContext);
+    _executor->resume();
 }
 
 

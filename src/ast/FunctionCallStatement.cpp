@@ -7,8 +7,7 @@ namespace ast
 {
 
 
-FunctionCallStatement::FunctionCallStatement(DeclarationContext *context, FunctionCallExpression *expr):
-    Statement(context->getCurrentSuper()),
+FunctionCallStatement::FunctionCallStatement(FunctionCallExpression *expr):
     _expr(expr)
 {
 
@@ -16,6 +15,7 @@ FunctionCallStatement::FunctionCallStatement(DeclarationContext *context, Functi
 
 void FunctionCallStatement::execute(vm::ExecutionContext *context) const
 {
+    Statement::execute(context);
     _expr->evaluate(context);
 }
 

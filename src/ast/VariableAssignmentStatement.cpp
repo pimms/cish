@@ -1,4 +1,5 @@
 #include "VariableAssignmentStatement.h"
+#include "DeclarationContext.h"
 
 #include "../vm/Variable.h"
 #include "../vm/ExecutionContext.h"
@@ -19,7 +20,6 @@ VariableAssignmentStatement::VariableAssignmentStatement(
         DeclarationContext *context,
         const std::string &varName,
         Expression *value):
-    Statement(context->getCurrentSuper()),
     _varName(varName),
     _expression(value)
 {
@@ -40,6 +40,13 @@ VariableAssignmentStatement::~VariableAssignmentStatement()
 }
 
 void VariableAssignmentStatement::execute(vm::ExecutionContext *context) const
+{
+    Statement::execute(context);
+    executeAssignment(context);
+}
+
+
+void VariableAssignmentStatement::executeAssignment(vm::ExecutionContext *context) const
 {
     vm::Variable *var = context->getStackFrame()->getVariable(_varName);
     if (var == nullptr) {

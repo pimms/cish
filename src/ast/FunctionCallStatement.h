@@ -14,7 +14,7 @@ namespace ast
 class FunctionCallStatement: public Statement
 {
 public:
-    FunctionCallStatement(DeclarationContext *context, FunctionCallExpression *expr);
+    FunctionCallStatement(FunctionCallExpression *expr);
     virtual void execute(vm::ExecutionContext*) const override;
 
 private:

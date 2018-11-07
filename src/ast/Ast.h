@@ -1,6 +1,7 @@
 #pragma once
 
 #include "AstNodes.h"
+#include "FunctionDefinition.h"
 
 #include <memory>
 #include <vector>
@@ -12,7 +13,6 @@ namespace cish
 namespace ast
 {
 
-class FunctionDefinition;
 
 class Ast
 {
@@ -25,7 +25,7 @@ public:
     void addFunctionDefinition(FunctionDefinition *funcDef);
     FunctionDefinition* getFunctionDefinition(const std::string &funcName);
     std::vector<FunctionDefinition*> getFunctionDefinitions() const;
-    
+
     void addRootStatement(Statement *statement);
     const std::vector<Statement*>& getRootStatements() const;
 

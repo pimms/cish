@@ -1,5 +1,6 @@
 #include "AstNodes.h"
 #include "../Exception.h"
+#include "../vm/ExecutionContext.h"
 
 
 namespace cish
@@ -8,18 +9,9 @@ namespace ast
 {
 
 
-/*
-==============
-Statement
-==============
-*/
-Statement::Statement(SuperStatement *super):
-    _superStatement(super)
-{ }
-
-SuperStatement* Statement::getSuperStatement() const
+void Statement::execute(vm::ExecutionContext *context) const
 {
-    return _superStatement;
+    context->yieldOnStatement(this);
 }
 
 

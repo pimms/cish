@@ -274,7 +274,7 @@ public:
         Result res = visitChildren(ctx);
         assert(res.size() == 1);
         assert(dynamic_cast<FunctionCallExpression*>(res[0]) != nullptr);
-        return createResult(new FunctionCallStatement(&_declContext, (FunctionCallExpression*)res[0]));
+        return createResult(new FunctionCallStatement((FunctionCallExpression*)res[0]));
     }
 
     virtual antlrcpp::Any visitReturnStatement(CMParser::ReturnStatementContext *ctx) override
@@ -355,7 +355,6 @@ public:
         // and variable declaration in a very specific order, and this is the best - if somewhat
         // awkward - place to do that.
         FunctionDefinition *funcDef = new FunctionDefinition(&_declContext, funcDecl);
-        _declContext.pushSuperStatement(funcDef);
         _declContext.enterFunction();
         for (const VarDeclaration &varDecl: params) {
             _declContext.declareVariable(varDecl.type, varDecl.name);
@@ -368,7 +367,6 @@ public:
         }
 
         _declContext.exitFunction();
-        _declContext.popSuperStatement();
 
         return createResult(funcDef);
     }

@@ -8,14 +8,14 @@ namespace ast
 
 FunctionDeclarationStatement::FunctionDeclarationStatement(DeclarationContext *context,
                                                            FuncDeclaration decl):
-    Statement(context->getCurrentSuper()),
     _decl(decl)
 {
     context->declareFunction(_decl);
 }
 
-void FunctionDeclarationStatement::execute(vm::ExecutionContext*) const
+void FunctionDeclarationStatement::execute(vm::ExecutionContext *context) const
 {
+    Statement::execute(context);
     // Nothing to do, lol
 }
 

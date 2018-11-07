@@ -5,6 +5,8 @@
 #include "ast/AstBuilder.h"
 #include "ast/LiteralExpression.h"
 #include "ast/Ast.h"
+#include "vm/Variable.h"
+#include "vm/ExecutionContext.h"
 
 
 using namespace cish::vm;
@@ -30,22 +32,25 @@ Variable* getVar(VirtualMachine *vm, const std::string &name)
 
 TEST(VirtualMachineTest, globalStatementsAreExecutedOneByOne)
 {
-    VirtualMachine *vm = createVm("int a = 15;  int b = 15 + a; int c;");
+    VirtualMachine *vm = createVm("int a = 15;  int b = 15 + a; int c; void main(){}");
     ASSERT_EQ(nullptr, getVar(vm, "a"));
     ASSERT_EQ(nullptr, getVar(vm, "b"));
     ASSERT_EQ(nullptr, getVar(vm, "c"));
 
     vm->executeNextStatement();
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
     ASSERT_EQ(15, getVar(vm, "a")->getAllocation()->read<int>());
     ASSERT_EQ(nullptr, getVar(vm, "b"));
     ASSERT_EQ(nullptr, getVar(vm, "c"));
 
     vm->executeNextStatement();
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
     ASSERT_EQ(15, getVar(vm, "a")->getAllocation()->read<int>());
     ASSERT_EQ(30, getVar(vm, "b")->getAllocation()->read<int>());
     ASSERT_EQ(nullptr, getVar(vm, "c"));
 
     vm->executeNextStatement();
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
     ASSERT_EQ(15, getVar(vm, "a")->getAllocation()->read<int>());
     ASSERT_EQ(30, getVar(vm, "b")->getAllocation()->read<int>());
     ASSERT_NE(nullptr, getVar(vm, "c"));

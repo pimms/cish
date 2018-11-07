@@ -11,11 +11,10 @@ namespace ast
 {
 
 
-class FunctionDefinition: public AstNode, public SuperStatement
+class FunctionDefinition: public SuperStatement
 {
 public:
-    FunctionDefinition(DeclarationContext *context,
-                       FuncDeclaration decl);
+    FunctionDefinition(DeclarationContext *context, FuncDeclaration decl);
     ~FunctionDefinition();
 
     const FuncDeclaration* getDeclaration() const;

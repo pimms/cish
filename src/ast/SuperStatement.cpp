@@ -31,6 +31,14 @@ void SuperStatement::addStatement(Statement *statement)
     _statements.push_back(statement);
 }
 
+void SuperStatement::execute(vm::ExecutionContext *context) const
+{
+    Statement::execute(context);
+    for (Statement *statement: _statements) {
+        statement->execute(context);
+    }
+}
+
 
 }
 }

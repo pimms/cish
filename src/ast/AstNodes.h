@@ -5,7 +5,6 @@
 
 #include "Type.h"
 #include "ExpressionValue.h"
-#include "DeclarationContext.h"
 
 
 namespace cish
@@ -13,8 +12,6 @@ namespace cish
 namespace vm { class ExecutionContext; }
 namespace ast
 {
-
-class SuperStatement;
 
 
 DECLARE_EXCEPTION(VariableNotDeclaredException);
@@ -33,14 +30,11 @@ public:
 class Statement: public AstNode
 {
 public:
-    Statement(SuperStatement *super);
     virtual ~Statement() {};
-    virtual void execute(vm::ExecutionContext*) const = 0;
 
-    SuperStatement* getSuperStatement() const;
-
-private:
-    SuperStatement *_superStatement;
+    // 1. Always override this method
+    // 2. Always call this method from subclasses
+    virtual void execute(vm::ExecutionContext*) const;
 };
 
 class Expression: public AstNode

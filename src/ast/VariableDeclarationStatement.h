@@ -9,6 +9,7 @@ namespace vm { class ExecutionContext; }
 namespace ast
 {
 
+class DeclarationContext;
 class VariableAssignmentStatement;
 
 
