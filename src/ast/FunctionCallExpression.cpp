@@ -1,4 +1,6 @@
 #include "FunctionCallExpression.h"
+#include "FunctionDefinition.h"
+#include "../vm/ExecutionContext.h"
 
 namespace cish
 {
@@ -42,10 +44,10 @@ TypeDecl FunctionCallExpression::getType() const
     return _funcDecl.returnType;
 }
 
-ExpressionValue FunctionCallExpression::evaluate(vm::ExecutionContext*) const
+ExpressionValue FunctionCallExpression::evaluate(vm::ExecutionContext *context) const
 {
-    // Figuring out how to do this is the million dollar question, now isn't it?
-    Throw(Exception, "FunctionCallExpression::evaluate has not been implemented");
+    const FunctionDefinition *funcDef = context->getFunctionDefinition(_funcDecl.name);
+
 }
 
 }

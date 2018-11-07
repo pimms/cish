@@ -54,3 +54,4 @@ TEST(VirtualMachineTest, globalStatementsAreExecutedOneByOne)
 
     delete vm;
 }
+

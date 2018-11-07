@@ -10,6 +10,8 @@ namespace cish
 namespace ast
 {
 
+DECLARE_EXCEPTION(InvalidParameterException);
+
 
 class FunctionDefinition: public SuperStatement
 {
@@ -18,6 +20,8 @@ public:
     ~FunctionDefinition();
 
     const FuncDeclaration* getDeclaration() const;
+
+    void execute(vm::ExecutionContext *context, std::vector<ExpressionValue> params);
 
 private:
     FuncDeclaration _decl;

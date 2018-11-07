@@ -27,6 +27,11 @@ void Executor::yieldOnStatement(const ast::Statement *statement)
     await();
 }
 
+const ast::FunctionDefinition* Executor::getFunctionDefinition(const std::string &funcName) const
+{
+    return _ast->getFunctionDefinition(funcName);
+}
+
 void Executor::execute()
 {
     const ast::SuperStatement *main = _ast->getFunctionDefinition("main");
@@ -34,7 +39,7 @@ void Executor::execute()
         Throw(NoEntryPointException, "Entrypoint 'main' not found");
     }
 
-    for (ast::Statement *statement: _ast->getRootStatements()) {
+    for (const ast::Statement *statement: _ast->getRootStatements()) {
         printf("Executing root statement\n");
         statement->execute(this);
     }

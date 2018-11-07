@@ -78,4 +78,3 @@ TEST(FunctionCallExpressionTest, voidExpressionsAsParamThrows)
     delete params[0];
 }
 
-

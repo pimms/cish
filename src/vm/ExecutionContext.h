@@ -6,13 +6,19 @@
 #include "Memory.h"
 #include "ExecutionThread.h"
 
-#include "../ast/Ast.h"
-#include "../ast/SuperStatement.h"
 #include "../Exception.h"
 
 
 namespace cish
 {
+namespace ast
+{
+
+class FunctionDefinition;
+class Statement;
+
+}
+
 namespace vm
 {
 
@@ -30,10 +36,12 @@ public:
 
     void pushStackFrame();
     void popStackFrame();
+
     StackFrame* getStackFrame() const;
     Memory* getMemory() const;
 
     virtual void yieldOnStatement(const ast::Statement *statement);
+    virtual const ast::FunctionDefinition* getFunctionDefinition(const std::string &funcName) const;
 
 private:
     std::vector<StackFrame*> _stackFrames;

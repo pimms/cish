@@ -23,11 +23,11 @@ public:
     ~Ast();
 
     void addFunctionDefinition(FunctionDefinition *funcDef);
-    FunctionDefinition* getFunctionDefinition(const std::string &funcName);
-    std::vector<FunctionDefinition*> getFunctionDefinitions() const;
+    const FunctionDefinition* getFunctionDefinition(const std::string &funcName);
+    std::vector<const FunctionDefinition*> getFunctionDefinitions() const;
 
     void addRootStatement(Statement *statement);
-    const std::vector<Statement*>& getRootStatements() const;
+    std::vector<const Statement*> getRootStatements() const;
 
 private:
     std::vector<Statement*> _rootStatements;
