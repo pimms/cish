@@ -21,7 +21,7 @@ void defineVariable(ExecutionContext &context, TypeDecl type, std::string name)
 {
     auto alloc = context.getMemory()->allocate(type.getSize());
     Variable *var = new Variable(type, std::move(alloc));
-    context.getStackFrame()->addVariable(name, var);
+    context.getScope()->addVariable(name, var);
 }
 
 template<typename To, typename From>
@@ -40,12 +40,12 @@ void testAssignmentCasting()
     declareVariable(dc, TypeDecl::getFromNative<To>(), "var");
 
     for (auto val: testData) {
-        ec.pushStackFrame();
+        ec.pushScope();
 
         auto alloc = memory.allocate(sizeof(To));
         auto rawAlloc = alloc.get();
         Variable *var = new Variable(TypeDecl::getFromNative<To>(), std::move(alloc));
-        ec.getStackFrame()->addVariable("var", var);
+        ec.getScope()->addVariable("var", var);
 
         ExpressionValue exprValue(TypeDecl::getFromNative<From>(), val);
         auto expr = new LiteralExpression(exprValue);
@@ -57,7 +57,7 @@ void testAssignmentCasting()
 
         ASSERT_EQ((To)val, rawAlloc->read<To>());
 
-        ec.popStackFrame();
+        ec.popScope();
     }
 }
 

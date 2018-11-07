@@ -14,28 +14,28 @@ const int MAX_STACK_FRAMES = 100;
 ExecutionContext::ExecutionContext(Memory *memory):
     _memory(memory)
 {
-    _stackFrames.push_back(new StackFrame());
+    _stackFrames.push_back(new Scope());
 }
 
 ExecutionContext::~ExecutionContext()
 {
-    for (StackFrame *frame: _stackFrames) {
+    for (Scope *frame: _stackFrames) {
         delete frame;
     }
 }
 
 
-void ExecutionContext::pushStackFrame()
+void ExecutionContext::pushScope()
 {
     if (_stackFrames.size() >= MAX_STACK_FRAMES) {
         Throw(StackOverflowException, "Too many stack-frames (%d)", _stackFrames.size());
     }
 
-    StackFrame *frame = new StackFrame(getStackFrame());
+    Scope *frame = new Scope(getScope());
     _stackFrames.push_back(frame);
 }
 
-void ExecutionContext::popStackFrame()
+void ExecutionContext::popScope()
 {
     if (_stackFrames.size() == 1) {
         Throw(StackUnderflowException, "Cannot pop the root stack-frame");
@@ -45,7 +45,7 @@ void ExecutionContext::popStackFrame()
     _stackFrames.pop_back();
 }
 
-StackFrame* ExecutionContext::getStackFrame() const
+Scope* ExecutionContext::getScope() const
 {
     return _stackFrames.back();
 }

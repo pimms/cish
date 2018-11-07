@@ -2,9 +2,9 @@
 
 #include "ast/VariableDeclarationStatement.h"
 #include "ast/LiteralExpression.h"
+#include "ast/DeclarationContext.h"
 #include "vm/Memory.h"
 #include "vm/ExecutionContext.h"
-
 
 using namespace cish::ast;
 using namespace cish::vm;
@@ -31,10 +31,10 @@ TEST(VariableDeclarationStatementTest, variablesAreDeclaredInExecutionContext)
 
     VariableDeclarationStatement stmt(&dc, TypeDecl::INT, "var", nullptr);
 
-    ASSERT_EQ(nullptr, ec.getStackFrame()->getVariable("var"));
+    ASSERT_EQ(nullptr, ec.getScope()->getVariable("var"));
     stmt.execute(&ec);
 
-    Variable *var = ec.getStackFrame()->getVariable("var");
+    Variable *var = ec.getScope()->getVariable("var");
     ASSERT_NE(nullptr, var);
     ASSERT_EQ(TypeDecl(TypeDecl::INT), var->getType());
 }
@@ -50,6 +50,6 @@ TEST(VariableDeclarationStatementTest, variablesAreInitializedWhenExpressionIsDe
     VariableDeclarationStatement stmt(&dc, TypeDecl::INT, "var", expr);
     stmt.execute(&ec);
 
-    Variable *var = ec.getStackFrame()->getVariable("var");
+    Variable *var = ec.getScope()->getVariable("var");
     ASSERT_EQ(100, var->getAllocation()->read<int>());
 }

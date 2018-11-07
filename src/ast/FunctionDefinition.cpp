@@ -1,5 +1,6 @@
 #include "FunctionDefinition.h"
 #include "../vm/ExecutionContext.h"
+#include "FunctionCallExpression.h"
 
 
 namespace cish
@@ -45,11 +46,11 @@ void FunctionDefinition::execute(vm::ExecutionContext *context, std::vector<Expr
         }
     }
 
-    context->pushFunctionScope();
+    context->pushScope();
 
     // TODO: Declare them fkn variables
 
-    context->popFunctionScope();
+    context->popScope();
 }
 
 

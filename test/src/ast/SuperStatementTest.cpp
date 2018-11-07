@@ -4,6 +4,7 @@
 #include "ast/SuperStatement.h"
 #include "ast/VariableDeclarationStatement.h"
 #include "ast/Type.h"
+#include "ast/DeclarationContext.h"
 
 #include "vm/Memory.h"
 #include "vm/ExecutionContext.h"
@@ -26,11 +27,11 @@ TEST(SuperStatementTest, superStatementsCallAllTheirChildren)
     super.addStatement(decl2);
     super.execute(&ec);
 
-    ASSERT_NE(nullptr, ec.getStackFrame()->getVariable("var1"));
-    ASSERT_EQ(TypeDecl::INT, ec.getStackFrame()->getVariable("var1")->getType().getType());
+    ASSERT_NE(nullptr, ec.getScope()->getVariable("var1"));
+    ASSERT_EQ(TypeDecl::INT, ec.getScope()->getVariable("var1")->getType().getType());
 
-    ASSERT_NE(nullptr, ec.getStackFrame()->getVariable("var2"));
-    ASSERT_EQ(TypeDecl::LONG, ec.getStackFrame()->getVariable("var2")->getType().getType());
+    ASSERT_NE(nullptr, ec.getScope()->getVariable("var2"));
+    ASSERT_EQ(TypeDecl::LONG, ec.getScope()->getVariable("var2")->getType().getType());
 
     ASSERT_EQ(100 - 12, memory.getFreeSize());
 }

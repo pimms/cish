@@ -7,22 +7,22 @@ using namespace cish::vm;
 using namespace cish::ast;
 
 
-TEST(ExecutionContextTest, rootStackFrameExists)
+TEST(ExecutionContextTest, rootScopeExists)
 {
     Memory memory(100, 1);
     ExecutionContext context(&memory);
-    ASSERT_NE(nullptr, context.getStackFrame());
+    ASSERT_NE(nullptr, context.getScope());
 }
 
-TEST(ExecutionContextTest, poppingRootStackFrameThrows)
+TEST(ExecutionContextTest, poppingRootScopeThrows)
 {
     Memory memory(100, 1);
     ExecutionContext context(&memory);
-    ASSERT_THROW(context.popStackFrame(), StackUnderflowException);
+    ASSERT_THROW(context.popScope(), StackUnderflowException);
 
-    context.pushStackFrame();
-    ASSERT_NO_THROW(context.popStackFrame());
-    ASSERT_THROW(context.popStackFrame(), StackUnderflowException);
+    context.pushScope();
+    ASSERT_NO_THROW(context.popScope());
+    ASSERT_THROW(context.popScope(), StackUnderflowException);
 }
 
 TEST(ExecutionContextTest, excessivePushingEventuallyThrows)
@@ -33,7 +33,7 @@ TEST(ExecutionContextTest, excessivePushingEventuallyThrows)
     ASSERT_THROW({
         // Here's to hoping this throws! *cheers*
         while (true) {
-            context.pushStackFrame();
+            context.pushScope();
         }
     }, StackOverflowException);
 }

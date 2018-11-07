@@ -27,7 +27,7 @@ VirtualMachine* createVm(const std::string &source)
 
 Variable* getVar(VirtualMachine *vm, const std::string &name)
 {
-    return vm->getExecutionContext()->getStackFrame()->getVariable(name);
+    return vm->getExecutionContext()->getScope()->getVariable(name);
 }
 
 TEST(VirtualMachineTest, globalStatementsAreExecutedOneByOne)

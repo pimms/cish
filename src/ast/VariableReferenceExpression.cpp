@@ -28,7 +28,7 @@ TypeDecl VariableReferenceExpression::getType() const
 
 ExpressionValue VariableReferenceExpression::evaluate(vm::ExecutionContext *ctx) const
 {
-    vm::Variable *var = ctx->getStackFrame()->getVariable(_name);
+    vm::Variable *var = ctx->getScope()->getVariable(_name);
     if (!var) {
         Throw(VariableNotDefinedException, "Variable '%s' undefined", _name.c_str());
     }

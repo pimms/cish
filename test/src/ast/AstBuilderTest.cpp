@@ -21,7 +21,7 @@ TEST(AstBuilderTest, simpleGlobalVariable)
     Ast::Ptr ast = buildAst("int a = 15;");
     auto statements = ast->getRootStatements();
     ASSERT_EQ(1, statements.size());
-    ASSERT_NE(nullptr, dynamic_cast<VariableDeclarationStatement*>(statements[0]));
+    ASSERT_NE(nullptr, dynamic_cast<const VariableDeclarationStatement*>(statements[0]));
 }
 
 TEST(AstBuilderTest, semiComplexGlobalVariables)
@@ -34,9 +34,9 @@ TEST(AstBuilderTest, semiComplexGlobalVariables)
 
     auto statements = ast->getRootStatements();
     ASSERT_EQ(3, statements.size());
-    ASSERT_NE(nullptr, dynamic_cast<VariableDeclarationStatement*>(statements[0]));
-    ASSERT_NE(nullptr, dynamic_cast<VariableDeclarationStatement*>(statements[1]));
-    ASSERT_NE(nullptr, dynamic_cast<VariableDeclarationStatement*>(statements[2]));
+    ASSERT_NE(nullptr, dynamic_cast<const VariableDeclarationStatement*>(statements[0]));
+    ASSERT_NE(nullptr, dynamic_cast<const VariableDeclarationStatement*>(statements[1]));
+    ASSERT_NE(nullptr, dynamic_cast<const VariableDeclarationStatement*>(statements[2]));
 }
 
 

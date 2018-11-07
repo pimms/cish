@@ -41,7 +41,7 @@ void VariableDeclarationStatement::execute(vm::ExecutionContext *context) const
     vm::Allocation::Ptr alloc = context->getMemory()->allocate(_type.getSize());
     vm::Variable *var = new vm::Variable(_type, std::move(alloc));
 
-    context->getStackFrame()->addVariable(_varName, var);
+    context->getScope()->addVariable(_varName, var);
 
     if (_assignment != nullptr) {
         _assignment->executeAssignment(context);

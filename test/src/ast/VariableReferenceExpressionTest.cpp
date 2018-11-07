@@ -57,7 +57,7 @@ TEST(VariableReferenceExpressionTest, typeMismatchDuringEvaluationThrows)
 
     dc.declareVariable(TypeDecl::INT, "var");
 
-    ec.getStackFrame()->addVariable("var", new Variable(TypeDecl::SHORT, memory.allocate(2)));
+    ec.getScope()->addVariable("var", new Variable(TypeDecl::SHORT, memory.allocate(2)));
 
     VariableReferenceExpression expr(&dc, "var");
     ASSERT_THROW(expr.evaluate(&ec), InvalidTypeException);
@@ -87,7 +87,7 @@ void testSimpleVariableReferenceEvaluation()
         ExecutionContext ec(&memory);
 
         dc.declareVariable(type, "var");
-        ec.getStackFrame()->addVariable("var", var);
+        ec.getScope()->addVariable("var", var);
 
         VariableReferenceExpression expr(&dc, "var");
 
@@ -141,20 +141,20 @@ TEST(VariableReferenceExpressionTest, shadowingWorksAsExpected)
     VariableReferenceExpression ref2(&dc, "var");
 
     // Evaluate reference 1
-    ec.getStackFrame()->addVariable("var", var1);
+    ec.getScope()->addVariable("var", var1);
     ExpressionValue val1 = ref1.evaluate(&ec);
     ASSERT_EQ(TypeDecl(TypeDecl::INT), val1.getIntrinsicType());
     ASSERT_EQ(1, val1.get<int>());
 
     // Evaluate reference 2
-    ec.pushStackFrame();
-    ec.getStackFrame()->addVariable("var", var2);
+    ec.pushScope();
+    ec.getScope()->addVariable("var", var2);
     ExpressionValue val2 = ref2.evaluate(&ec);
     ASSERT_EQ(TypeDecl(TypeDecl::SHORT), val2.getIntrinsicType());
     ASSERT_EQ(2, val2.get<short>());
 
     // Evaluate reference 1 again
-    ec.popStackFrame();
+    ec.popScope();
     val1 = ref1.evaluate(&ec);
     ASSERT_EQ(TypeDecl(TypeDecl::INT), val1.getIntrinsicType());
     ASSERT_EQ(1, val1.get<int>());

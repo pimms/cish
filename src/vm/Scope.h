@@ -11,18 +11,18 @@ namespace cish
 namespace vm
 {
 
-class StackFrame
+class Scope
 {
 public:
-    StackFrame();
-    StackFrame(const StackFrame *parent);
-    ~StackFrame();
+    Scope();
+    Scope(const Scope *parent);
+    ~Scope();
 
     void addVariable(const std::string &name, Variable *var);
     Variable* getVariable(const std::string &name) const;
 
 private:
-    const StackFrame *_parent;
+    const Scope *_parent;
     std::map<std::string, Variable*> _vars;
 };
 

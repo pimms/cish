@@ -10,8 +10,6 @@ namespace cish
 namespace ast
 {
 
-DECLARE_EXCEPTION(InvalidParameterException);
-
 
 class FunctionDefinition: public SuperStatement
 {

@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "vm/StackFrame.h"
+#include "vm/Scope.h"
 #include "vm/Variable.h"
 #include "vm/Memory.h"
 #include "vm/Allocation.h"
@@ -16,16 +16,16 @@ Variable* createVariable(Memory &mem, uint32_t len)
 }
 
 
-TEST(StackFrameTest, UndefinedVariablesReturnsNull)
+TEST(ScopeTest, UndefinedVariablesReturnsNull)
 {
-    StackFrame frame;
+    Scope frame;
     ASSERT_EQ(nullptr, frame.getVariable("var"));
 }
 
-TEST(StackFrameTest, StoredVariablesAreRetrievable)
+TEST(ScopeTest, StoredVariablesAreRetrievable)
 {
     Memory mem(100, 4);
-    StackFrame frame;
+    Scope frame;
 
     Variable *var = createVariable(mem, 4);
     frame.addVariable("var", var);
@@ -34,11 +34,11 @@ TEST(StackFrameTest, StoredVariablesAreRetrievable)
     ASSERT_EQ(4, frame.getVariable("var")->getAllocation()->getSize());
 }
 
-TEST(StackFrameTest, ParentsVariablesAreAvailableInChildren)
+TEST(ScopeTest, ParentsVariablesAreAvailableInChildren)
 {
     Memory mem(100, 4);
-    StackFrame parent;
-    StackFrame child(&parent);
+    Scope parent;
+    Scope child(&parent);
 
     Variable *var = createVariable(mem, 4);
     parent.addVariable("var", var);
@@ -46,11 +46,11 @@ TEST(StackFrameTest, ParentsVariablesAreAvailableInChildren)
     ASSERT_NE(nullptr, child.getVariable("var"));
 }
 
-TEST(StackFrameTest, ChildVariablesOvershadowParents)
+TEST(ScopeTest, ChildVariablesOvershadowParents)
 {
     Memory mem(100, 4);
-    StackFrame parent;
-    StackFrame child(&parent);
+    Scope parent;
+    Scope child(&parent);
 
     Variable *v1 = createVariable(mem, 4);
     Variable *v2 = createVariable(mem, 8);

@@ -1,4 +1,4 @@
-#include "StackFrame.h"
+#include "Scope.h"
 
 
 namespace cish
@@ -6,11 +6,11 @@ namespace cish
 namespace vm
 {
 
-StackFrame::StackFrame(): StackFrame(nullptr) { }
+Scope::Scope(): Scope(nullptr) { }
 
-StackFrame::StackFrame(const StackFrame *parent): _parent(parent) { }
+Scope::Scope(const Scope *parent): _parent(parent) { }
 
-StackFrame::~StackFrame()
+Scope::~Scope()
 {
     for (const std::pair<std::string, Variable*> &pair: _vars) {
         delete pair.second;
@@ -18,7 +18,7 @@ StackFrame::~StackFrame()
 }
 
 
-void StackFrame::addVariable(const std::string &name, Variable *var)
+void Scope::addVariable(const std::string &name, Variable *var)
 {
     // Delete existing variable if one exists
     if (_vars.count(name) != 0) {
@@ -28,7 +28,7 @@ void StackFrame::addVariable(const std::string &name, Variable *var)
     _vars[name] = var;
 }
 
-Variable* StackFrame::getVariable(const std::string &name) const
+Variable* Scope::getVariable(const std::string &name) const
 {
     if (_vars.count(name) != 0) {
         return _vars.at(name);

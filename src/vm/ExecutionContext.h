@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "StackFrame.h"
+#include "Scope.h"
 #include "Memory.h"
 #include "ExecutionThread.h"
 
@@ -34,17 +34,17 @@ public:
     ExecutionContext(Memory *memory);
     virtual ~ExecutionContext();
 
-    void pushStackFrame();
-    void popStackFrame();
+    void pushScope();
+    void popScope();
 
-    StackFrame* getStackFrame() const;
+    Scope* getScope() const;
     Memory* getMemory() const;
 
     virtual void yieldOnStatement(const ast::Statement *statement);
     virtual const ast::FunctionDefinition* getFunctionDefinition(const std::string &funcName) const;
 
 private:
-    std::vector<StackFrame*> _stackFrames;
+    std::vector<Scope*> _stackFrames;
     Memory *_memory;
 };
 

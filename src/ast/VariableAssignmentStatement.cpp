@@ -48,7 +48,7 @@ void VariableAssignmentStatement::execute(vm::ExecutionContext *context) const
 
 void VariableAssignmentStatement::executeAssignment(vm::ExecutionContext *context) const
 {
-    vm::Variable *var = context->getStackFrame()->getVariable(_varName);
+    vm::Variable *var = context->getScope()->getVariable(_varName);
     if (var == nullptr) {
         Throw(VariableNotDefinedException, "Variable '%s' not defined", _varName.c_str());
     }
