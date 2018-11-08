@@ -39,6 +39,11 @@ void VirtualMachine::executeNextStatement()
     _executor->cycle();
 }
 
+void VirtualMachine::terminate()
+{
+    _executor->terminate();
+}
+
 
 }
 }

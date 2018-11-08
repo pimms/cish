@@ -122,7 +122,7 @@ TEST(VariableReferenceExpressionTest, shadowingWorksAsExpected)
     dc.enterFunction();
 
     ExecutionContext ec(&memory);
-
+    ec.pushFunctionFrame();
 
     Allocation::Ptr alloc1 = memory.allocate(4);
     Allocation::Ptr alloc2 = memory.allocate(2);
@@ -158,6 +158,8 @@ TEST(VariableReferenceExpressionTest, shadowingWorksAsExpected)
     val1 = ref1.evaluate(&ec);
     ASSERT_EQ(TypeDecl(TypeDecl::INT), val1.getIntrinsicType());
     ASSERT_EQ(1, val1.get<int>());
+
+    ec.popFunctionFrame();
 }
 
 

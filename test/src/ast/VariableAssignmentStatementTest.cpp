@@ -40,7 +40,7 @@ void testAssignmentCasting()
     declareVariable(dc, TypeDecl::getFromNative<To>(), "var");
 
     for (auto val: testData) {
-        ec.pushScope();
+        ec.pushFunctionFrame();
 
         auto alloc = memory.allocate(sizeof(To));
         auto rawAlloc = alloc.get();
@@ -57,7 +57,7 @@ void testAssignmentCasting()
 
         ASSERT_EQ((To)val, rawAlloc->read<To>());
 
-        ec.popScope();
+        ec.popFunctionFrame();
     }
 }
 

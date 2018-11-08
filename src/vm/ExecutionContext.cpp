@@ -14,40 +14,75 @@ const int MAX_STACK_FRAMES = 100;
 ExecutionContext::ExecutionContext(Memory *memory):
     _memory(memory)
 {
-    _stackFrames.push_back(new Scope());
+    _globalScope = new Scope();
 }
 
 ExecutionContext::~ExecutionContext()
 {
-    for (Scope *frame: _stackFrames) {
-        delete frame;
+    for (FunctionFrame &functionFrame: _frameStack) {
+        for (Scope *frame: functionFrame) {
+            delete frame;
+        }
     }
+
+    delete _globalScope;
 }
 
 
 void ExecutionContext::pushScope()
 {
-    if (_stackFrames.size() >= MAX_STACK_FRAMES) {
-        Throw(StackOverflowException, "Too many stack-frames (%d)", _stackFrames.size());
+    if (_frameStack.empty()) {
+        Throw(Exception, "Cannot push a scope without a function frame");
     }
 
     Scope *frame = new Scope(getScope());
-    _stackFrames.push_back(frame);
+    _frameStack.back().push_back(frame);
 }
 
 void ExecutionContext::popScope()
 {
-    if (_stackFrames.size() == 1) {
-        Throw(StackUnderflowException, "Cannot pop the root stack-frame");
+    if (_frameStack.empty()) {
+        Throw(Exception, "Cannot push a scope without a function frame");
     }
 
-    delete _stackFrames.back();
-    _stackFrames.pop_back();
+    if (_frameStack.back().size() == 1) {
+        Throw(StackUnderflowException, "Cannot pop the root scope");
+    }
+
+    delete _frameStack.back().back();
+    _frameStack.back().pop_back();
+}
+
+void ExecutionContext::pushFunctionFrame()
+{
+    if (_frameStack.size() > MAX_STACK_FRAMES) {
+        Throw(StackOverflowException, "Call stack exceeded maximum limit of %d", MAX_STACK_FRAMES);
+    }
+
+    Scope *scope = new Scope(_globalScope);
+    _frameStack.push_back(FunctionFrame { scope });
+}
+
+void ExecutionContext::popFunctionFrame()
+{
+    if (_frameStack.empty()) {
+        Throw(StackUnderflowException, "No function frame to pop");
+    }
+
+    if (_frameStack.back().size() != 1) {
+        Throw(Exception, "Illegal operation - cannot pop function frame without popping all scopes first");
+    }
+
+    delete _frameStack.back()[0];
+    _frameStack.pop_back();
 }
 
 Scope* ExecutionContext::getScope() const
 {
-    return _stackFrames.back();
+    if (_frameStack.empty())
+        return _globalScope;
+
+    return _frameStack.back().back();
 }
 
 Memory* ExecutionContext::getMemory() const
@@ -62,7 +97,7 @@ void ExecutionContext::yieldOnStatement(const ast::Statement *statement)
 
 const ast::FunctionDefinition* ExecutionContext::getFunctionDefinition(const std::string &funcName) const
 {
-    // Nothing we can do! This method must be overriden to serve any purpose.
+    // Nothing we can do! This method must be overridden to serve any purpose.
     printf("WARNING! getFunctionDefinition called on ExecutionContext");
     return nullptr;
 }

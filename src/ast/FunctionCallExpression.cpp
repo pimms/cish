@@ -48,6 +48,14 @@ ExpressionValue FunctionCallExpression::evaluate(vm::ExecutionContext *context) 
 {
     const FunctionDefinition *funcDef = context->getFunctionDefinition(_funcDecl.name);
 
+    std::vector<ExpressionValue> params;
+    for (Expression *expr: _params) {
+        params.push_back(expr->evaluate(context));
+    }
+
+    funcDef->execute(context, params);
+
+    Throw(Exception, "NOT IMPLEMENTED - How do we handle return types, lol");
 }
 
 }

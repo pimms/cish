@@ -37,6 +37,9 @@ public:
     void pushScope();
     void popScope();
 
+    void pushFunctionFrame();
+    void popFunctionFrame();
+
     Scope* getScope() const;
     Memory* getMemory() const;
 
@@ -44,7 +47,10 @@ public:
     virtual const ast::FunctionDefinition* getFunctionDefinition(const std::string &funcName) const;
 
 private:
-    std::vector<Scope*> _stackFrames;
+    typedef std::vector<Scope*> FunctionFrame;
+    Scope *_globalScope;
+    std::vector<FunctionFrame> _frameStack;
+
     Memory *_memory;
 };
 

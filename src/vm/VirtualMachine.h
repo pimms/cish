@@ -36,6 +36,13 @@ public:
 
     void executeNextStatement();
 
+    /**
+     * Termniate the VM. This method will not return until the
+     * associated background thread is joined, and will not have
+     * any effect if the VM already is stopped.
+     */
+    void terminate();
+
 private:
     Memory *_memory;
     Executor *_executor;

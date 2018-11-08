@@ -55,3 +55,40 @@ TEST(VirtualMachineTest, globalStatementsAreExecutedOneByOne)
     delete vm;
 }
 
+TEST(VirtualMachineTest, executingNextStatementWhenStoppedThrows)
+{
+    VirtualMachine *vm = createVm("int a = 15;  int b = 15 + a; int c; void main(){}");
+    vm->executeNextStatement();
+    vm->terminate();
+
+    ASSERT_THROW(vm->executeNextStatement(), VmException);
+}
+
+TEST(VirtualMachineTest, terminationIdempotence)
+{
+    VirtualMachine *vm = createVm("int a = 15;  int b = 15 + a; int c; void main(){}");
+    vm->executeNextStatement();
+    vm->terminate();
+    ASSERT_NO_THROW(vm->terminate());
+}
+
+TEST(VirtualMachineTest, terminatingVmHaltsExecution)
+{
+    VirtualMachine *vm = createVm("int a = 15;  int b = 15 + a; int c; void main(){}");
+    ASSERT_EQ(nullptr, getVar(vm, "a"));
+    ASSERT_EQ(nullptr, getVar(vm, "b"));
+    ASSERT_EQ(nullptr, getVar(vm, "c"));
+
+    vm->executeNextStatement();
+    ASSERT_EQ(15, getVar(vm, "a")->getAllocation()->read<int>());
+    ASSERT_EQ(nullptr, getVar(vm, "b"));
+    ASSERT_EQ(nullptr, getVar(vm, "c"));
+
+    vm->terminate();
+
+    ASSERT_EQ(15, getVar(vm, "a")->getAllocation()->read<int>());
+    ASSERT_EQ(nullptr, getVar(vm, "b"));
+    ASSERT_EQ(nullptr, getVar(vm, "c"));
+
+    delete vm;
+}
