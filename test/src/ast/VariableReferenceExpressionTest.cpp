@@ -2,6 +2,7 @@
 
 #include "ast/VariableReferenceExpression.h"
 #include "ast/DeclarationContext.h"
+#include "ast/FunctionDefinition.h"
 #include "vm/Memory.h"
 #include "vm/Variable.h"
 #include "vm/ExecutionContext.h"
@@ -119,7 +120,8 @@ TEST(VariableReferenceExpressionTest, shadowingWorksAsExpected)
 {
     Memory memory(100, 1);
     DeclarationContext dc;
-    dc.enterFunction();
+    FunctionDefinition func(&dc, FuncDeclaration{TypeDecl::INT, "foo"});
+    dc.enterFunction(&func);
 
     ExecutionContext ec(&memory);
     ec.pushFunctionFrame();

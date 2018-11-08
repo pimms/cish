@@ -35,6 +35,8 @@ struct FuncDeclaration
 };
 
 
+class FunctionDefinition;
+
 class DeclarationContext
 {
 public:
@@ -51,8 +53,9 @@ public:
     void pushVariableScope();
     void popVariableScope();
 
-    void enterFunction();
+    void enterFunction(FunctionDefinition *funcDef);
     void exitFunction();
+    FunctionDefinition* getCurrentFunction() const;
 
     void declareFunction(FuncDeclaration decl);
     const FuncDeclaration* getFunctionDeclaration(const std::string &name) const;
@@ -60,7 +63,7 @@ public:
 private:
     typedef std::vector<VarDeclaration> VariableScope;
     std::vector<VariableScope> _varScope;
-    bool _insideFunction;
+    FunctionDefinition *_currentFunction;
     std::map<std::string, FuncDeclaration> _funcs;
     std::vector<SuperStatement*> _superStack;
 

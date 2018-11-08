@@ -30,6 +30,8 @@ const FuncDeclaration* FunctionDefinition::getDeclaration() const
 
 void FunctionDefinition::execute(vm::ExecutionContext *context, const std::vector<ExpressionValue>& params) const
 {
+    Statement::execute(context);
+
     if (params.size() != _decl.params.size()) {
         Throw(InvalidParameterException, "Function '%s' expected %d params, got %d",
                 _decl.name.c_str(), _decl.params.size(), params.size());
@@ -51,8 +53,8 @@ void FunctionDefinition::execute(vm::ExecutionContext *context, const std::vecto
     // TODO: Declare them fkn variables
 
     context->popFunctionFrame();
-}
 
+}
 
 
 }

@@ -8,7 +8,7 @@ namespace ast
 
 
 DeclarationContext::DeclarationContext():
-    _insideFunction(false)
+    _currentFunction(nullptr)
 {
     _varScope.push_back(VariableScope());
 }
@@ -41,7 +41,7 @@ const VarDeclaration* DeclarationContext::getVariableDeclaration(const std::stri
 
 void DeclarationContext::pushVariableScope()
 {
-    if (!_insideFunction) {
+    if (!_currentFunction) {
         Throw(InvalidDeclarationScope, "Cannot push a variable scope outside a function");
     }
 
@@ -51,7 +51,7 @@ void DeclarationContext::pushVariableScope()
 
 void DeclarationContext::popVariableScope()
 {
-    const int minScopes = 1 + (_insideFunction ? 1 : 0);
+    const int minScopes = 1 + (_currentFunction ? 1 : 0);
     if (_varScope.size() <= minScopes) {
         Throw(InvalidDeclarationScope, "Cannot pop past root scope of context");
     }
@@ -59,19 +59,19 @@ void DeclarationContext::popVariableScope()
     _varScope.pop_back();
 }
 
-void DeclarationContext::enterFunction()
+void DeclarationContext::enterFunction(FunctionDefinition *funcDef)
 {
-    if (_insideFunction) {
+    if (_currentFunction) {
         Throw(InvalidDeclarationScope, "Cannot enter a function while inside a function");
     }
 
-    _insideFunction = true;
+    _currentFunction = funcDef;
     _varScope.push_back(VariableScope());
 }
 
 void DeclarationContext::exitFunction()
 {
-    if (!_insideFunction) {
+    if (!_currentFunction) {
         Throw(InvalidDeclarationScope, "Cannot exit function when not inside a function");
     }
 
@@ -80,7 +80,12 @@ void DeclarationContext::exitFunction()
     }
 
     _varScope.pop_back();
-    _insideFunction = false;
+    _currentFunction = nullptr;
+}
+
+FunctionDefinition* DeclarationContext::getCurrentFunction() const
+{
+    return _currentFunction;
 }
 
 void DeclarationContext::declareFunction(FuncDeclaration func)

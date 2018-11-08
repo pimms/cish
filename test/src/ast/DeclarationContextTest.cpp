@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include "ast/DeclarationContext.h"
+#include "ast/FunctionDefinition.h"
 
 
 using namespace cish::ast;
@@ -32,8 +33,10 @@ TEST(DeclarationContextTest, declaringAlreadyDeclaredVariableThrows)
 
 TEST(DeclarationContextTest, shadowingAllowedInNewScopes)
 {
+
     DeclarationContext context;
-    context.enterFunction();
+    FunctionDefinition func(&context, FuncDeclaration{TypeDecl::INT, "foo"});
+    context.enterFunction(&func);
 
     // At first it's an int
     context.declareVariable(TypeDecl::INT, "var");
@@ -106,16 +109,20 @@ TEST(DeclarationContextTest, redeclarationWithDifferentSignatureThrows)
 TEST(DeclarationContextTest, canOnlyBeInOneFunctionScope)
 {
     DeclarationContext context;
-    ASSERT_NO_THROW(context.enterFunction());
-    ASSERT_THROW(context.enterFunction(), InvalidDeclarationScope);
+    FunctionDefinition func(&context, FuncDeclaration{TypeDecl::INT, "foo"});
+
+    ASSERT_NO_THROW(context.enterFunction(&func));
+    ASSERT_THROW(context.enterFunction(&func), InvalidDeclarationScope);
 }
 
 TEST(DeclarationContextTest, excessiveFunctionPoppingThrows)
 {
     DeclarationContext context;
+    FunctionDefinition func(&context, FuncDeclaration{TypeDecl::INT, "foo"});
+
     ASSERT_THROW(context.exitFunction(), InvalidDeclarationScope);
 
-    ASSERT_NO_THROW(context.enterFunction());
+    ASSERT_NO_THROW(context.enterFunction(&func));
     ASSERT_NO_THROW(context.exitFunction());
 
     ASSERT_THROW(context.exitFunction(), InvalidDeclarationScope);
@@ -126,7 +133,8 @@ TEST(DeclarationContextTest, globalVariablesAreDeclaredInFunctions)
     DeclarationContext context;
     context.declareVariable(TypeDecl::INT, "global");
 
-    context.enterFunction();
+    FunctionDefinition func(&context, FuncDeclaration{TypeDecl::INT, "foo"});
+    context.enterFunction(&func);
     ASSERT_NE(nullptr, context.getVariableDeclaration("global"));
 }
 
@@ -139,7 +147,8 @@ TEST(DeclarationContextTest, varScopesAreNotGloballyAvailable)
 TEST(DeclarationContextTest, varScopesMustBeBalancedWithinFunction)
 {
     DeclarationContext context;
-    context.enterFunction();
+    FunctionDefinition func(&context, FuncDeclaration{TypeDecl::INT, "foo"});
+    context.enterFunction(&func);
     context.pushVariableScope();
     context.pushVariableScope();
     context.popVariableScope();
@@ -153,7 +162,8 @@ TEST(DeclarationContextTest, functionRootVariablesAreNotGloballyDeclared)
 {
     DeclarationContext context;
 
-    context.enterFunction();
+    FunctionDefinition func(&context, FuncDeclaration{TypeDecl::INT, "foo"});
+    context.enterFunction(&func);
     context.declareVariable(TypeDecl::INT, "var");
     ASSERT_NE(nullptr, context.getVariableDeclaration("var"));
     context.exitFunction();

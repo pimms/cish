@@ -20,8 +20,8 @@ ExecutionContext::ExecutionContext(Memory *memory):
 ExecutionContext::~ExecutionContext()
 {
     for (FunctionFrame &functionFrame: _frameStack) {
-        for (Scope *frame: functionFrame) {
-            delete frame;
+        for (Scope *scope: functionFrame.scopes) {
+            delete scope;
         }
     }
 
@@ -35,8 +35,8 @@ void ExecutionContext::pushScope()
         Throw(Exception, "Cannot push a scope without a function frame");
     }
 
-    Scope *frame = new Scope(getScope());
-    _frameStack.back().push_back(frame);
+    Scope *scope = new Scope(getScope());
+    _frameStack.back().scopes.push_back(scope);
 }
 
 void ExecutionContext::popScope()
@@ -45,12 +45,12 @@ void ExecutionContext::popScope()
         Throw(Exception, "Cannot push a scope without a function frame");
     }
 
-    if (_frameStack.back().size() == 1) {
+    if (_frameStack.back().scopes.size() == 1) {
         Throw(StackUnderflowException, "Cannot pop the root scope");
     }
 
-    delete _frameStack.back().back();
-    _frameStack.back().pop_back();
+    delete _frameStack.back().scopes.back();
+    _frameStack.back().scopes.pop_back();
 }
 
 void ExecutionContext::pushFunctionFrame()
@@ -60,7 +60,7 @@ void ExecutionContext::pushFunctionFrame()
     }
 
     Scope *scope = new Scope(_globalScope);
-    _frameStack.push_back(FunctionFrame { scope });
+    _frameStack.push_back(FunctionFrame { {scope} });
 }
 
 void ExecutionContext::popFunctionFrame()
@@ -69,11 +69,11 @@ void ExecutionContext::popFunctionFrame()
         Throw(StackUnderflowException, "No function frame to pop");
     }
 
-    if (_frameStack.back().size() != 1) {
+    if (_frameStack.back().scopes.size() != 1) {
         Throw(Exception, "Illegal operation - cannot pop function frame without popping all scopes first");
     }
 
-    delete _frameStack.back()[0];
+    delete _frameStack.back().scopes[0];
     _frameStack.pop_back();
 }
 
@@ -82,7 +82,7 @@ Scope* ExecutionContext::getScope() const
     if (_frameStack.empty())
         return _globalScope;
 
-    return _frameStack.back().back();
+    return _frameStack.back().scopes.back();
 }
 
 Memory* ExecutionContext::getMemory() const

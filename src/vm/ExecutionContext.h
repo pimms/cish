@@ -47,7 +47,10 @@ public:
     virtual const ast::FunctionDefinition* getFunctionDefinition(const std::string &funcName) const;
 
 private:
-    typedef std::vector<Scope*> FunctionFrame;
+    struct FunctionFrame
+    {
+        std::vector<Scope*> scopes;
+    };
     Scope *_globalScope;
     std::vector<FunctionFrame> _frameStack;
 

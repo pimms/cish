@@ -355,7 +355,7 @@ public:
         // and variable declaration in a very specific order, and this is the best - if somewhat
         // awkward - place to do that.
         FunctionDefinition *funcDef = new FunctionDefinition(&_declContext, funcDecl);
-        _declContext.enterFunction();
+        _declContext.enterFunction(funcDef);
         for (const VarDeclaration &varDecl: params) {
             _declContext.declareVariable(varDecl.type, varDecl.name);
         }

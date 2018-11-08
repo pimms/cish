@@ -18,6 +18,7 @@ DECLARE_EXCEPTION(VariableNotDeclaredException);
 DECLARE_EXCEPTION(VariableNotDefinedException);
 DECLARE_EXCEPTION(InvalidTypeException);
 DECLARE_EXCEPTION(InvalidCastException);
+DECLARE_EXCEPTION(InvalidStatementException);
 
 
 class AstNode {
