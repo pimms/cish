@@ -49,8 +49,8 @@ returnStatement
     ;
 
 ifStatement
-    : 'if' '(' expression ')' '{' statement* '}'
-    | 'if' '(' expression ')' statement
+    : 'if' '(' expression ')' '{' statement* '}' elseStatement?
+    | 'if' '(' expression ')' statement elseStatement?
     ;
 elseStatement
     : 'else' '{' statement* '}'

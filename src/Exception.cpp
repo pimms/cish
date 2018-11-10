@@ -8,7 +8,7 @@ static void findAndReplaceAll(std::string & data, std::string toSearch, std::str
 	size_t pos = data.find(toSearch);
 	while(pos != std::string::npos) {
 		data.replace(pos, toSearch.size(), replaceStr);
-		pos =data.find(toSearch, pos + toSearch.size());
+		pos = data.find(toSearch, pos + toSearch.size());
 	}
 }
 

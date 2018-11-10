@@ -17,6 +17,7 @@
 #include "FunctionCallStatement.h"
 #include "ReturnStatement.h"
 #include "IfStatement.h"
+#include "ElseStatement.h"
 
 #include <cassert>
 
@@ -306,9 +307,17 @@ public:
 
     virtual antlrcpp::Any visitIfStatement(CMParser::IfStatementContext *ctx) override
     {
+        // Parse the else-branch first
+        ElseStatement *elseStatement = nullptr;
+        if (ctx->elseStatement() != nullptr) {
+            Result res = visitElseStatement(ctx->elseStatement()).as<Result>();
+            assert(res.size() == 1);
+            assert(dynamic_cast<ElseStatement*>(res[0]) != nullptr);
+            elseStatement = (ElseStatement*)res[0];
+        }
 
         Expression *expr = manuallyVisitExpression(ctx->expression());
-        IfStatement *ifStatement = new IfStatement(expr);
+        IfStatement *ifStatement = new IfStatement(expr, elseStatement);
 
         _declContext.pushVariableScope();
 
@@ -324,7 +333,17 @@ public:
 
     virtual antlrcpp::Any visitElseStatement(CMParser::ElseStatementContext *ctx) override
     {
-        Throw(AstNodeNotImplementedException, "Node of type 'ElseStatement' is not yet supported as an AST-node!");
+        ElseStatement *elseStatement = new ElseStatement();
+        _declContext.pushVariableScope();
+
+        std::vector<Statement*> statements;
+        for (CMParser::StatementContext *stmtContext: ctx->statement()) {
+            Statement *statement = manuallyVisitStatement(stmtContext);
+            elseStatement->addStatement(statement);
+        }
+
+        _declContext.popVariableScope();
+        return createResult(elseStatement);
     }
 
     virtual antlrcpp::Any visitAssignment(CMParser::AssignmentContext *ctx) override

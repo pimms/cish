@@ -145,6 +145,56 @@ TEST(SipmleProgramsTest, quiteABitOfIfLogic)
     assertExitCode(source, 10);
 }
 
+TEST(SimpleProgramsTest, basicElseBranch)
+{
+    const std::string source =
+        "int getFiveOrTen(bool getFive) {"
+        "   if (getFive) {"
+        "       return 5;"
+        "   } else {"
+        "       return 10;"
+        "   }"
+        "}"
+        "int main() {"
+        "   return getFiveOrTen(true) + getFiveOrTen(false);"
+        "}";
+    assertExitCode(source, 15);
+}
+
+TEST(SimpleProgramsTest, ifElseBranch)
+{
+    const std::string source =
+        "int main()"
+        "{"
+        "    int a = 3;"
+        "    if (a == 1) {"
+        "        return 0;"
+        "    } else if (a == 2) {"
+        "        return 0;"
+        "    } else if (a == 3) {"
+        "        return 3;"
+        "    } else {"
+        "        return 5;"
+        "    }"
+        "}";
+    assertExitCode(source, 3);
+}
+
+TEST(SimpleProgramsTest, nestedIf) {
+    const std::string source =
+        "int main() {"
+        "    int a = 3;"
+        "    if (a == 3) {"
+        "        if (a == 3)"
+        "            if (a == 0) {"
+        "                return 0;"
+        "            } else return 1;"
+        "    }"
+        "    return 0;"
+        "}";
+    assertExitCode(source, 1);
+}
+
 
 /* COMPILATION FAILURES */
 
