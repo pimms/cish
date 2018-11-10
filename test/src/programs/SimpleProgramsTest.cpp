@@ -8,6 +8,7 @@
 #include <gtest/gtest.h>
 
 #include "../TestHelpers.h"
+#include "vm/VirtualMachine.h"
 
 using namespace cish::vm;
 using namespace cish::ast;
@@ -193,6 +194,64 @@ TEST(SimpleProgramsTest, nestedIf) {
         "    return 0;"
         "}";
     assertExitCode(source, 1);
+}
+
+TEST(SimpleProgramsTest, simpleForCounter)
+{
+    const std::string source =
+        "void foo() {}"
+        "int main()"
+        "{"
+        "    int var = 0;"
+        "    for (int i=0; i<10; i=i+1)"
+        "        var = var + 1;"
+        "    return var;"
+        "}";
+    assertExitCode(source, 10);
+}
+
+TEST(SimpleProgramsTest, forLoopOnlyWithConditional)
+{
+    const std::string source =
+        "int global = 10;"
+        "bool foo() { global = global - 1; return global >= 0; }"
+        "int main() {"
+        "    int n = 0;"
+        "    for (; foo();)"
+        "        n = n + 1;"
+        "    return n;"
+        "}";
+    assertExitCode(source, 10);
+}
+
+TEST(SimpleProgramsTest, infiniteForLoop)
+{
+    // We're not REALLY able to verify this, but we know for certain
+    // that if the VM survives 200 statement-iterations, that we've
+    // not returned... :)
+    const std::string source = "int main() { for (;;); }";
+    VmPtr vm = createVm(source);
+
+    for (int i=0; i<200; i++) {
+        ASSERT_TRUE(vm->isRunning());
+        vm->executeNextStatement();
+    }
+    ASSERT_TRUE(vm->isRunning());
+}
+
+TEST(SimpleProgramsTest, nestedLoops)
+{
+    const std::string source =
+        "int main() {"
+        "    int n = 0;"
+        "    for (int i=0; i<5; i=i+1) {"
+        "        for (int j=0; j<5; j=j+1) {"
+        "            n = n+1;"
+        "        }"
+        "    }"
+        "   return n;"
+        "}";
+    assertExitCode(source, 25);
 }
 
 

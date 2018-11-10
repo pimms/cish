@@ -47,6 +47,11 @@ bool AntlrContext::hasErrors() const
     return _errors.size() != 0;
 }
 
+std::vector<CompilationError> AntlrContext::getErrors() const
+{
+    return _errors;
+}
+
 antlr4::tree::ParseTree* AntlrContext::getParseTree() const
 {
     if (hasErrors()) {
@@ -64,7 +69,7 @@ void AntlrContext::syntaxError(antlr4::Recognizer *recognizer,
                                const std::string &msg,
                                std::exception_ptr e)
 {
-    Error err;
+    CompilationError err;
     err.lineNumber = line;
     err.charNumber = charPositionInLine;
     err.message = msg;

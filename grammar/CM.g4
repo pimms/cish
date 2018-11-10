@@ -11,7 +11,7 @@ rootBlock
 rootItem
     : functionDefinition
     | functionDeclaration
-    | variableDeclaration
+    | variableDeclaration ';'
     ;
 
 
@@ -33,9 +33,9 @@ expr
 
 statement
     : ifStatement
-    | assignment
+    | assignment ';'
     | functionCallStatement
-    | variableDeclaration
+    | variableDeclaration ';'
     | returnStatement
     | forStatement
     | ';'
@@ -73,13 +73,12 @@ forIterator
     ;
 
 
-
 assignment
-    : identifier '=' expression ';'
+    : identifier '=' expression
     ;
 
 variableDeclaration
-    : typeIdentifier identifier ('=' expression)? ';'
+    : typeIdentifier identifier ('=' expression)?
     ;
 
 functionDeclaration

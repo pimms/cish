@@ -47,5 +47,13 @@ public:
 };
 
 
+
+class NoOpStatement: public Statement
+{
+public:
+    virtual void execute(vm::ExecutionContext*) const override;
+};
+
+
 }
 }

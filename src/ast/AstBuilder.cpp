@@ -18,6 +18,7 @@
 #include "ReturnStatement.h"
 #include "IfStatement.h"
 #include "ElseStatement.h"
+#include "ForLoopStatement.h"
 
 #include <cassert>
 
@@ -58,6 +59,9 @@ class TreeConverter: public CMBaseVisitor
 
     Statement* manuallyVisitStatement(CMParser::StatementContext *ctx)
     {
+        if (ctx->getText() == ";")
+            return new NoOpStatement();
+
         antlrcpp::Any any = visitStatement(ctx);
         assert(any.isNotNull());
 
@@ -346,6 +350,66 @@ public:
         return createResult(elseStatement);
     }
 
+    virtual antlrcpp::Any visitForStatement(CMParser::ForStatementContext *ctx) override {
+        Statement *initializer = nullptr;
+        Expression *condition = nullptr;
+        Statement *iterator = nullptr;
+
+        _declContext.pushVariableScope();
+
+        if (ctx->forInitializer())
+            initializer = manuallyVisitForInitializer(ctx->forInitializer());
+        if (ctx->expression())
+            condition = manuallyVisitExpression(ctx->expression());
+        if (ctx->forIterator())
+            iterator = manuallyVisitForIterator(ctx->forIterator());
+
+        ForLoopStatement *forLoop = new ForLoopStatement(initializer, condition, iterator);
+
+        std::vector<Statement*> statements;
+        for (CMParser::StatementContext *stmtContext: ctx->statement()) {
+            Statement *statement = manuallyVisitStatement(stmtContext);
+            forLoop->addStatement(statement);
+        }
+
+        _declContext.popVariableScope();
+        return createResult(forLoop);
+    }
+
+    Statement* manuallyVisitForInitializer(CMParser::ForInitializerContext *ctx) {
+        Result res;
+        if (ctx->assignment()) {
+            res = visitAssignment(ctx->assignment()).as<Result>();
+        } else if (ctx->variableDeclaration()) {
+            res = visitVariableDeclaration(ctx->variableDeclaration()).as<Result>();
+        } else {
+            Throw(Exception, "Unsupported initialization in for-loop");
+        }
+
+        assert(res.size() == 1);
+        assert(dynamic_cast<Statement*>(res[0]) != nullptr);
+        return (Statement*)res[0];
+    }
+
+    Statement* manuallyVisitForIterator(CMParser::ForIteratorContext *ctx) {
+        Result res;
+        if (ctx->assignment()) {
+            res = visitAssignment(ctx->assignment()).as<Result>();
+            assert(res.size() == 1);
+            assert(dynamic_cast<Statement*>(res[0]) != nullptr);
+            return (Statement*)res[0];
+        } else if (ctx->functionCall()) {
+            res = visitFunctionCall(ctx->functionCall()).as<Result>();
+            assert(res.size() == 1);
+            assert(dynamic_cast<FunctionCallExpression*>(res[0]) != nullptr);
+            auto expr = (FunctionCallExpression*)res[0];
+            return new FunctionCallStatement(expr);
+        } else {
+            Throw(Exception, "Unsupported initialization in for-loop");
+        }
+    }
+
+
     virtual antlrcpp::Any visitAssignment(CMParser::AssignmentContext *ctx) override
     {
         const std::string varName = ctx->identifier()->Identifier()->getText();
@@ -501,6 +565,17 @@ AstBuilder::AstBuilder(const AntlrContext *antlrContext):
 
 Ast::Ptr AstBuilder::buildAst()
 {
+    // TODO: Propagate these errors out of here in a more reasonable way
+    if (_antlrContext->hasErrors()) {
+        std::vector<ast::CompilationError> errors = _antlrContext->getErrors();
+        for (auto err: errors) {
+            printf("Syntax error on line %d (%d): %s\n",
+                err.lineNumber, err.charNumber, err.message.c_str());
+        }
+
+        Throw(SyntaxErrorException, "There are syntax errors");
+    }
+
     internal::TreeConverter converter;
     Ast::Ptr ast = converter.convertTree(_antlrContext);
     return std::move(ast);

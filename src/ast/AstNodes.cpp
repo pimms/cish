@@ -15,5 +15,12 @@ void Statement::execute(vm::ExecutionContext *context) const
 }
 
 
+
+void NoOpStatement::execute(vm::ExecutionContext *context) const
+{
+	Statement::execute(context);
+}
+
+
 }
 }

@@ -15,23 +15,26 @@ namespace ast
 
 DECLARE_EXCEPTION(SyntaxErrorException);
 
+
+struct CompilationError
+{
+    std::string message;
+    int lineNumber;
+    int charNumber;
+};
+
+
 class AntlrContext: private antlr4::ANTLRErrorListener
 {
 public:
-    struct Error
-    {
-        std::string message;
-        int lineNumber;
-        int charNumber;
-    };
 
     AntlrContext(const std::string &source);
     ~AntlrContext();
 
     bool hasErrors() const;
+    std::vector<CompilationError> getErrors() const;
 
     antlr4::tree::ParseTree* getParseTree() const;
-    std::vector<Error> getErrors() const;
 
 private:
     antlr4::ANTLRInputStream *_inputStream;
@@ -40,7 +43,7 @@ private:
     CMParser *_parser;
     antlr4::tree::ParseTree *_tree;
 
-    std::vector<Error> _errors;
+    std::vector<CompilationError> _errors;
 
 
     virtual void syntaxError(antlr4::Recognizer *recognizer,
