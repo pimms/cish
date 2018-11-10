@@ -8,6 +8,10 @@ namespace cish
 namespace ast
 {
 
+
+DECLARE_EXCEPTION(FunctionNotDefinedException);
+
+
 class AntlrContext;
 
 class AstBuilder

@@ -85,6 +85,25 @@ TEST(SimpleProgramsTest, changingAndReturningAParameter)
     assertExitCode(source, 14);
 }
 
+TEST(SimpleProgramsTest, multipleDeclarationsWithDefinitionAfterCall)
+{
+    const std::string source =
+        "int foo(); "
+        "int foo(); "
+        "int main() { return foo(); } "
+        "int foo() { return 2; } ";
+    assertExitCode(source, 2);
+}
+
+TEST(SimpleProgramsTest, renamingParametersInFuncDef)
+{
+    const std::string source =
+        "int foo(int a); "
+        "int main() { return foo(5); } "
+        "int foo(int b) { return b; } ";
+    assertExitCode(source, 5);
+}
+
 
 /* COMPILATION FAILURES */
 
@@ -116,3 +135,48 @@ TEST(SimpleProgramsTest, cannotReturnWithoutValueFromNonVoidFunction)
     );
 }
 
+TEST(SimpleProgramsTest, declaredFunctionsMustBeDefined)
+{
+    assertCompilationFailure(
+        "void foo();"
+        "int main() {return 0;} "
+    );
+}
+
+TEST(SimpleProgramsTest, redeclarationWithDifferentSignatureIllegal)
+{
+    assertCompilationFailure(
+        "void foo(); "
+        "int foo(); "
+        "void main() {}"
+    );
+    assertCompilationFailure(
+        "void foo(); "
+        "void foo(int a); "
+        "void main() {}"
+    );
+    assertCompilationFailure(
+        "void foo(int a); "
+        "void foo(float a); "
+        "void main() {}"
+    );
+}
+
+TEST(SimpleProgramsTest, definitionWithDifferentSignatureIllegal)
+{
+    assertCompilationFailure(
+        "void foo(); "
+        "int foo() { return 0; } "
+        "void main() {}"
+    );
+    assertCompilationFailure(
+        "void foo(); "
+        "void foo(int a) {} "
+        "void main() {}"
+    );
+    assertCompilationFailure(
+        "void foo(int a); "
+        "void foo(float a) {} "
+        "void main() {}"
+    );
+}

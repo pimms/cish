@@ -35,6 +35,7 @@ class TreeConverter: public CMBaseVisitor
 {
     typedef std::vector<AstNode*> Result;
     DeclarationContext _declContext;
+    std::vector<FuncDeclaration> _funcDecls;
 
     Result createResult(AstNode *node)
     {
@@ -96,11 +97,24 @@ class TreeConverter: public CMBaseVisitor
         return decl;
     }
 
+    void verifyAllFunctionsDefined(Ast *ast)
+    {
+        for (FuncDeclaration decl: _funcDecls) {
+            if (ast->getFunctionDefinition(decl.name) == nullptr) {
+                Throw(FunctionNotDefinedException, "Function '%s' was declared but never defined",
+                        decl.name.c_str());
+            }
+        }
+    }
+
 public:
     Ast::Ptr convertTree(const AntlrContext *antlrContext)
     {
         antlr4::tree::ParseTree *tree = antlrContext->getParseTree();
         Ast *ast = visit(tree);
+
+        verifyAllFunctionsDefined(ast);
+
         return Ast::Ptr(ast);
     }
 
@@ -343,6 +357,8 @@ public:
         funcDecl.returnType = TypeDecl::getFromString(typeName);
         funcDecl.name = funcName;
         funcDecl.params = params;
+
+        _funcDecls.push_back(funcDecl);
 
         return createResult(new FunctionDeclarationStatement(&_declContext, funcDecl));
     }
