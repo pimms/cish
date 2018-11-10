@@ -1,4 +1,5 @@
 #include "FunctionCallStatement.h"
+#include "../vm/ExecutionContext.h"
 
 
 namespace cish
@@ -15,6 +16,9 @@ FunctionCallStatement::FunctionCallStatement(FunctionCallExpression *expr):
 
 void FunctionCallStatement::execute(vm::ExecutionContext *context) const
 {
+    if (context->currentFunctionHasReturned())
+        return;
+
     Statement::execute(context);
     _expr->evaluate(context);
 }

@@ -1,4 +1,5 @@
 #include "FunctionDeclarationStatement.h"
+#include "../vm/ExecutionContext.h"
 
 namespace cish
 {
@@ -15,8 +16,8 @@ FunctionDeclarationStatement::FunctionDeclarationStatement(DeclarationContext *c
 
 void FunctionDeclarationStatement::execute(vm::ExecutionContext *context) const
 {
-    Statement::execute(context);
-    // Nothing to do, lol
+    if (context->currentFunctionHasReturned())
+        return;
 }
 
 

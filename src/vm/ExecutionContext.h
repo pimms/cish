@@ -8,6 +8,8 @@
 
 #include "../Exception.h"
 
+#include "../ast/ExpressionValue.h"
+
 
 namespace cish
 {
@@ -39,6 +41,9 @@ public:
 
     void pushFunctionFrame();
     void popFunctionFrame();
+    void returnCurrentFunction(ast::ExpressionValue retval);
+    bool currentFunctionHasReturned() const;
+    ast::ExpressionValue getCurrentFunctionReturnValue() const;
 
     Scope* getScope() const;
     Memory* getMemory() const;
@@ -50,7 +55,10 @@ private:
     struct FunctionFrame
     {
         std::vector<Scope*> scopes;
+        bool hasReturned;
+        ast::ExpressionValue returnValue;
     };
+
     Scope *_globalScope;
     std::vector<FunctionFrame> _frameStack;
 

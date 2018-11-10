@@ -19,7 +19,7 @@ public:
 
     const FuncDeclaration* getDeclaration() const;
 
-    void execute(vm::ExecutionContext *context, const std::vector<ExpressionValue>& params) const;
+    ExpressionValue execute(vm::ExecutionContext *context, const std::vector<ExpressionValue>& params) const;
 
     bool hasReturned() const;
     ExpressionValue getReturnValue() const;

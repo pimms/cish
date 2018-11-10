@@ -101,3 +101,84 @@ TEST(ExecutionContextTest, functionFramesHidesNonGlobalScopes)
 }
 
 
+TEST(ExecutionContextTest, returningIsAllowedExactlyOncePerFunctionScope)
+{
+    Memory memory(100, 1);
+    ExecutionContext context(&memory);
+
+    ASSERT_ANY_THROW(context.returnCurrentFunction(ExpressionValue(0)));
+
+    context.pushFunctionFrame();
+    ASSERT_NO_THROW(context.returnCurrentFunction(ExpressionValue(0)));
+    ASSERT_ANY_THROW(context.returnCurrentFunction(ExpressionValue(0)));
+}
+
+TEST(ExecutionContextTest, outsideFunctionCurrentFunctionHasNotReturned)
+{
+    Memory memory(100, 1);
+    ExecutionContext context(&memory);
+    ASSERT_NO_THROW(context.currentFunctionHasReturned());
+}
+
+TEST(ExecutionContextTest, functionIsCorrectlyFlaggedAsReturned)
+{
+    Memory memory(100, 1);
+    ExecutionContext context(&memory);
+
+    ASSERT_ANY_THROW(context.returnCurrentFunction(ExpressionValue(0)));
+
+        context.pushFunctionFrame();
+        ASSERT_FALSE(context.currentFunctionHasReturned());
+
+            context.pushFunctionFrame();
+            ASSERT_FALSE(context.currentFunctionHasReturned());
+
+            context.returnCurrentFunction(ExpressionValue(0));
+            ASSERT_TRUE(context.currentFunctionHasReturned());
+
+            context.popFunctionFrame();
+
+        ASSERT_FALSE(context.currentFunctionHasReturned());
+
+        context.returnCurrentFunction(ExpressionValue(0));
+        ASSERT_TRUE(context.currentFunctionHasReturned());
+
+        context.popFunctionFrame();
+}
+
+
+TEST(ExecutionContextTest, functionReturnValueIsAvailableBeforePop)
+{
+    Memory memory(100, 1);
+    ExecutionContext context(&memory);
+
+        context.pushFunctionFrame();
+        ASSERT_FALSE(context.currentFunctionHasReturned());
+
+            context.pushFunctionFrame();
+            context.returnCurrentFunction(ExpressionValue(2));
+            ASSERT_EQ(2, context.getCurrentFunctionReturnValue().get<int>());
+            context.popFunctionFrame();
+
+        context.returnCurrentFunction(ExpressionValue(1));
+        ASSERT_EQ(1, context.getCurrentFunctionReturnValue().get<int>());
+
+        context.popFunctionFrame();
+}
+
+TEST(ExecutionContextTest, functionReturnValueThrowsIfNotInFunction)
+{
+    Memory memory(100, 1);
+    ExecutionContext context(&memory);
+
+    ASSERT_ANY_THROW(context.getCurrentFunctionReturnValue());
+}
+
+TEST(ExecutionContextTest, functionReturnValueDefaultsToZeroIfUndefined)
+{
+    Memory memory(100, 1);
+    ExecutionContext context(&memory);
+
+    context.pushFunctionFrame();
+    ASSERT_EQ(0, context.getCurrentFunctionReturnValue().get<int>());
+}

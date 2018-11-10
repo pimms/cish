@@ -2,6 +2,8 @@
 
 #include "AstNodes.h"
 
+#include "../vm/ExecutionContext.h"
+
 
 namespace cish
 {
@@ -33,6 +35,9 @@ void SuperStatement::addStatement(Statement *statement)
 
 void SuperStatement::execute(vm::ExecutionContext *context) const
 {
+    if (context->currentFunctionHasReturned())
+        return;
+
     Statement::execute(context);
     for (Statement *statement: _statements) {
         statement->execute(context);

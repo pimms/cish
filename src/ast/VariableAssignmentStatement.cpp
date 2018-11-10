@@ -41,6 +41,9 @@ VariableAssignmentStatement::~VariableAssignmentStatement()
 
 void VariableAssignmentStatement::execute(vm::ExecutionContext *context) const
 {
+    if (context->currentFunctionHasReturned())
+        return;
+
     Statement::execute(context);
     executeAssignment(context);
 }
@@ -48,6 +51,9 @@ void VariableAssignmentStatement::execute(vm::ExecutionContext *context) const
 
 void VariableAssignmentStatement::executeAssignment(vm::ExecutionContext *context) const
 {
+    if (context->currentFunctionHasReturned())
+        return;
+
     vm::Variable *var = context->getScope()->getVariable(_varName);
     if (var == nullptr) {
         Throw(VariableNotDefinedException, "Variable '%s' not defined", _varName.c_str());

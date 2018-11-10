@@ -60,7 +60,7 @@ void ExecutionContext::pushFunctionFrame()
     }
 
     Scope *scope = new Scope(_globalScope);
-    _frameStack.push_back(FunctionFrame { {scope} });
+    _frameStack.push_back(FunctionFrame { {scope}, false, ast::ExpressionValue(0) });
 }
 
 void ExecutionContext::popFunctionFrame()
@@ -75,6 +75,36 @@ void ExecutionContext::popFunctionFrame()
 
     delete _frameStack.back().scopes[0];
     _frameStack.pop_back();
+}
+
+void ExecutionContext::returnCurrentFunction(ast::ExpressionValue retval)
+{
+    if (_frameStack.empty())
+        Throw(Exception, "Cannot return from outside a function");
+    if (_frameStack.back().hasReturned)
+        Throw(Exception, "Current function has already returned");
+
+    _frameStack.back().hasReturned = true;
+    _frameStack.back().returnValue = retval;
+}
+
+bool ExecutionContext::currentFunctionHasReturned() const
+{
+    // Keep in mind that this method will get called by ALL statements, including
+    // those in the global scope - as such, we need to inform them gently that
+    // the current function - albeit undefined - has NOT returned.
+    if (_frameStack.empty())
+        return false;
+
+    return _frameStack.back().hasReturned;
+}
+
+ast::ExpressionValue ExecutionContext::getCurrentFunctionReturnValue() const
+{
+    if (_frameStack.empty())
+        Throw(Exception, "No return value available");
+
+    return _frameStack.back().returnValue;
 }
 
 Scope* ExecutionContext::getScope() const

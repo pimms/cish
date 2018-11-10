@@ -36,6 +36,9 @@ VariableDeclarationStatement::~VariableDeclarationStatement()
 
 void VariableDeclarationStatement::execute(vm::ExecutionContext *context) const
 {
+    if (context->currentFunctionHasReturned())
+        return;
+
     Statement::execute(context);
 
     vm::Allocation::Ptr alloc = context->getMemory()->allocate(_type.getSize());
