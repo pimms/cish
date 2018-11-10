@@ -239,7 +239,7 @@ TEST(SimpleProgramsTest, infiniteForLoop)
     ASSERT_TRUE(vm->isRunning());
 }
 
-TEST(SimpleProgramsTest, nestedLoops)
+TEST(SimpleProgramsTest, nestedForLoops)
 {
     const std::string source =
         "int main() {"
