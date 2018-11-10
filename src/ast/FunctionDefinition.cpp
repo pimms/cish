@@ -54,6 +54,7 @@ ExpressionValue FunctionDefinition::execute(vm::ExecutionContext *context, const
         scope->addVariable(varName, var);
     }
 
+    Statement::execute(context);
     SuperStatement::execute(context);
     ExpressionValue retVal = context->getCurrentFunctionReturnValue();
     context->popFunctionFrame();

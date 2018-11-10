@@ -16,6 +16,7 @@
 #include "FunctionDefinition.h"
 #include "FunctionCallStatement.h"
 #include "ReturnStatement.h"
+#include "IfStatement.h"
 
 #include <cassert>
 
@@ -305,7 +306,20 @@ public:
 
     virtual antlrcpp::Any visitIfStatement(CMParser::IfStatementContext *ctx) override
     {
-        Throw(AstNodeNotImplementedException, "Node of type 'IfStatement' is not yet supported as an AST-node!");
+
+        Expression *expr = manuallyVisitExpression(ctx->expression());
+        IfStatement *ifStatement = new IfStatement(expr);
+
+        _declContext.pushVariableScope();
+
+        std::vector<Statement*> statements;
+        for (CMParser::StatementContext *stmtContext: ctx->statement()) {
+            Statement *statement = manuallyVisitStatement(stmtContext);
+            ifStatement->addStatement(statement);
+        }
+
+        _declContext.popVariableScope();
+        return createResult(ifStatement);
     }
 
     virtual antlrcpp::Any visitElseStatement(CMParser::ElseStatementContext *ctx) override

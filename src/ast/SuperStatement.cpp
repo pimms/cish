@@ -38,7 +38,6 @@ void SuperStatement::execute(vm::ExecutionContext *context) const
     if (context->currentFunctionHasReturned())
         return;
 
-    Statement::execute(context);
     for (Statement *statement: _statements) {
         statement->execute(context);
     }

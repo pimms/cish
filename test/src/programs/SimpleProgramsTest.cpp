@@ -104,6 +104,47 @@ TEST(SimpleProgramsTest, renamingParametersInFuncDef)
     assertExitCode(source, 5);
 }
 
+TEST(SimpleProgramsTest, oneLineIf)
+{
+    const std::string source =
+        "int foo(int n) {"
+        "   if (n >= 5)"
+        "       return 5;"
+        "   return 0;"
+        "}"
+        "int main() {"
+        "   return foo(6) + foo(4);"
+        "}";
+    assertExitCode(source, 5);
+}
+
+TEST(SipmleProgramsTest, quiteABitOfIfLogic)
+{
+    // A whoole lot of nonsense logic
+    const std::string source =
+        "bool greaterThanTen(int n) {"
+        "    if (n > 10) {"
+        "        return true;"
+        "    }"
+        "    return false;"
+        "}"
+        "int fifteen() { return 15; }"
+        "int foo() {"
+        "    int result;"
+        "    int var = 11;"
+        "    if (greaterThanTen(fifteen() + var)) {"
+        "        result = 5;"
+        "        result = result + 5;"
+        "    }"
+        "    if (result > 4) {"
+        "        return result;"
+        "    }"
+        "    return 0;"
+        "}"
+        "int main() { return foo(); }";
+    assertExitCode(source, 10);
+}
+
 
 /* COMPILATION FAILURES */
 
@@ -177,6 +218,18 @@ TEST(SimpleProgramsTest, definitionWithDifferentSignatureIllegal)
     assertCompilationFailure(
         "void foo(int a); "
         "void foo(float a) {} "
+        "void main() {}"
+    );
+}
+
+TEST(SimpleProgramsTest, declarationsInIfBranchUnavailableOutside)
+{
+    assertCompilationFailure(
+        "void foo() { "
+        "   if (1 == 5) { "
+        "       int a = 15; "
+        "   int b = a; "
+        "} "
         "void main() {}"
     );
 }
