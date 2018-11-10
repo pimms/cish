@@ -97,23 +97,27 @@ void ExecutionThread::start()
 
 void ExecutionThread::resume()
 {
-    _orgToWorker.signal([this]() {
-        _nextRequest++;
-        // printf("[O] resume/signaling next request (%d)\n", (int)_nextRequest.load());
-    });
+    if (_isRunning) {
+        _orgToWorker.signal([this]() {
+            _nextRequest++;
+            // printf("[O] resume/signaling next request (%d)\n", (int)_nextRequest.load());
+        });
+    }
 }
 
 void ExecutionThread::cycle()
 {
-    _orgToWorker.signal([this]() {
-        _nextRequest++;
-        // printf("[O] cycle/signaling next request (%d)\n", (int)_nextRequest.load());
-    });
+    if (_isRunning) {
+        _orgToWorker.signal([this]() {
+            _nextRequest++;
+            // printf("[O] cycle/signaling next request (%d)\n", (int)_nextRequest.load());
+        });
 
-    _workerToOrg.wait([this]() {
-        return _lastRequestHandled == _nextRequest;
-    });
-    // printf("[O] cycle/received process ack (%d)\n", (int)_nextRequest.load());
+        _workerToOrg.wait([this]() {
+            return _lastRequestHandled == _nextRequest;
+        });
+        // printf("[O] cycle/received process ack (%d)\n", (int)_nextRequest.load());
+    }
 }
 
 void ExecutionThread::terminate()
@@ -186,6 +190,14 @@ void ExecutionThread::backgroundMain()
 {
     try {
         execute();
+
+        // If we are being called in a synchronous manner, the worker thread
+        // will never send the final ack, so we need to do it manually.
+        _workerToOrg.signal([this]() {
+            _lastRequestHandled.store(_lastRequestReceived);
+        });
+
+        printf("Execution thread exiting normally\n");
     } catch (TerminateSignal tsig) {
         printf("[W] executionthread terminated\n");
     } catch (cish::Exception e) {
@@ -195,6 +207,7 @@ void ExecutionThread::backgroundMain()
     } catch (...) {
         printf("[W] unknown throwable caught\n");
     }
+
 
     _isRunning = false;
 }

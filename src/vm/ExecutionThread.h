@@ -90,7 +90,7 @@ private:
     ContinuationState getContinuationState() const;
     void backgroundMain();
 
-    bool _isRunning;
+    std::atomic_bool _isRunning;
 
     std::thread _thread;
     internal::Signal _orgToWorker;

@@ -36,6 +36,9 @@ public:
 
     void executeNextStatement();
 
+    bool isRunning() const;
+    int getExitCode() const;
+
     /**
      * Termniate the VM. This method will not return until the
      * associated background thread is joined, and will not have

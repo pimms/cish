@@ -8,31 +8,16 @@
 #include "vm/Variable.h"
 #include "vm/ExecutionContext.h"
 
+#include "../TestHelpers.h"
+
 
 using namespace cish::vm;
 using namespace cish::ast;
 
 
-VirtualMachine* createVm(const std::string &source)
-{
-    AntlrContext *antlrContext = new AntlrContext(source);
-    AstBuilder builder(antlrContext);
-    Ast::Ptr ast = builder.buildAst();
-
-    VmOptions opts;
-    opts.heapSize = 512;
-    opts.minAllocSize = 4;
-    return new VirtualMachine(opts, std::move(ast));
-}
-
-Variable* getVar(VirtualMachine *vm, const std::string &name)
-{
-    return vm->getExecutionContext()->getScope()->getVariable(name);
-}
-
 TEST(VirtualMachineTest, globalStatementsAreExecutedOneByOne)
 {
-    VirtualMachine *vm = createVm("int a = 15;  int b = 15 + a; int c; void main(){}");
+    VmPtr vm = createVm("int a = 15;  int b = 15 + a; int c; void main(){}");
     ASSERT_EQ(nullptr, getVar(vm, "a"));
     ASSERT_EQ(nullptr, getVar(vm, "b"));
     ASSERT_EQ(nullptr, getVar(vm, "c"));
@@ -51,13 +36,11 @@ TEST(VirtualMachineTest, globalStatementsAreExecutedOneByOne)
     ASSERT_EQ(15, getVar(vm, "a")->getAllocation()->read<int>());
     ASSERT_EQ(30, getVar(vm, "b")->getAllocation()->read<int>());
     ASSERT_NE(nullptr, getVar(vm, "c"));
-
-    delete vm;
 }
 
 TEST(VirtualMachineTest, executingNextStatementWhenStoppedThrows)
 {
-    VirtualMachine *vm = createVm("int a = 15;  int b = 15 + a; int c; void main(){}");
+    VmPtr vm = createVm("int a = 15;  int b = 15 + a; int c; void main(){}");
     vm->executeNextStatement();
     vm->terminate();
 
@@ -66,7 +49,7 @@ TEST(VirtualMachineTest, executingNextStatementWhenStoppedThrows)
 
 TEST(VirtualMachineTest, terminationIdempotence)
 {
-    VirtualMachine *vm = createVm("int a = 15;  int b = 15 + a; int c; void main(){}");
+    VmPtr vm = createVm("int a = 15;  int b = 15 + a; int c; void main(){}");
     vm->executeNextStatement();
     vm->terminate();
     ASSERT_NO_THROW(vm->terminate());
@@ -74,7 +57,7 @@ TEST(VirtualMachineTest, terminationIdempotence)
 
 TEST(VirtualMachineTest, terminatingVmHaltsExecution)
 {
-    VirtualMachine *vm = createVm("int a = 15;  int b = 15 + a; int c; void main(){}");
+    VmPtr vm = createVm("int a = 15;  int b = 15 + a; int c; void main(){}");
     ASSERT_EQ(nullptr, getVar(vm, "a"));
     ASSERT_EQ(nullptr, getVar(vm, "b"));
     ASSERT_EQ(nullptr, getVar(vm, "c"));
@@ -89,6 +72,52 @@ TEST(VirtualMachineTest, terminatingVmHaltsExecution)
     ASSERT_EQ(15, getVar(vm, "a")->getAllocation()->read<int>());
     ASSERT_EQ(nullptr, getVar(vm, "b"));
     ASSERT_EQ(nullptr, getVar(vm, "c"));
+}
 
-    delete vm;
+
+TEST(VirtualMachineTest, isRunningReturnsFalsePostTermination)
+{
+    VmPtr vm = createVm("int a = 15; void main() {}");
+
+    ASSERT_TRUE(vm->isRunning());
+    vm->executeNextStatement();
+    vm->executeNextStatement();
+    ASSERT_FALSE(vm->isRunning());
+}
+
+TEST(VirtualMachineTest, executingBeyondLastStatementThrows)
+{
+    VmPtr vm = createVm("int a = 15; void main() {}");
+
+    vm->executeNextStatement();
+    vm->executeNextStatement();
+    ASSERT_FALSE(vm->isRunning());
+    ASSERT_THROW(vm->executeNextStatement(), VmException);
+}
+
+TEST(VirtualMachineTest, gettingExitCodeThrowsIfVmIsRunning)
+{
+    VmPtr vm = createVm("void main() {}");
+
+    ASSERT_TRUE(vm->isRunning());
+    ASSERT_ANY_THROW(vm->getExitCode());
+}
+
+TEST(VirtualMachineTest, exitCodeDefaultsToZeroForVoidMain)
+{
+    VmPtr vm = createVm("void main() {}");
+
+    vm->executeNextStatement();
+    ASSERT_FALSE(vm->isRunning());
+    ASSERT_EQ(0, vm->getExitCode());
+}
+
+TEST(VirtualMachineTest, exitCodeReturnedFromMain)
+{
+    VmPtr vm = createVm("int main() { return 15; }");
+
+    vm->executeNextStatement();
+    vm->executeNextStatement();
+    ASSERT_FALSE(vm->isRunning());
+    ASSERT_EQ(15, vm->getExitCode());
 }

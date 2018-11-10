@@ -53,9 +53,7 @@ ExpressionValue FunctionCallExpression::evaluate(vm::ExecutionContext *context) 
         params.push_back(expr->evaluate(context));
     }
 
-    funcDef->execute(context, params);
-
-    Throw(Exception, "NOT IMPLEMENTED - How do we handle return types, lol");
+    return funcDef->execute(context, params);
 }
 
 }

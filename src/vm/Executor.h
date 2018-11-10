@@ -22,12 +22,16 @@ public:
     virtual void yieldOnStatement(const ast::Statement *statement) override;
     virtual const ast::FunctionDefinition* getFunctionDefinition(const std::string &funcName) const override;
 
+    ast::ExpressionValue getExitStatus() const;
+
 protected:
     // From ExecutionThread
     virtual void execute() override;
 
 private:
     ast::Ast::Ptr _ast;
+    ast::ExpressionValue _exitStatus;
+    bool _hasTerminated;
 };
 
 

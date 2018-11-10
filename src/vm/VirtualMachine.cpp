@@ -39,6 +39,16 @@ void VirtualMachine::executeNextStatement()
     _executor->cycle();
 }
 
+bool VirtualMachine::isRunning() const
+{
+    return _executor->isRunning();
+}
+
+int VirtualMachine::getExitCode() const
+{
+    return _executor->getExitStatus().get<int>();
+}
+
 void VirtualMachine::terminate()
 {
     _executor->terminate();

@@ -12,7 +12,9 @@ namespace vm
 
 Executor::Executor(Memory *memory, ast::Ast::Ptr ast):
     ExecutionContext(memory),
-    _ast(std::move(ast))
+    _ast(std::move(ast)),
+    _exitStatus(-1337),
+    _hasTerminated(false)
 {
 
 }
@@ -32,9 +34,18 @@ const ast::FunctionDefinition* Executor::getFunctionDefinition(const std::string
     return _ast->getFunctionDefinition(funcName);
 }
 
+ast::ExpressionValue Executor::getExitStatus() const
+{
+    if (!_hasTerminated) {
+        Throw(Exception, "The executing program has not terminated, exit status unavailable");
+    }
+
+    return _exitStatus;
+}
+
 void Executor::execute()
 {
-    const ast::SuperStatement *main = _ast->getFunctionDefinition("main");
+    const ast::FunctionDefinition *main = _ast->getFunctionDefinition("main");
     if (!main) {
         Throw(NoEntryPointException, "Entrypoint 'main' not found");
     }
@@ -45,7 +56,9 @@ void Executor::execute()
     }
 
     printf("exec main\n");
-    main->execute(this);
+    _exitStatus = main->execute(this, {});
+    printf("main returned\n");
+    _hasTerminated = true;
 }
 
 

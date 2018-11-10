@@ -15,6 +15,7 @@
 #include "FunctionDeclarationStatement.h"
 #include "FunctionDefinition.h"
 #include "FunctionCallStatement.h"
+#include "ReturnStatement.h"
 
 #include <cassert>
 
@@ -279,7 +280,13 @@ public:
 
     virtual antlrcpp::Any visitReturnStatement(CMParser::ReturnStatementContext *ctx) override
     {
-        Throw(AstNodeNotImplementedException, "Node of type 'ReturnStatement' is not yet supported as an AST-node!");
+        Expression *expression = nullptr;
+        if (ctx->expression()) {
+            expression = manuallyVisitExpression(ctx->expression());
+        }
+
+        ReturnStatement *statement = new ReturnStatement(&_declContext, expression);
+        return createResult(statement);
     }
 
     virtual antlrcpp::Any visitIfStatement(CMParser::IfStatementContext *ctx) override
