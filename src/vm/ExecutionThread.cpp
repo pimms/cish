@@ -190,13 +190,6 @@ void ExecutionThread::backgroundMain()
 {
     try {
         execute();
-
-        // If we are being called in a synchronous manner, the worker thread
-        // will never send the final ack, so we need to do it manually.
-        _workerToOrg.signal([this]() {
-            _lastRequestHandled.store(_lastRequestReceived);
-        });
-
         printf("Execution thread exiting normally\n");
     } catch (TerminateSignal tsig) {
         printf("[W] executionthread terminated\n");
@@ -208,6 +201,11 @@ void ExecutionThread::backgroundMain()
         printf("[W] unknown throwable caught\n");
     }
 
+    // If we are being called in a synchronous manner, the worker thread
+    // will never send the final ack, so we need to do it manually.
+    _workerToOrg.signal([this]() {
+        _lastRequestHandled.store(_lastRequestReceived);
+    });
 
     _isRunning = false;
 }

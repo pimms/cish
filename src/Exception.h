@@ -10,6 +10,18 @@
     #define vsprintf_s vsprintf
 #endif
 
+
+
+
+#ifdef DEBUG
+    #define __DBGPRINT_EXCEPTION(_name) \
+        printf("throwing %s at %s:%d (%s): %s\n", \
+                _name, file.c_str(), line, func.c_str(), buffer);
+#else
+    #define __DBGPRINT_EXCEPTION(_name)
+#endif
+
+
 #define DECLARE_EXCEPTION(name)                     \
     class name : ::cish::Exception                   \
     {                                               \
@@ -31,6 +43,7 @@
                 << "Line: " << line << "\n"         \
                 << "What: " << buffer << "\n";      \
             _what = ss.str().c_str();               \
+            __DBGPRINT_EXCEPTION(#name)             \
         }                                           \
                                                     \
         virtual const char* what() const noexcept override \
@@ -42,7 +55,8 @@
         std::string _what;                          \
     };
 
-#define Throw(_TYPE, ...) { throw _TYPE(__FILE__, __FUNCTION__, __LINE__, __VA_ARGS__); }
+#define Throw(_TYPE, ...) \
+    throw _TYPE(__FILE__, __FUNCTION__, __LINE__, __VA_ARGS__);
 
 namespace cish
 {

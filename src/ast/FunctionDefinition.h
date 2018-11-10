@@ -7,6 +7,7 @@
 
 namespace cish
 {
+namespace vm { class Memory; class Variable; }
 namespace ast
 {
 
@@ -25,6 +26,8 @@ public:
     ExpressionValue getReturnValue() const;
 
 private:
+    vm::Variable* convertToVariable(vm::Memory *memory, const ExpressionValue &expr) const;
+
     FuncDeclaration _decl;
 };
 

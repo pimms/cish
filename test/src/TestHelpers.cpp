@@ -1,11 +1,17 @@
 #include "TestHelpers.h"
 
 
-VmPtr createVm(const std::string &source)
+cish::ast::Ast::Ptr createAst(const std::string &source)
 {
     cish::ast::AntlrContext antlrContext(source);
     cish::ast::AstBuilder builder(&antlrContext);
     cish::ast::Ast::Ptr ast = builder.buildAst();
+    return ast;
+}
+
+VmPtr createVm(const std::string &source)
+{
+    cish::ast::Ast::Ptr ast = createAst(source);
 
     cish::vm::VmOptions opts;
     opts.heapSize = 512;

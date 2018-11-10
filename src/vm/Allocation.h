@@ -25,7 +25,6 @@ public:
     virtual void onDeallocation(Allocation *allocation) = 0;
 };
 
-
 class Allocation
 {
 public:

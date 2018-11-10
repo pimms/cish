@@ -3,6 +3,15 @@
 namespace cish
 {
 
+static void findAndReplaceAll(std::string & data, std::string toSearch, std::string replaceStr)
+{
+	size_t pos = data.find(toSearch);
+	while(pos != std::string::npos) {
+		data.replace(pos, toSearch.size(), replaceStr);
+		pos =data.find(toSearch, pos + toSearch.size());
+	}
+}
+
 
 Exception::Exception(std::string file, std::string func, int line, const char *format, ...)
 {
@@ -20,6 +29,11 @@ Exception::Exception(std::string file, std::string func, int line, const char *f
         << "Line: " << line << "\n"
         << "What: " << buffer << "\n";
     _what = ss.str().c_str();
+
+#ifdef DEBUG
+    printf("throwing cish::Exception at %s:%d (%s): %s\n",
+            file.c_str(), line, func.c_str(), buffer);
+#endif
 }
 
 Exception::Exception(): _what("") { }

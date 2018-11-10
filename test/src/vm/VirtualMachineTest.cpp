@@ -103,21 +103,3 @@ TEST(VirtualMachineTest, gettingExitCodeThrowsIfVmIsRunning)
     ASSERT_ANY_THROW(vm->getExitCode());
 }
 
-TEST(VirtualMachineTest, exitCodeDefaultsToZeroForVoidMain)
-{
-    VmPtr vm = createVm("void main() {}");
-
-    vm->executeNextStatement();
-    ASSERT_FALSE(vm->isRunning());
-    ASSERT_EQ(0, vm->getExitCode());
-}
-
-TEST(VirtualMachineTest, exitCodeReturnedFromMain)
-{
-    VmPtr vm = createVm("int main() { return 15; }");
-
-    vm->executeNextStatement();
-    vm->executeNextStatement();
-    ASSERT_FALSE(vm->isRunning());
-    ASSERT_EQ(15, vm->getExitCode());
-}
