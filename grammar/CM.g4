@@ -37,6 +37,7 @@ statement
     | functionCallStatement
     | variableDeclaration
     | returnStatement
+    | forStatement
     | ';'
     ;
 
@@ -56,6 +57,22 @@ elseStatement
     : 'else' '{' statement* '}'
     | 'else' statement
     ;
+
+
+forStatement
+    : 'for' '(' forInitializer? ';' expression? ';' forIterator? ')' '{' statement* '}'
+    | 'for' '(' forInitializer? ';' expression? ';' forIterator? ')' statement
+    ;
+forInitializer
+    : variableDeclaration
+    | assignment
+    ;
+forIterator
+    : assignment
+    | functionCall
+    ;
+
+
 
 assignment
     : identifier '=' expression ';'
