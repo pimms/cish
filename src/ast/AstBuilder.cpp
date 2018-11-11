@@ -19,6 +19,7 @@
 #include "IfStatement.h"
 #include "ElseStatement.h"
 #include "ForLoopStatement.h"
+#include "WhileStatement.h"
 
 #include <cassert>
 
@@ -407,6 +408,39 @@ public:
         } else {
             Throw(Exception, "Unsupported initialization in for-loop");
         }
+    }
+
+
+    virtual antlrcpp::Any visitWhileStatement(CMParser::WhileStatementContext *ctx) override {
+        Expression *condition = manuallyVisitExpression(ctx->expression());
+        _declContext.pushVariableScope();
+
+        WhileStatement *whileStatement = new WhileStatement(condition);
+
+        std::vector<Statement*> statements;
+        for (CMParser::StatementContext *stmtContext: ctx->statement()) {
+            Statement *statement = manuallyVisitStatement(stmtContext);
+            whileStatement->addStatement(statement);
+        }
+
+        _declContext.popVariableScope();
+        return createResult(whileStatement);
+    }
+
+    virtual antlrcpp::Any visitDoWhileStatement(CMParser::DoWhileStatementContext *ctx) override {
+        Expression *condition = manuallyVisitExpression(ctx->expression());
+        _declContext.pushVariableScope();
+
+        DoWhileStatement *doWhileStatement = new DoWhileStatement(condition);
+
+        std::vector<Statement*> statements;
+        for (CMParser::StatementContext *stmtContext: ctx->statement()) {
+            Statement *statement = manuallyVisitStatement(stmtContext);
+            doWhileStatement->addStatement(statement);
+        }
+
+        _declContext.popVariableScope();
+        return createResult(doWhileStatement);
     }
 
 

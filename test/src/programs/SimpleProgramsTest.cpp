@@ -239,7 +239,7 @@ TEST(SimpleProgramsTest, infiniteForLoop)
     ASSERT_TRUE(vm->isRunning());
 }
 
-TEST(SimpleProgramsTest, nestedForLoops)
+TEST(SimpleProgramsTest, nestedLoops)
 {
     const std::string source =
         "int main() {"
@@ -252,6 +252,39 @@ TEST(SimpleProgramsTest, nestedForLoops)
         "   return n;"
         "}";
     assertExitCode(source, 25);
+}
+
+TEST(SimpleProgramsTest, whileLoop)
+{
+    const std::string source =
+        "int main() {"
+        "   int n = 0;"
+        "   while (n < 5) { n = n + 1; }"
+        "   return n;"
+        "}";
+    assertExitCode(source, 5);
+}
+
+TEST(SimpleProgramsTest, doWhileLoop)
+{
+    const std::string source =
+        "int main() {"
+        "    int n = 0;"
+        "    do { n = n + 1; } while (n < 5);"
+        "    return n;"
+        "}";
+    assertExitCode(source, 5);
+}
+
+TEST(SimpleProgramsTest, doWhileLoopOnlyRunOnce)
+{
+    const std::string source =
+        "int main() {"
+        "    int n = 0;"
+        "    do { n = n + 1; } while (false);"
+        "    return n;"
+        "}";
+    assertExitCode(source, 1);
 }
 
 

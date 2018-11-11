@@ -38,6 +38,8 @@ statement
     | variableDeclaration ';'
     | returnStatement
     | forStatement
+    | whileStatement
+    | doWhileStatement
     | ';'
     ;
 
@@ -46,7 +48,7 @@ functionCallStatement
     ;
 
 returnStatement
-    : 'return' expression ';'
+    : 'return' expression? ';'
     ;
 
 ifStatement
@@ -72,9 +74,17 @@ forIterator
     | functionCall
     ;
 
+whileStatement
+    : 'while' '(' expression ')' statement
+    | 'while' '(' expression ')' '{' statement* '}'
+    ;
+doWhileStatement
+    : 'do' '{' statement* '}' 'while' '(' expression ')' ';'
+    ;
+
 
 assignment
-    : identifier '=' expression
+        : identifier '=' expression
     ;
 
 variableDeclaration
