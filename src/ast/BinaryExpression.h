@@ -8,6 +8,8 @@ namespace cish
 namespace ast
 {
 
+DECLARE_EXCEPTION(InvalidOperationException);
+
 
 class BinaryExpression: public Expression
 {
@@ -45,8 +47,12 @@ private:
     Expression *_left;
     Expression *_right;
 
+    void pointerSpecificChecks();
+
     template<typename T>
     ExpressionValue evaluateT(vm::ExecutionContext *ctx) const;
+
+    ExpressionValue evaluatePtrT(vm::ExecutionContext *ctx) const;
 
     template<typename T>
     std::function<T(T,T)> getFunction() const;

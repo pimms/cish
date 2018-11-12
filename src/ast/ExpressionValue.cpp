@@ -51,7 +51,7 @@ ExpressionValue::ExpressionValue()
     memset(&_value, 0, sizeof(_value));
 }
 
-TypeDecl ExpressionValue::getIntrinsicType() const
+const TypeDecl& ExpressionValue::getIntrinsicType() const
 {
     return _type;
 }

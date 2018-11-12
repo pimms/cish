@@ -27,7 +27,7 @@ public:
     ExpressionValue(int intValue);
     ExpressionValue(float floatValue);
 
-    TypeDecl getIntrinsicType() const;
+    const TypeDecl& getIntrinsicType() const;
 
     template<typename T>
     T get() const;

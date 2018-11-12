@@ -30,11 +30,60 @@ TypeDecl TypeDecl::getFromString(const std::string &str)
     return TypeDecl(map.at(str));
 }
 
-TypeDecl::TypeDecl(): _type(VOID) {}
+TypeDecl TypeDecl::getPointer(Type referencedType)
+{
+    TypeDecl type;
+    type._type = Type::POINTER;
+    type._referencedType = new TypeDecl(referencedType);
+    return type;
+}
 
-TypeDecl::TypeDecl(const TypeDecl &o): _type(o._type) {}
+TypeDecl TypeDecl::getPointer(const TypeDecl &referencedType)
+{
+    TypeDecl type;
+    type._type = Type::POINTER;
+    type._referencedType = new TypeDecl(referencedType);
+    return type;
+}
 
-TypeDecl::TypeDecl(Type t): _type(t) {}
+
+TypeDecl::TypeDecl():
+    _type(VOID),
+    _referencedType(nullptr)
+ {}
+
+TypeDecl::TypeDecl(const TypeDecl &o)
+{
+    *this = o;
+}
+
+TypeDecl::TypeDecl(Type t):
+    _type(t),
+    _referencedType(nullptr)
+{
+    if (_type == POINTER) {
+        Throw(Exception, "Pointer types cannot be constructed through TypeDecl::TypeDecl(Type)");
+    }
+}
+
+TypeDecl::~TypeDecl()
+{
+    if (_referencedType)
+        delete _referencedType;
+}
+
+TypeDecl& TypeDecl::operator=(const TypeDecl &o)
+{
+    _type = o._type;
+    if (o._referencedType != nullptr) {
+        // NB! potentially recursive initialization
+        assert(_type == POINTER);
+        _referencedType = new TypeDecl(*o._referencedType);
+    } else {
+        _referencedType = nullptr;
+    }
+    return *this;
+}
 
 TypeDecl::Type TypeDecl::getType() const
 {
@@ -60,6 +109,8 @@ uint32_t TypeDecl::getSize() const
             return 4;
         case DOUBLE:
             return 8;
+        case POINTER:
+            return 4;
     }
 
     Throw(Exception, "Type '%d' has undefined size", (int)_type);
@@ -84,14 +135,33 @@ const char* TypeDecl::getName() const
             return "float";
         case DOUBLE:
             return "double";
+        case POINTER:
+            return "pointer (todo)";
     }
 
     return "<undef>";
 }
 
+const TypeDecl* TypeDecl::getReferencedType() const
+{
+    if (_type != Type::POINTER) {
+        Throw(InvalidTypeException, "Cannot get referenced type of non-pointer TypeDecl");
+    }
+    assert(_referencedType != nullptr);
+    return _referencedType;
+}
+
 bool TypeDecl::operator==(const TypeDecl &o) const
 {
-    return _type == o.getType();
+    if (_type != Type::POINTER) {
+        return _type == o._type;
+    }
+
+    if (o.getType() != Type::POINTER) {
+        return false;
+    }
+
+    return (*_referencedType == *o._referencedType);
 }
 
 bool TypeDecl::operator==(const TypeDecl::Type &o) const
@@ -109,7 +179,23 @@ bool TypeDecl::castableTo(const TypeDecl::Type &t) const
     if ((_type == VOID) != (t == VOID))
         return false;
 
-    // TOOD: This is (probably?) incorrect, fix at some point
+    if (_type == POINTER || t == POINTER) {
+        Type other;
+        if (_type == POINTER) {
+            other = t;
+        } else {
+            other = _type;
+        }
+
+        switch (other) {
+            case FLOAT:
+            case DOUBLE:
+                return false;
+            default:
+                return true;
+        }
+    }
+
     return true;
 }
 
@@ -119,7 +205,8 @@ bool TypeDecl::isIntegral() const
             _type == CHAR ||
             _type == SHORT ||
             _type == INT ||
-            _type == LONG;
+            _type == LONG ||
+            _type == POINTER;
 }
 
 bool TypeDecl::isFloating() const
@@ -137,8 +224,6 @@ template<> TypeDecl TypeDecl::getFromNative<int>() { return TypeDecl(TypeDecl::I
 template<> TypeDecl TypeDecl::getFromNative<long>() { return TypeDecl(TypeDecl::LONG); }
 template<> TypeDecl TypeDecl::getFromNative<float>() { return TypeDecl(TypeDecl::FLOAT); }
 template<> TypeDecl TypeDecl::getFromNative<double>() { return TypeDecl(TypeDecl::DOUBLE); }
-
-
 
 
 

@@ -48,3 +48,124 @@ TEST(TypeTest, resolveFromStringThrowsIfUnrecognized)
     ASSERT_THROW(TypeDecl::getFromString("phartyphockborlz"), InvalidTypeException);
 }
 
+TEST(TypeTest, referencedTypeIsCorrectlyCopied)
+{
+    TypeDecl ptr = TypeDecl::getPointer(TypeDecl::Type::INT);
+    TypeDecl copy = ptr;
+
+    ASSERT_NE(nullptr, ptr.getReferencedType());
+    ASSERT_NE(nullptr, copy.getReferencedType());
+    ASSERT_NE(ptr.getReferencedType(), copy.getReferencedType());
+}
+
+TEST(TypeTest, primitivesHasNoReferencedType)
+{
+    ASSERT_ANY_THROW(TypeDecl(TypeDecl::VOID).getReferencedType());
+    ASSERT_ANY_THROW(TypeDecl(TypeDecl::BOOL).getReferencedType());
+    ASSERT_ANY_THROW(TypeDecl(TypeDecl::CHAR).getReferencedType());
+    ASSERT_ANY_THROW(TypeDecl(TypeDecl::SHORT).getReferencedType());
+    ASSERT_ANY_THROW(TypeDecl(TypeDecl::INT).getReferencedType());
+    ASSERT_ANY_THROW(TypeDecl(TypeDecl::LONG).getReferencedType());
+    ASSERT_ANY_THROW(TypeDecl(TypeDecl::FLOAT).getReferencedType());
+    ASSERT_ANY_THROW(TypeDecl(TypeDecl::DOUBLE).getReferencedType());
+}
+
+TEST(TypeTest, pointersMustBeConstructedExplicitly)
+{
+    ASSERT_ANY_THROW(TypeDecl type(TypeDecl::POINTER));
+}
+
+TEST(TypeTest, pointerTypesReferenceCorrectly)
+{
+    TypeDecl pointer = TypeDecl::getPointer(TypeDecl::INT);
+    ASSERT_EQ(TypeDecl::INT, pointer.getReferencedType()->getType());
+    ASSERT_ANY_THROW(pointer.getReferencedType()->getReferencedType());
+}
+
+TEST(TypeTest, copiedPointerTypesReferenceCorrectly)
+{
+    TypeDecl copy;
+    {
+        TypeDecl pointer = TypeDecl::getPointer(TypeDecl::INT);
+        copy = pointer;
+    }
+
+    ASSERT_EQ(TypeDecl::INT, copy.getReferencedType()->getType());
+    ASSERT_ANY_THROW(copy.getReferencedType()->getReferencedType());
+}
+
+TEST(TypeTest, pointerToPointerTypesReferenceCorrectly)
+{
+    TypeDecl ptr = TypeDecl::getPointer(TypeDecl::INT);
+    TypeDecl ptrPtr = TypeDecl::getPointer(ptr);
+
+    ASSERT_EQ(TypeDecl::POINTER, ptrPtr.getReferencedType()->getType());
+
+    ASSERT_EQ(TypeDecl::INT, ptrPtr.getReferencedType()->getReferencedType()->getType());
+    ASSERT_ANY_THROW(ptrPtr.getReferencedType()->getReferencedType()->getReferencedType());
+}
+
+TEST(TypeTest, copierPointerToPointerTypesReferenceCorrectly)
+{
+    TypeDecl copy;
+    {
+        TypeDecl ptr = TypeDecl::getPointer(TypeDecl::INT);
+        TypeDecl ptrPtr = TypeDecl::getPointer(ptr);
+        copy = ptrPtr;
+    }
+
+    ASSERT_EQ(TypeDecl::POINTER, copy.getReferencedType()->getType());
+
+    ASSERT_EQ(TypeDecl::INT, copy.getReferencedType()->getReferencedType()->getType());
+    ASSERT_ANY_THROW(copy.getReferencedType()->getReferencedType()->getReferencedType());
+}
+
+
+TEST(TypeTest, deepPointerEqualityTest)
+{
+    TypeDecl rawInt = TypeDecl::INT;
+    TypeDecl intPtr = TypeDecl::getPointer(TypeDecl::INT);
+    TypeDecl floatPtr = TypeDecl::getPointer(TypeDecl::FLOAT);
+    TypeDecl intPtrPtr = TypeDecl::getPointer(intPtr);
+    TypeDecl floatPtrPtr = TypeDecl::getPointer(floatPtr);
+
+    ASSERT_TRUE(rawInt == rawInt);
+    ASSERT_FALSE(rawInt == intPtr);
+    ASSERT_FALSE(rawInt == intPtrPtr);
+    ASSERT_FALSE(rawInt == floatPtr);
+    ASSERT_FALSE(rawInt == floatPtrPtr);
+
+    ASSERT_FALSE(intPtr == rawInt);
+    ASSERT_TRUE(intPtr == intPtr);
+    ASSERT_FALSE(intPtr == intPtrPtr);
+    ASSERT_FALSE(intPtr == floatPtr);
+    ASSERT_FALSE(intPtr == floatPtrPtr);
+
+    ASSERT_FALSE(intPtrPtr == rawInt);
+    ASSERT_FALSE(intPtrPtr == intPtr);
+    ASSERT_TRUE(intPtrPtr == intPtrPtr);
+    ASSERT_FALSE(intPtrPtr == floatPtr);
+    ASSERT_FALSE(intPtrPtr == floatPtrPtr);
+
+    ASSERT_FALSE(floatPtr == rawInt);
+    ASSERT_FALSE(floatPtr == intPtr);
+    ASSERT_FALSE(floatPtr == intPtrPtr);
+    ASSERT_TRUE(floatPtr == floatPtr);
+    ASSERT_FALSE(floatPtr == floatPtrPtr);
+
+    ASSERT_FALSE(floatPtrPtr == rawInt);
+    ASSERT_FALSE(floatPtrPtr == intPtr);
+    ASSERT_FALSE(floatPtrPtr == intPtrPtr);
+    ASSERT_FALSE(floatPtrPtr == floatPtr);
+    ASSERT_TRUE(floatPtrPtr == floatPtrPtr);
+}
+
+TEST(TypeTest, pointerTypeDeclWithPointerTypeIsShallow)
+{
+    TypeDecl intPtr = TypeDecl::getPointer(TypeDecl::INT);
+    TypeDecl voidPtr = TypeDecl::getPointer(TypeDecl::VOID);
+
+    ASSERT_TRUE(intPtr == TypeDecl::POINTER);
+    ASSERT_TRUE(voidPtr == TypeDecl::POINTER);
+    ASSERT_FALSE(intPtr == voidPtr);
+}

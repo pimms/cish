@@ -343,3 +343,124 @@ TEST(BinaryExpressionTest, simpleTestOfNestedBinaryExpressions)
     ASSERT_NEAR(-90.f, expr.evaluate(&econtext).get<float>(), 0.001);
 }
 
+TEST(BinaryExpressionTest, pointerOnPointerActionIsSinful)
+{
+    auto left = new LiteralExpression(ExpressionValue(TypeDecl::getPointer(TypeDecl::INT), 100));
+    auto right = new LiteralExpression(ExpressionValue(TypeDecl::getPointer(TypeDecl::INT), 100));
+    ASSERT_THROW(BinaryExpression expr(BinaryExpression::PLUS, left, right), InvalidOperationException);
+}
+
+TEST(BinaryExpressionTest, pointerArithmeticTypeTest)
+{
+    std::map<TypeDecl::Type, bool> typeMap = {
+        {TypeDecl::Type::VOID,      false},
+        {TypeDecl::Type::BOOL,      true},
+        {TypeDecl::Type::CHAR,      true},
+        {TypeDecl::Type::SHORT,     true},
+        {TypeDecl::Type::INT,       true},
+        {TypeDecl::Type::LONG,      true},
+        {TypeDecl::Type::FLOAT,     false},
+        {TypeDecl::Type::DOUBLE,    false},
+    };
+
+    for (auto pair: typeMap) {
+        if (pair.second) {
+            auto ptr = new LiteralExpression(ExpressionValue(TypeDecl::getPointer(TypeDecl::INT), 100));
+            auto other = new LiteralExpression(ExpressionValue(pair.first, 1));
+            ASSERT_NO_THROW(BinaryExpression expr(BinaryExpression::PLUS, ptr, other));
+
+            ptr = new LiteralExpression(ExpressionValue(TypeDecl::getPointer(TypeDecl::INT), 100));
+            other = new LiteralExpression(ExpressionValue(pair.first, 1));
+            ASSERT_NO_THROW(BinaryExpression expr(BinaryExpression::PLUS, other, ptr));
+        } else {
+            auto ptr = new LiteralExpression(ExpressionValue(TypeDecl::getPointer(TypeDecl::INT), 100));
+            auto other = new LiteralExpression(ExpressionValue(pair.first, 1));
+            ASSERT_ANY_THROW(BinaryExpression expr(BinaryExpression::PLUS, ptr, other));
+            ASSERT_ANY_THROW(BinaryExpression expr(BinaryExpression::PLUS, other, ptr));
+            delete ptr;
+            delete other;
+        }
+    }
+}
+
+TEST(BinaryExpressionTest, verifyValidPointerOperations)
+{
+    std::map<BinaryExpression::Operator, bool> expected = {
+        {BinaryExpression::MULTIPLY,      false},
+        {BinaryExpression::DIVIDE,        false},
+        {BinaryExpression::MODULO,        false},
+        {BinaryExpression::PLUS,          true},
+        {BinaryExpression::MINUS,         true},
+        {BinaryExpression::GT,            true},
+        {BinaryExpression::LT,            true},
+        {BinaryExpression::GTE,           true},
+        {BinaryExpression::LTE,           true},
+        {BinaryExpression::EQ,            true},
+        {BinaryExpression::NE,            true},
+        {BinaryExpression::LOGICAL_AND,   true},
+        {BinaryExpression::LOGICAL_OR,    true},
+    };
+
+    for (auto pair: expected) {
+        if (pair.second) {
+            auto eint = new LiteralExpression(ExpressionValue(TypeDecl::INT, 1));
+            auto eptr = new LiteralExpression(ExpressionValue(TypeDecl::getPointer(TypeDecl::INT), 100));
+            ASSERT_NO_THROW(BinaryExpression expr(pair.first, eptr, eint));
+
+            eint = new LiteralExpression(ExpressionValue(TypeDecl::INT, 1));
+            eptr = new LiteralExpression(ExpressionValue(TypeDecl::getPointer(TypeDecl::INT), 100));
+            ASSERT_NO_THROW(BinaryExpression expr(pair.first, eint, eptr));
+        } else {
+            auto eint = new LiteralExpression(ExpressionValue(TypeDecl::INT, 1));
+            auto eptr = new LiteralExpression(ExpressionValue(TypeDecl::getPointer(TypeDecl::INT), 100));
+            ASSERT_THROW(BinaryExpression expr(pair.first, eptr, eint), InvalidOperationException);
+            ASSERT_THROW(BinaryExpression expr(pair.first, eint, eptr), InvalidOperationException);
+            delete eint;
+            delete eptr;
+        }
+    }
+}
+
+TEST(BinaryExpressionTest, pointerAdditionArithmetics)
+{
+    // We'll perform arithmetics on pointers of the following types:
+    std::vector<TypeDecl> ptrTypes = {
+        TypeDecl::VOID,
+        TypeDecl::BOOL,
+        TypeDecl::CHAR,
+        TypeDecl::SHORT,
+        TypeDecl::INT,
+        TypeDecl::LONG,
+        TypeDecl::FLOAT,
+        TypeDecl::DOUBLE,
+        TypeDecl::getPointer(TypeDecl::VOID),
+        TypeDecl::getPointer(TypeDecl::BOOL),
+        TypeDecl::getPointer(TypeDecl::CHAR),
+        TypeDecl::getPointer(TypeDecl::SHORT),
+        TypeDecl::getPointer(TypeDecl::INT),
+        TypeDecl::getPointer(TypeDecl::LONG),
+        TypeDecl::getPointer(TypeDecl::FLOAT),
+        TypeDecl::getPointer(TypeDecl::DOUBLE),
+    };
+
+    for (auto ptrType: ptrTypes) {
+        const int tsize = (ptrType == TypeDecl::VOID ? 1 : TypeDecl(ptrType).getSize());
+
+        for (int i=-5; i<=5; i++) {
+            const int initial = 100;
+            const int expected = 100 + (i * tsize);
+
+            cish::vm::Memory memory(100, 1);
+            cish::vm::ExecutionContext econtext(&memory);
+
+            TypeDecl ptrTermType = TypeDecl::getPointer(ptrType);
+
+            auto ptrTerm = new LiteralExpression(ExpressionValue(ptrTermType, initial));
+            auto addTerm = new LiteralExpression(ExpressionValue(i));
+            BinaryExpression expr(BinaryExpression::PLUS, addTerm, ptrTerm);
+            auto result = expr.evaluate(&econtext);
+            ASSERT_EQ(expected, result.get<int>());
+            ASSERT_TRUE(result.getIntrinsicType() == ptrTermType);
+        }
+    }
+}

@@ -22,22 +22,33 @@ public:
         SHORT,
         INT,
         LONG,
+
         FLOAT,
         DOUBLE,
+
+        POINTER,
     };
 
     template<typename T>
     static TypeDecl getFromNative();
     static TypeDecl getFromString(const std::string &str);
+    static TypeDecl getPointer(Type referencedType);
+    static TypeDecl getPointer(const TypeDecl &referencedType);
 
 
     TypeDecl();
     TypeDecl(const TypeDecl &o);
     TypeDecl(Type t);
+    ~TypeDecl();
+
+    TypeDecl& operator=(const TypeDecl &o);
 
     Type getType() const;
     uint32_t getSize() const;
     const char* getName() const;
+
+    // This method is ONLY valid if this type is a POINTER.
+    const TypeDecl* getReferencedType() const;
 
     bool operator==(const TypeDecl &o) const;
     bool operator==(const TypeDecl::Type &o) const;
@@ -53,6 +64,7 @@ public:
 
 private:
     Type _type;
+    TypeDecl *_referencedType;
 };
 
 
