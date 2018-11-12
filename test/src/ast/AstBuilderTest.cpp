@@ -39,6 +39,32 @@ TEST(AstBuilderTest, semiComplexGlobalVariables)
     ASSERT_NE(nullptr, dynamic_cast<const VariableDeclarationStatement*>(statements[2]));
 }
 
+TEST(AstBuilderTest, pointerDeclaration)
+{
+    Ast::Ptr ast = buildAst("int* ptr;");
+    auto statements = ast->getRootStatements();
+
+    auto *stmt = dynamic_cast<const VariableDeclarationStatement*>(statements[0]);
+    ASSERT_NE(nullptr, stmt);
+
+    TypeDecl type = stmt->getDeclaredType();
+    ASSERT_EQ(TypeDecl::POINTER, type.getType());
+    ASSERT_EQ(TypeDecl::INT, type.getReferencedType()->getType());
+}
+
+TEST(AstBuilderTest, pointerPointerDeclaration)
+{
+    Ast::Ptr ast = buildAst("int*  *   ptr;");
+    auto statements = ast->getRootStatements();
+
+    auto *stmt = dynamic_cast<const VariableDeclarationStatement*>(statements[0]);
+    ASSERT_NE(nullptr, stmt);
+
+    TypeDecl type = stmt->getDeclaredType();
+    ASSERT_EQ(TypeDecl::POINTER, type.getType());
+    ASSERT_EQ(TypeDecl::POINTER, type.getReferencedType()->getType());
+    ASSERT_EQ(TypeDecl::INT, type.getReferencedType()->getReferencedType()->getType());
+}
 
 
 TEST(AstBuilderTest, compilationPassingSmokeTest)

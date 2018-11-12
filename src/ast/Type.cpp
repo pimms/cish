@@ -12,6 +12,11 @@ namespace ast
 
 TypeDecl TypeDecl::getFromString(const std::string &str)
 {
+    if (str.back() == '*') {
+        TypeDecl refType = getFromString(str.substr(0, str.length() - 1));
+        return getPointer(refType);
+    }
+
     static const std::map<std::string,Type> map = {
         {"void", VOID},
         {"bool", BOOL},

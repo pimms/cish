@@ -95,11 +95,11 @@ class TreeConverter: public CMBaseVisitor
 
     VarDeclaration manuallyVisitFunctionParameter(CMParser::FunctionParameterContext *ctx)
     {
-        const std::string typeName = ctx->typeIdentifier()->getText();
+        TypeDecl type = visitTypeIdentifier(ctx->typeIdentifier()).as<TypeDecl>();
         const std::string varName = ctx->identifier()->getText();
 
         VarDeclaration decl;
-        decl.type = TypeDecl::getFromString(typeName);
+        decl.type = type;
         decl.name = varName;
         return decl;
     }
@@ -464,9 +464,7 @@ public:
             Throw(AstConversionException, "Const variable declarations are not yet supported");
         }
 
-        const std::string typeName = typeContext->mutableTypeIdentifier()->getText();
-        const TypeDecl type = TypeDecl::getFromString(typeName);
-
+        const TypeDecl type = visitTypeIdentifier(ctx->typeIdentifier()).as<TypeDecl>();;
         const std::string varName = ctx->identifier()->getText();
 
         CMParser::ExpressionContext *exprContext = ctx->expression();
@@ -480,12 +478,11 @@ public:
 
     virtual antlrcpp::Any visitFunctionDeclaration(CMParser::FunctionDeclarationContext *ctx) override
     {
-        const std::string typeName = ctx->typeIdentifier()->getText();
         const std::string funcName = ctx->identifier()->getText();
         std::vector<VarDeclaration> params = manuallyVisitIdentifierList(ctx->identifierList());
 
         FuncDeclaration funcDecl;
-        funcDecl.returnType = TypeDecl::getFromString(typeName);
+        funcDecl.returnType = visitTypeIdentifier(ctx->typeIdentifier());
         funcDecl.name = funcName;
         funcDecl.params = params;
 
@@ -496,12 +493,11 @@ public:
 
     virtual antlrcpp::Any visitFunctionDefinition(CMParser::FunctionDefinitionContext *ctx) override
     {
-        const std::string typeName = ctx->typeIdentifier()->getText();
         const std::string funcName = ctx->identifier()->getText();
         std::vector<VarDeclaration> params = manuallyVisitIdentifierList(ctx->identifierList());
 
         FuncDeclaration funcDecl;
-        funcDecl.returnType = TypeDecl::getFromString(typeName);
+        funcDecl.returnType = visitTypeIdentifier(ctx->typeIdentifier());
         funcDecl.name = funcName;
         funcDecl.params = params;
 
@@ -570,20 +566,23 @@ public:
 
     virtual antlrcpp::Any visitTypeIdentifier(CMParser::TypeIdentifierContext *ctx) override
     {
-        // Will never be implemented!
-        Throw(AstConversionException, "Internal conversion exception - should never visit TypeIdentifier");
+        if (ctx->mutableTypeIdentifier()) {
+            return visitMutableTypeIdentifier(ctx->mutableTypeIdentifier());
+       } else if (ctx->constTypeIdentifier()) {
+            return visitConstTypeIdentifier(ctx->constTypeIdentifier());
+       }
+
+        return TypeDecl::getFromString(ctx->getText());
     }
 
     virtual antlrcpp::Any visitMutableTypeIdentifier(CMParser::MutableTypeIdentifierContext *ctx) override
     {
-        // Will never be implemented!
-        Throw(AstConversionException, "Internal conversion exception - should never visit MutableTypeIdentifier");
+        return TypeDecl::getFromString(ctx->getText());
     }
 
     virtual antlrcpp::Any visitConstTypeIdentifier(CMParser::ConstTypeIdentifierContext *ctx) override
     {
-        // Will never be implemented!
-        Throw(AstConversionException, "Internal conversion exception - should never visit ConstTypeIdentifier");
+        Throw(AstConversionException, "Not implemented!");
     }
 };
 

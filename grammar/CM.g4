@@ -50,8 +50,7 @@ functionCallStatement
 returnStatement
     : 'return' expression? ';'
     ;
-
-ifStatement
+ ifStatement
     : 'if' '(' expression ')' '{' statement* '}' elseStatement?
     | 'if' '(' expression ')' statement elseStatement?
     ;
@@ -122,16 +121,17 @@ identifier
 typeIdentifier
     : mutableTypeIdentifier
     | constTypeIdentifier
-    | 'void'
     ;
 mutableTypeIdentifier
-    : identifier ('*')?
+    : identifier Asterisk*
     ;
 constTypeIdentifier
-    : 'const' identifier ('*')?
+    : Const identifier Asterisk*
     ;
 
 
+
+Asterisk : '*';
 
 Or       : '||';
 And      : '&&';
@@ -143,7 +143,7 @@ GT       : '>';
 LT       : '<';
 Add      : '+';
 Subtract : '-';
-Multiply : '*';
+Multiply : Asterisk;
 Divide   : '/';
 Modulus  : '%';
 OBrace   : '{';
@@ -151,6 +151,7 @@ CBrace   : '}';
 SColon   : ';';
 Assign   : '=';
 Null     : 'NULL';
+Const    : 'const';
 
 Integer
     : [0-9]+

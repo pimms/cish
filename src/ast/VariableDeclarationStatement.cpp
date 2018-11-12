@@ -51,6 +51,11 @@ void VariableDeclarationStatement::execute(vm::ExecutionContext *context) const
     }
 }
 
+const TypeDecl& VariableDeclarationStatement::getDeclaredType() const
+{
+    return _type;
+}
+
 
 }
 }

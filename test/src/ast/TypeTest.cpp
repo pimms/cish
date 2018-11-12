@@ -30,6 +30,41 @@ TEST(TypeTest, resolveFromString)
     ASSERT_EQ(TypeDecl(TypeDecl::DOUBLE), TypeDecl::getFromString("double"));
 }
 
+TEST(TypeTest, resolvePointerFromString)
+{
+    ASSERT_EQ(TypeDecl::POINTER, TypeDecl::getFromString("void*").getType());
+    ASSERT_EQ(TypeDecl::VOID, TypeDecl::getFromString("void*").getReferencedType()->getType());
+
+    ASSERT_EQ(TypeDecl::POINTER, TypeDecl::getFromString("bool*").getType());
+    ASSERT_EQ(TypeDecl::BOOL, TypeDecl::getFromString("bool*").getReferencedType()->getType());
+
+    ASSERT_EQ(TypeDecl::POINTER, TypeDecl::getFromString("char*").getType());
+    ASSERT_EQ(TypeDecl::CHAR, TypeDecl::getFromString("char*").getReferencedType()->getType());
+
+    ASSERT_EQ(TypeDecl::POINTER, TypeDecl::getFromString("short*").getType());
+    ASSERT_EQ(TypeDecl::SHORT, TypeDecl::getFromString("short*").getReferencedType()->getType());
+
+    ASSERT_EQ(TypeDecl::POINTER, TypeDecl::getFromString("int*").getType());
+    ASSERT_EQ(TypeDecl::INT, TypeDecl::getFromString("int*").getReferencedType()->getType());
+
+    ASSERT_EQ(TypeDecl::POINTER, TypeDecl::getFromString("long*").getType());
+    ASSERT_EQ(TypeDecl::LONG, TypeDecl::getFromString("long*").getReferencedType()->getType());
+
+    ASSERT_EQ(TypeDecl::POINTER, TypeDecl::getFromString("float*").getType());
+    ASSERT_EQ(TypeDecl::FLOAT, TypeDecl::getFromString("float*").getReferencedType()->getType());
+
+    ASSERT_EQ(TypeDecl::POINTER, TypeDecl::getFromString("double*").getType());
+    ASSERT_EQ(TypeDecl::DOUBLE, TypeDecl::getFromString("double*").getReferencedType()->getType());
+}
+
+TEST(TypeTest, resolvePointerPointerFromString)
+{
+    auto type = TypeDecl::getFromString("int**");
+    ASSERT_EQ(TypeDecl::POINTER, type.getType());
+    ASSERT_EQ(TypeDecl::POINTER, type.getReferencedType()->getType());
+    ASSERT_EQ(TypeDecl::INT, type.getReferencedType()->getReferencedType()->getType());
+}
+
 TEST(TypeTest, resolveFromStringThrowsIfUnrecognized)
 {
     // We might support these at some point, but not right now

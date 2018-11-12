@@ -24,6 +24,8 @@ public:
     ~VariableDeclarationStatement();
     virtual void execute(vm::ExecutionContext *context) const override;
 
+    const TypeDecl& getDeclaredType() const;
+
 private:
     const TypeDecl _type;
     const std::string _varName;
