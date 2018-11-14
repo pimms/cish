@@ -9,6 +9,7 @@
 #include "VariableReferenceExpression.h"
 #include "FunctionCallExpression.h"
 #include "LiteralExpression.h"
+#include "IncDecExpression.h"
 
 #include "VariableAssignmentStatement.h"
 #include "VariableDeclarationStatement.h"
@@ -20,6 +21,7 @@
 #include "ElseStatement.h"
 #include "ForLoopStatement.h"
 #include "WhileStatement.h"
+#include "ExpressionStatement.h"
 
 #include <cassert>
 
@@ -102,6 +104,12 @@ class TreeConverter: public CMBaseVisitor
         decl.type = type;
         decl.name = varName;
         return decl;
+    }
+
+    Result buildIncDecExpression(IncDecExpression::Operation op, const std::string varName)
+    {
+        IncDecExpression *expr = new IncDecExpression(&_declContext, op, varName);
+        return createResult(expr);
     }
 
     void verifyAllFunctionsDefined(Ast *ast)
@@ -192,6 +200,43 @@ public:
     {
         return visitChildren(ctx);
     }
+
+
+    virtual antlrcpp::Any manuallyVisitIncdecexpr(CMParser::IncdecexprContext *ctx)
+    {
+        if (dynamic_cast<CMParser::POSTFIX_INC_EXPRContext*>(ctx)) {
+            return visitPOSTFIX_INC_EXPR((CMParser::POSTFIX_INC_EXPRContext*)ctx);
+        } else if (dynamic_cast<CMParser::PREFIX_INC_EXPRContext*>(ctx)) {
+            return visitPREFIX_INC_EXPR((CMParser::PREFIX_INC_EXPRContext*)ctx);
+        } else if (dynamic_cast<CMParser::POSTFIX_DEC_EXPRContext*>(ctx)) {
+            return visitPOSTFIX_DEC_EXPR((CMParser::POSTFIX_DEC_EXPRContext*)ctx);
+        } else if (dynamic_cast<CMParser::PREFIX_DEC_EXPRContext*>(ctx)) {
+            return visitPREFIX_DEC_EXPR((CMParser::PREFIX_DEC_EXPRContext*)ctx);
+        } else {
+            Throw(AstConversionException, "Manual visit of Incdecexpr failed");
+        }
+    }
+
+    virtual antlrcpp::Any visitPOSTFIX_INC_EXPR(CMParser::POSTFIX_INC_EXPRContext *ctx) override
+    {
+        return buildIncDecExpression(IncDecExpression::POSTFIX_INCREMENT, ctx->Identifier()->getText());
+    }
+
+    virtual antlrcpp::Any visitPREFIX_INC_EXPR(CMParser::PREFIX_INC_EXPRContext *ctx) override
+    {
+        return buildIncDecExpression(IncDecExpression::PREFIX_INCREMENT, ctx->Identifier()->getText());
+    }
+
+    virtual antlrcpp::Any visitPOSTFIX_DEC_EXPR(CMParser::POSTFIX_DEC_EXPRContext *ctx) override
+    {
+        return buildIncDecExpression(IncDecExpression::POSTFIX_DECREMENT, ctx->Identifier()->getText());
+    }
+
+    virtual antlrcpp::Any visitPREFIX_DEC_EXPR(CMParser::PREFIX_DEC_EXPRContext *ctx) override
+    {
+        return buildIncDecExpression(IncDecExpression::PREFIX_DECREMENT, ctx->Identifier()->getText());
+    }
+
 
     virtual antlrcpp::Any visitMULT_EXPR(CMParser::MULT_EXPRContext *ctx) override
     {
@@ -351,7 +396,8 @@ public:
         return createResult(elseStatement);
     }
 
-    virtual antlrcpp::Any visitForStatement(CMParser::ForStatementContext *ctx) override {
+    virtual antlrcpp::Any visitForStatement(CMParser::ForStatementContext *ctx) override
+    {
         Statement *initializer = nullptr;
         Expression *condition = nullptr;
         Statement *iterator = nullptr;
@@ -377,7 +423,8 @@ public:
         return createResult(forLoop);
     }
 
-    Statement* manuallyVisitForInitializer(CMParser::ForInitializerContext *ctx) {
+    Statement* manuallyVisitForInitializer(CMParser::ForInitializerContext *ctx)
+    {
         Result res;
         if (ctx->assignment()) {
             res = visitAssignment(ctx->assignment()).as<Result>();
@@ -392,7 +439,8 @@ public:
         return (Statement*)res[0];
     }
 
-    Statement* manuallyVisitForIterator(CMParser::ForIteratorContext *ctx) {
+    Statement* manuallyVisitForIterator(CMParser::ForIteratorContext *ctx)
+    {
         Result res;
         if (ctx->assignment()) {
             res = visitAssignment(ctx->assignment()).as<Result>();
@@ -405,13 +453,20 @@ public:
             assert(dynamic_cast<FunctionCallExpression*>(res[0]) != nullptr);
             auto expr = (FunctionCallExpression*)res[0];
             return new FunctionCallStatement(expr);
+        } else if (ctx->incdecexpr()) {
+            res = manuallyVisitIncdecexpr(ctx->incdecexpr()).as<Result>();
+            assert(res.size() == 1);
+            assert(dynamic_cast<IncDecExpression*>(res[0]) != nullptr);
+            auto expr = (IncDecExpression*)res[0];
+            return new ExpressionStatement(expr);
         } else {
             Throw(Exception, "Unsupported initialization in for-loop");
         }
     }
 
 
-    virtual antlrcpp::Any visitWhileStatement(CMParser::WhileStatementContext *ctx) override {
+    virtual antlrcpp::Any visitWhileStatement(CMParser::WhileStatementContext *ctx) override
+    {
         Expression *condition = manuallyVisitExpression(ctx->expression());
         _declContext.pushVariableScope();
 
@@ -427,7 +482,8 @@ public:
         return createResult(whileStatement);
     }
 
-    virtual antlrcpp::Any visitDoWhileStatement(CMParser::DoWhileStatementContext *ctx) override {
+    virtual antlrcpp::Any visitDoWhileStatement(CMParser::DoWhileStatementContext *ctx) override
+    {
         Expression *condition = manuallyVisitExpression(ctx->expression());
         _declContext.pushVariableScope();
 
@@ -441,6 +497,12 @@ public:
 
         _declContext.popVariableScope();
         return createResult(doWhileStatement);
+    }
+
+    virtual antlrcpp::Any visitExpressionStatement(CMParser::ExpressionStatementContext *ctx) override
+    {
+        Expression *expression = manuallyVisitExpression(ctx->expression());
+        return createResult(new ExpressionStatement(expression));
     }
 
 

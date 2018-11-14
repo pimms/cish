@@ -50,9 +50,7 @@ TEST(SimpleProgramsTest, exitCodeDefaultsToZeroForVoidMain)
     const std::string source = "void main() {}";
     assertExitCode(source,0 );
 }
-
-TEST(SimpleProgramsTest, exitCodeReturnedFromMain)
-{
+TEST(SimpleProgramsTest, exitCodeReturnedFromMain) {
     const std::string source = "int main() { return 15; }";
     assertExitCode(source, 15);
 }
@@ -181,7 +179,8 @@ TEST(SimpleProgramsTest, ifElseBranch)
     assertExitCode(source, 3);
 }
 
-TEST(SimpleProgramsTest, nestedIf) {
+TEST(SimpleProgramsTest, nestedIf)
+{
     const std::string source =
         "int main() {"
         "    int a = 3;"
@@ -285,6 +284,71 @@ TEST(SimpleProgramsTest, doWhileLoopOnlyRunOnce)
         "    return n;"
         "}";
     assertExitCode(source, 1);
+}
+
+
+TEST(SimpleProgramsTest, postfixIncrement)
+{
+    const std::string source =
+        "int main() {"
+        "    int n = 0;"
+        "    return n++;"
+        "}";
+    assertExitCode(source, 0);
+}
+
+TEST(SimpleProgramsTest, prefixIncrement)
+{
+    const std::string source =
+        "int main() {"
+        "    int n = 0;"
+        "    return ++n;"
+        "}";
+    assertExitCode(source, 1);
+}
+
+TEST(SimpleProgramsTest, postfixDecrement)
+{
+    const std::string source =
+        "int main() {"
+        "    int n = 10;"
+        "    return n--;"
+        "}";
+    assertExitCode(source, 10);
+}
+
+TEST(SimpleProgramsTest, prefixDecrement)
+{
+    const std::string source =
+        "int main() {"
+        "    int n = 10;"
+        "    return --n;"
+        "}";
+    assertExitCode(source, 9);
+}
+
+TEST(SimpleProgramsTest, standaloneIncrements)
+{
+    const std::string source =
+        "int main() {"
+        "   int n = 0;"
+        "   n++;"
+        "   return n;"
+        "}";
+    assertExitCode(source, 1);
+}
+
+
+TEST(SimpleProgramsTest, forLoopWithIncrement) {
+    const std::string source =
+        "int main() {"
+        "   int n = 0;"
+        "   for (int i=0; i<10; i++) {"
+        "       n++; n--; ++n;"
+        "   }"
+        "   return n;"
+        "}";
+    assertExitCode(source, 10);
 }
 
 

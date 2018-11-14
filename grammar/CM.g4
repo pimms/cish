@@ -21,7 +21,8 @@ expression
     ;
 
 expr
-    : expr op=( '*' | '/' | '%' ) expr          # MULT_EXPR
+    : incdecexpr                                # INCDECEXPR___
+    | expr op=( '*' | '/' | '%' ) expr          # MULT_EXPR
     | expr op=( '+' | '-' ) expr                # ADD_EXPR
     | expr op=( '>=' | '<=' | '>' | '<' ) expr  # COMPARE_EXPR
     | expr op=( '==' | '!=' ) expr              # EQUALITY_EXPR
@@ -29,6 +30,12 @@ expr
     | (String|Integer|Floating|Boolean|Null)    # LITERAL_EXPR
     | Identifier                                # VAR_REF_EXPR
     | functionCall                              # FUNC_CALL_EXPR
+    ;
+incdecexpr
+    : Identifier '++'                           # POSTFIX_INC_EXPR
+    | '++' Identifier                           # PREFIX_INC_EXPR
+    | Identifier '--'                           # POSTFIX_DEC_EXPR
+    | '--' Identifier                           # PREFIX_DEC_EXPR
     ;
 
 statement
@@ -40,13 +47,16 @@ statement
     | forStatement
     | whileStatement
     | doWhileStatement
+    | expressionStatement
     | ';'
     ;
 
+expressionStatement
+    : expression ';'
+    ;
 functionCallStatement
     : functionCall ';'
     ;
-
 returnStatement
     : 'return' expression? ';'
     ;
@@ -71,6 +81,7 @@ forInitializer
 forIterator
     : assignment
     | functionCall
+    | incdecexpr
     ;
 
 whileStatement

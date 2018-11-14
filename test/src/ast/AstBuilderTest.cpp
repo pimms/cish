@@ -7,7 +7,6 @@
 
 using namespace cish::vm;
 using namespace cish::ast;
-
 Ast::Ptr buildAst(const std::string &source)
 {
     AntlrContext context(source);
@@ -76,6 +75,7 @@ TEST(AstBuilderTest, compilationPassingSmokeTest)
             "int global = 99; \n"
             "void foo(int x) { int y = x * 5 + global; } \n"
             "void bar() { foo(45); } \n"
+            "int var = global++;"
         );
     );
 }
