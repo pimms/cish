@@ -63,6 +63,7 @@ void VariableAssignmentStatement::executeAssignment(vm::ExecutionContext *contex
 
     ExpressionValue value = _expression->evaluate(context);
 
+
     switch (var->getType().getType()) {
         case TypeDecl::BOOL:
             var->getAllocation()->write(value.get<bool>());
@@ -84,6 +85,9 @@ void VariableAssignmentStatement::executeAssignment(vm::ExecutionContext *contex
             break;
         case TypeDecl::DOUBLE:
             var->getAllocation()->write(value.get<double>());
+            break;
+        case TypeDecl::POINTER:
+            var->getAllocation()->write(value.get<uint32_t>());
             break;
 
         default:
