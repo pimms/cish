@@ -363,6 +363,17 @@ TEST(SimpleProgramsTest, assigningFromConstant)
     assertExitCode(source, 50);
 }
 
+TEST(SimpleProgramsTest, returningADereferencedPointer)
+{
+    const std::string source =
+        "int main() {"
+        "   int var = 100;"
+        "   int *ptr = &var;"
+        "   return *ptr;"
+        "}";
+    assertExitCode(source, 100);
+}
+
 
 /* COMPILATION FAILURES */
 
@@ -458,6 +469,15 @@ TEST(SimpleProgramsTest, reassigningConstVariable)
         "void main() {"
         "   const int const = 10;"
         "   const++;"
+        "}"
+    );
+}
+
+TEST(SimpleProgramsTest, cannotTakeAddressOfLiterals)
+{
+    assertCompilationFailure(
+        "void main() {"
+        "   int *ptr = &100;"
         "}"
     );
 }

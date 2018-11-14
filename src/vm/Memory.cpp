@@ -12,6 +12,12 @@ namespace vm
 
 static const uint32_t FIRST_USABLE_ADDRESS = 0x00400000;
 
+uint32_t Memory::firstUsableMemoryAddress()
+{
+    return FIRST_USABLE_ADDRESS;
+}
+
+
 Memory::Memory(uint32_t heapSize, uint32_t minAllocSize):
     _heapSize(heapSize),
     _allocationSize(minAllocSize),
@@ -68,6 +74,28 @@ Allocation::Ptr Memory::allocate(uint32_t size)
     return Allocation::create(FIRST_USABLE_ADDRESS + byteOffset, byteSize, this);
 }
 
+std::vector<uint8_t> Memory::safeRead(uint32_t addr, uint32_t len)
+{
+    if (addr < FIRST_USABLE_ADDRESS || addr >= FIRST_USABLE_ADDRESS + _heapSize) {
+        Throw(InvalidReadException, "attempted reading unallocated address: %x", addr);
+    }
+
+    const uint32_t offset = addr - FIRST_USABLE_ADDRESS;
+    const uint32_t firstUnit = offset / _allocationSize;
+    const uint32_t numUnits = bytesToAllocations(len);
+
+    for (int i=0; i<numUnits; i++) {
+        if (!isUnitAllocated(firstUnit + i))
+            Throw(InvalidReadException, "attempted reading unallocated address: %x", addr);
+    }
+
+    std::vector<uint8_t> res;
+    for (int i=0; i<len; i++) {
+        res.push_back(_heap[offset + i]);
+    }
+    return res;
+}
+
 
 uint32_t Memory::findUnallocatedRun(uint32_t requiredUnits)
 {
@@ -75,7 +103,7 @@ uint32_t Memory::findUnallocatedRun(uint32_t requiredUnits)
     // the whole memory space, lol
 
     uint32_t cur = 0;
-    uint32_t runLenght = 0;
+    uint32_t runLength = 0;
 
     // Find the first unoccupied run of 'length' bytes in the memory space.
     for (int i=0; i<_numAllocationUnits; i++) {
@@ -83,21 +111,21 @@ uint32_t Memory::findUnallocatedRun(uint32_t requiredUnits)
         const uint32_t bit = i % 8;
 
         if ((_allocationMap[byte] & (1 << bit)) == 0) {
-            if (!runLenght) {
+            if (!runLength) {
                 cur = i;
             }
 
-            runLenght++;
+            runLength++;
 
-            if (runLenght >= requiredUnits) {
+            if (runLength >= requiredUnits) {
                 return cur;
             }
         } else {
-            runLenght = 0;
+            runLength = 0;
         }
     }
 
-    throw OutOfMemoryException("Allocation failed");
+    Throw(OutOfMemoryException, "Allocation failed");
 }
 
 void Memory::markAsAllocated(uint32_t startUnit, uint32_t numUnits)
@@ -118,6 +146,14 @@ void Memory::markAsFree(uint32_t startUnit, uint32_t numUnits)
 
         _allocationMap[byte] &= ~(1 << bit);
     }
+}
+
+bool Memory::isUnitAllocated(uint32_t unitIndex) const
+{
+    const uint32_t byte = unitIndex / 8;
+    const uint32_t bit = unitIndex % 8;
+
+    return _allocationMap[byte] & (1 << bit);
 }
 
 uint32_t Memory::bytesToAllocations(uint32_t byteCount) const

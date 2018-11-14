@@ -10,6 +10,8 @@
 #include "FunctionCallExpression.h"
 #include "LiteralExpression.h"
 #include "IncDecExpression.h"
+#include "AddrofExpression.h"
+#include "DerefExpression.h"
 
 #include "VariableAssignmentStatement.h"
 #include "VariableDeclarationStatement.h"
@@ -237,6 +239,18 @@ public:
         return buildIncDecExpression(IncDecExpression::PREFIX_DECREMENT, ctx->Identifier()->getText());
     }
 
+
+    virtual antlrcpp::Any visitADDROF_EXPR(CMParser::ADDROF_EXPRContext *ctx) override
+    {
+        const std::string varName = ctx->Identifier()->getText();
+        return createResult(new AddrofExpression(&_declContext, varName));
+    }
+
+    virtual antlrcpp::Any visitDEREF_EXPR(CMParser::DEREF_EXPRContext *ctx) override
+    {
+        const std::string varName = ctx->Identifier()->getText();
+        return createResult(new DerefExpression(&_declContext, varName));
+    }
 
     virtual antlrcpp::Any visitMULT_EXPR(CMParser::MULT_EXPRContext *ctx) override
     {

@@ -1,8 +1,11 @@
 #pragma once
 
+#include "Allocation.h"
+#include "../Exception.h"
+
 #include <stdint.h>
 #include <stdexcept>
-#include "Allocation.h"
+#include <vector>
 
 
 namespace cish
@@ -11,15 +14,15 @@ namespace vm
 {
 
 
-class OutOfMemoryException : public std::runtime_error {
-public:
-    OutOfMemoryException(const char *msg): std::runtime_error(msg) {}
-};
+DECLARE_EXCEPTION(OutOfMemoryException);
+DECLARE_EXCEPTION(InvalidReadException);
 
 
 class Memory : private MemoryAccess
 {
 public:
+    static uint32_t firstUsableMemoryAddress();
+
     Memory(uint32_t heapSize, uint32_t minAllocSize);
     virtual ~Memory();
 
@@ -27,6 +30,8 @@ public:
     uint32_t getFreeSize() const;
 
     Allocation::Ptr allocate(uint32_t size);
+
+    std::vector<uint8_t> safeRead(uint32_t addr, uint32_t len);
 
 private:
     const uint32_t _heapSize;
@@ -38,6 +43,7 @@ private:
     uint32_t findUnallocatedRun(uint32_t len);
     void markAsAllocated(uint32_t offset, uint32_t len);
     void markAsFree(uint32_t offset, uint32_t len);
+    bool isUnitAllocated(uint32_t unitIndex) const;
     uint32_t bytesToAllocations(uint32_t byteCount) const;
 
     /* MemoryAccess */

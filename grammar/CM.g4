@@ -22,6 +22,8 @@ expression
 
 expr
     : incdecexpr                                # INCDECEXPR___
+    | '&' Identifier                            # ADDROF_EXPR
+    | '*' Identifier                            # DEREF_EXPR
     | expr op=( '*' | '/' | '%' ) expr          # MULT_EXPR
     | expr op=( '+' | '-' ) expr                # ADD_EXPR
     | expr op=( '>=' | '<=' | '>' | '<' ) expr  # COMPARE_EXPR
@@ -30,7 +32,6 @@ expr
     | (String|Integer|Floating|Boolean|Null)    # LITERAL_EXPR
     | Identifier                                # VAR_REF_EXPR
     | functionCall                              # FUNC_CALL_EXPR
-    | '&' Identifier                            # ADDROF_EXPR
     ;
 incdecexpr
     : Identifier '++'                           # POSTFIX_INC_EXPR

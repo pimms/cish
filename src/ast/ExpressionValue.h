@@ -41,7 +41,7 @@ private:
 
     TypeDecl _type;
     union {
-        int ival;
+        int32_t ival;
         float fval;
         bool bval;
     } _value;
