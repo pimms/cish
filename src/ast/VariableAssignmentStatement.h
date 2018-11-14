@@ -15,11 +15,27 @@ class DeclarationContext;
 class VariableAssignmentStatement: public Statement
 {
 public:
+    /**
+     * Exists so VariableDeclarationStatement is able to piggy-back on
+     * VariableAssignmentStatement to initialize constant variables.
+     */
+    enum class ConstAwareness
+    {
+        IGNORE,
+        STRICT,
+    };
+
     VariableAssignmentStatement(DeclarationContext *context,
                                 const std::string &varName,
                                 Expression *value);
-    ~VariableAssignmentStatement();
+    VariableAssignmentStatement(DeclarationContext *context,
+                                const std::string &varName,
+                                Expression *value,
+                                ConstAwareness constAwareness);
+
+    virtual ~VariableAssignmentStatement();
     virtual void execute(vm::ExecutionContext *context) const override;
+
     void executeAssignment(vm::ExecutionContext *context) const;
 
 private:

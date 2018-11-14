@@ -142,3 +142,15 @@ TEST(IncDecExpressionTest, charUnderflow)
     ASSERT_EQ(-128, value.get<char>());
 }
 
+TEST(IncDecExpressionTest, operatingOnConstVariablesNotAllowed)
+{
+    DeclarationContext dc;
+
+    TypeDecl type = TypeDecl::INT;
+    type.setConst(true);
+    dc.declareVariable(type, "i");
+
+    ASSERT_THROW(IncDecExpression expr(&dc, IncDecExpression::POSTFIX_DECREMENT, "i"),
+                 InvalidOperationException);
+}
+

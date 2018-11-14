@@ -8,8 +8,6 @@ namespace cish
 namespace ast
 {
 
-DECLARE_EXCEPTION(InvalidOperationException);
-
 
 class BinaryExpression: public Expression
 {

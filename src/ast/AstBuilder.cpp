@@ -522,10 +522,6 @@ public:
     {
         CMParser::TypeIdentifierContext *typeContext = ctx->typeIdentifier();
 
-        if (typeContext->constTypeIdentifier() != nullptr) {
-            Throw(AstConversionException, "Const variable declarations are not yet supported");
-        }
-
         const TypeDecl type = visitTypeIdentifier(ctx->typeIdentifier()).as<TypeDecl>();;
         const std::string varName = ctx->identifier()->getText();
 
@@ -644,7 +640,10 @@ public:
 
     virtual antlrcpp::Any visitConstTypeIdentifier(CMParser::ConstTypeIdentifierContext *ctx) override
     {
-        Throw(AstConversionException, "Not implemented!");
+        std::string text = ctx->getText().substr(5);
+        TypeDecl type = TypeDecl::getFromString(text);
+        type.setConst(true);
+        return type;
     }
 };
 

@@ -339,7 +339,8 @@ TEST(SimpleProgramsTest, standaloneIncrements)
 }
 
 
-TEST(SimpleProgramsTest, forLoopWithIncrement) {
+TEST(SimpleProgramsTest, forLoopWithIncrement)
+{
     const std::string source =
         "int main() {"
         "   int n = 0;"
@@ -349,6 +350,17 @@ TEST(SimpleProgramsTest, forLoopWithIncrement) {
         "   return n;"
         "}";
     assertExitCode(source, 10);
+}
+
+TEST(SimpleProgramsTest, assigningFromConstant)
+{
+    const std::string source =
+        "const int CONSTANT = 100;"
+        "int main() {"
+        "   int var = CONSTANT / 2;"
+        "   return var;"
+        "}";
+    assertExitCode(source, 50);
 }
 
 
@@ -439,3 +451,14 @@ TEST(SimpleProgramsTest, declarationsInIfBranchUnavailableOutside)
         "void main() {}"
     );
 }
+
+TEST(SimpleProgramsTest, reassigningConstVariable)
+{
+    assertCompilationFailure(
+        "void main() {"
+        "   const int const = 10;"
+        "   const++;"
+        "}"
+    );
+}
+

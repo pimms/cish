@@ -143,3 +143,17 @@ TEST(VariableAssignmentStatemenTest, undeclaredVariablesThrows)
     ASSERT_THROW(VariableAssignmentStatement stmt(&dc, "var", expr), VariableNotDeclaredException);
     delete expr;
 }
+
+TEST(VariableAssignmentStatemenTest, assigningToConstVariablesNotAllowed)
+{
+    DeclarationContext dc;
+
+    TypeDecl type = TypeDecl::INT;
+    type.setConst(true);
+
+    dc.declareVariable(type, "i");
+
+    auto expr = new LiteralExpression(ExpressionValue(TypeDecl::INT, 10));
+    ASSERT_THROW(VariableAssignmentStatement stmt(&dc, "i", expr), InvalidOperationException);
+    delete expr;
+}

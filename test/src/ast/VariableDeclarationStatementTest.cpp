@@ -53,3 +53,32 @@ TEST(VariableDeclarationStatementTest, variablesAreInitializedWhenExpressionIsDe
     Variable *var = ec.getScope()->getVariable("var");
     ASSERT_EQ(100, var->getAllocation()->read<int>());
 }
+
+TEST(VariableDeclarationStatementTest, declarationAndAssignmentOfConstVariableIsAllowed)
+{
+    DeclarationContext dc;
+
+    TypeDecl type = TypeDecl::INT;
+    type.setConst(true);
+
+    auto expr = new LiteralExpression(100);
+    ASSERT_NO_THROW(VariableDeclarationStatement stmt(&dc, type, "i", expr));
+
+}
+
+TEST(VariableDeclarationStatementTest, mutableVariablesDontNeedAnAssignedValue)
+{
+    DeclarationContext dc;
+    ASSERT_NO_THROW(VariableDeclarationStatement stmt(&dc, TypeDecl::INT, "i", nullptr));
+}
+
+TEST(VariableDeclarationStatementTest, constVariablesDontNeedAnAssignedValue)
+{
+    DeclarationContext dc;
+
+    TypeDecl type = TypeDecl::INT;
+    type.setConst(true);
+
+    auto expr = new LiteralExpression(100);
+    ASSERT_NO_THROW(VariableDeclarationStatement stmt(&dc, type, "i", nullptr));
+}

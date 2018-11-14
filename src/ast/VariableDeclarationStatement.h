@@ -1,6 +1,7 @@
 #pragma once
 
 #include "AstNodes.h"
+#include "VariableAssignmentStatement.h"
 
 
 namespace cish
@@ -21,7 +22,7 @@ public:
             TypeDecl type,
             const std::string &varName,
             Expression *value);
-    ~VariableDeclarationStatement();
+    virtual ~VariableDeclarationStatement();
     virtual void execute(vm::ExecutionContext *context) const override;
 
     const TypeDecl& getDeclaredType() const;

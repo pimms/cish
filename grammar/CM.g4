@@ -30,6 +30,7 @@ expr
     | (String|Integer|Floating|Boolean|Null)    # LITERAL_EXPR
     | Identifier                                # VAR_REF_EXPR
     | functionCall                              # FUNC_CALL_EXPR
+    | '&' Identifier                            # ADDROF_EXPR
     ;
 incdecexpr
     : Identifier '++'                           # POSTFIX_INC_EXPR

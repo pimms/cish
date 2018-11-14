@@ -20,6 +20,14 @@ VariableAssignmentStatement::VariableAssignmentStatement(
         DeclarationContext *context,
         const std::string &varName,
         Expression *value):
+    VariableAssignmentStatement(context, varName, value, ConstAwareness::STRICT)
+{ }
+
+VariableAssignmentStatement::VariableAssignmentStatement(
+        DeclarationContext *context,
+        const std::string &varName,
+        Expression *value,
+        VariableAssignmentStatement::ConstAwareness constAwareness):
     _varName(varName),
     _expression(value)
 {
@@ -31,6 +39,10 @@ VariableAssignmentStatement::VariableAssignmentStatement(
     if (!value->getType().castableTo(var->type)) {
         Throw(InvalidCastException, "Cannot cast value of '%s' into variable '%s' of type '%s'",
                 value->getType().getName(), var->name.c_str(), var->type.getName());
+    }
+
+    if (constAwareness == ConstAwareness::STRICT && var->type.isConst()) {
+        Throw(InvalidOperationException, "Cannot assign to a constant variable");
     }
 }
 
@@ -58,8 +70,6 @@ void VariableAssignmentStatement::executeAssignment(vm::ExecutionContext *contex
     if (var == nullptr) {
         Throw(VariableNotDefinedException, "Variable '%s' not defined", _varName.c_str());
     }
-
-    // TODO: Ensure variable is not const
 
     ExpressionValue value = _expression->evaluate(context);
 

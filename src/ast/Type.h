@@ -62,9 +62,13 @@ public:
     bool isIntegral() const;
     bool isFloating() const;
 
+    bool isConst() const;
+    void setConst(bool isConst);
+
 private:
     Type _type;
     TypeDecl *_referencedType;
+    bool _const;
 };
 
 

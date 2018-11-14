@@ -23,7 +23,8 @@ VariableDeclarationStatement::VariableDeclarationStatement(
     context->declareVariable(type, _varName);
 
     if (value != nullptr) {
-        _assignment = new VariableAssignmentStatement(context, _varName, value);
+        auto constAwareness = VariableAssignmentStatement::ConstAwareness::IGNORE;
+        _assignment = new VariableAssignmentStatement(context, _varName, value, constAwareness);
     }
 }
 

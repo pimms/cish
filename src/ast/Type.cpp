@@ -54,7 +54,8 @@ TypeDecl TypeDecl::getPointer(const TypeDecl &referencedType)
 
 TypeDecl::TypeDecl():
     _type(VOID),
-    _referencedType(nullptr)
+    _referencedType(nullptr),
+    _const(false)
  {}
 
 TypeDecl::TypeDecl(const TypeDecl &o)
@@ -64,7 +65,8 @@ TypeDecl::TypeDecl(const TypeDecl &o)
 
 TypeDecl::TypeDecl(Type t):
     _type(t),
-    _referencedType(nullptr)
+    _referencedType(nullptr),
+    _const(false)
 {
     if (_type == POINTER) {
         Throw(Exception, "Pointer types cannot be constructed through TypeDecl::TypeDecl(Type)");
@@ -80,6 +82,7 @@ TypeDecl::~TypeDecl()
 TypeDecl& TypeDecl::operator=(const TypeDecl &o)
 {
     _type = o._type;
+    _const = o._const;
     if (o._referencedType != nullptr) {
         // NB! potentially recursive initialization
         assert(_type == POINTER);
@@ -218,6 +221,16 @@ bool TypeDecl::isFloating() const
 {
     return  _type == FLOAT ||
             _type == DOUBLE;
+}
+
+bool TypeDecl::isConst() const
+{
+    return _const;
+}
+
+void TypeDecl::setConst(bool isConst)
+{
+    _const = isConst;
 }
 
 

@@ -204,3 +204,4 @@ TEST(TypeTest, pointerTypeDeclWithPointerTypeIsShallow)
     ASSERT_TRUE(voidPtr == TypeDecl::POINTER);
     ASSERT_FALSE(intPtr == voidPtr);
 }
+

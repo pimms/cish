@@ -44,6 +44,10 @@ IncDecExpression::IncDecExpression(DeclarationContext *context,
         Throw(InvalidTypeException,
             "Increment/decrement operator only allowed on integral types");
     }
+
+    if (_varDecl.type.isConst()) {
+        Throw(InvalidOperationException, "Cannot alter a const variable");
+    }
 }
 
 IncDecExpression::~IncDecExpression()
