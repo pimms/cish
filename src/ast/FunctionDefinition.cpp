@@ -79,9 +79,6 @@ vm::Variable* FunctionDefinition::convertToVariable(vm::Memory *memory, const Ex
         case TypeDecl::INT:
             alloc->write<int>(expr.get<int>());
             break;
-        case TypeDecl::LONG:
-            alloc->write<long>(expr.get<long>());
-            break;
         case TypeDecl::FLOAT:
             alloc->write<float>(expr.get<float>());
             break;

@@ -13,7 +13,6 @@ TEST(TypeTest, sizeTest)
     ASSERT_EQ(1, TypeDecl(TypeDecl::CHAR).getSize());
     ASSERT_EQ(2, TypeDecl(TypeDecl::SHORT).getSize());
     ASSERT_EQ(4, TypeDecl(TypeDecl::INT).getSize());
-    ASSERT_EQ(8, TypeDecl(TypeDecl::LONG).getSize());
     ASSERT_EQ(4, TypeDecl(TypeDecl::FLOAT).getSize());
     ASSERT_EQ(8, TypeDecl(TypeDecl::DOUBLE).getSize());
 }
@@ -25,7 +24,6 @@ TEST(TypeTest, resolveFromString)
     ASSERT_EQ(TypeDecl(TypeDecl::CHAR), TypeDecl::getFromString("char"));
     ASSERT_EQ(TypeDecl(TypeDecl::SHORT), TypeDecl::getFromString("short"));
     ASSERT_EQ(TypeDecl(TypeDecl::INT), TypeDecl::getFromString("int"));
-    ASSERT_EQ(TypeDecl(TypeDecl::LONG), TypeDecl::getFromString("long"));
     ASSERT_EQ(TypeDecl(TypeDecl::FLOAT), TypeDecl::getFromString("float"));
     ASSERT_EQ(TypeDecl(TypeDecl::DOUBLE), TypeDecl::getFromString("double"));
 }
@@ -46,9 +44,6 @@ TEST(TypeTest, resolvePointerFromString)
 
     ASSERT_EQ(TypeDecl::POINTER, TypeDecl::getFromString("int*").getType());
     ASSERT_EQ(TypeDecl::INT, TypeDecl::getFromString("int*").getReferencedType()->getType());
-
-    ASSERT_EQ(TypeDecl::POINTER, TypeDecl::getFromString("long*").getType());
-    ASSERT_EQ(TypeDecl::LONG, TypeDecl::getFromString("long*").getReferencedType()->getType());
 
     ASSERT_EQ(TypeDecl::POINTER, TypeDecl::getFromString("float*").getType());
     ASSERT_EQ(TypeDecl::FLOAT, TypeDecl::getFromString("float*").getReferencedType()->getType());
@@ -100,7 +95,6 @@ TEST(TypeTest, primitivesHasNoReferencedType)
     ASSERT_ANY_THROW(TypeDecl(TypeDecl::CHAR).getReferencedType());
     ASSERT_ANY_THROW(TypeDecl(TypeDecl::SHORT).getReferencedType());
     ASSERT_ANY_THROW(TypeDecl(TypeDecl::INT).getReferencedType());
-    ASSERT_ANY_THROW(TypeDecl(TypeDecl::LONG).getReferencedType());
     ASSERT_ANY_THROW(TypeDecl(TypeDecl::FLOAT).getReferencedType());
     ASSERT_ANY_THROW(TypeDecl(TypeDecl::DOUBLE).getReferencedType());
 }

@@ -42,9 +42,6 @@ TEST(BinaryExpressionTest, type_folding)
     testTypeFolding<int,bool,int>();
     testTypeFolding<bool,int,int>();
 
-    testTypeFolding<long,bool,long>();
-    testTypeFolding<bool,long,long>();
-
     testTypeFolding<float,bool,float>();
     testTypeFolding<bool,float,float>();
 
@@ -60,9 +57,6 @@ TEST(BinaryExpressionTest, type_folding)
     testTypeFolding<int,char,int>();
     testTypeFolding<char,int,int>();
 
-    testTypeFolding<long,char,long>();
-    testTypeFolding<char,long,long>();
-
     testTypeFolding<float,char,float>();
     testTypeFolding<char,float,float>();
 
@@ -75,9 +69,6 @@ TEST(BinaryExpressionTest, type_folding)
     testTypeFolding<int,short,int>();
     testTypeFolding<short,int,int>();
 
-    testTypeFolding<long,short,long>();
-    testTypeFolding<short,long,long>();
-
     testTypeFolding<float,short,float>();
     testTypeFolding<short,float,float>();
 
@@ -87,23 +78,12 @@ TEST(BinaryExpressionTest, type_folding)
     // Base int
     testTypeFolding<int,int,int>();
 
-    testTypeFolding<long,int,long>();
-    testTypeFolding<int,long,long>();
-
     testTypeFolding<float,int,float>();
     testTypeFolding<int,float,float>();
 
     testTypeFolding<double,int,double>();
     testTypeFolding<int,double,double>();
 
-    // Base long
-    testTypeFolding<long,long,long>();
-
-    testTypeFolding<float,long,float>();
-    testTypeFolding<long,float,float>();
-
-    testTypeFolding<double,long,double>();
-    testTypeFolding<long,double,double>();
 
     // Base float
     testTypeFolding<float,float,float>();
@@ -201,9 +181,6 @@ TEST(BinaryExpressionTest, testAllArithmeticOperatorPermutations)
     testArithmeticOperators<int,bool,int>();
     testArithmeticOperators<bool,int,int>();
 
-    testArithmeticOperators<long,bool,long>();
-    testArithmeticOperators<bool,long,long>();
-
     testArithmeticOperators<float,bool,float>();
     testArithmeticOperators<bool,float,float>();
 
@@ -219,9 +196,6 @@ TEST(BinaryExpressionTest, testAllArithmeticOperatorPermutations)
     testArithmeticOperators<int,char,int>();
     testArithmeticOperators<char,int,int>();
 
-    testArithmeticOperators<long,char,long>();
-    testArithmeticOperators<char,long,long>();
-
     testArithmeticOperators<float,char,float>();
     testArithmeticOperators<char,float,float>();
 
@@ -234,9 +208,6 @@ TEST(BinaryExpressionTest, testAllArithmeticOperatorPermutations)
     testArithmeticOperators<int,short,int>();
     testArithmeticOperators<short,int,int>();
 
-    testArithmeticOperators<long,short,long>();
-    testArithmeticOperators<short,long,long>();
-
     testArithmeticOperators<float,short,float>();
     testArithmeticOperators<short,float,float>();
 
@@ -246,23 +217,12 @@ TEST(BinaryExpressionTest, testAllArithmeticOperatorPermutations)
     // Base int
     testArithmeticOperators<int,int,int>();
 
-    testArithmeticOperators<long,int,long>();
-    testArithmeticOperators<int,long,long>();
-
     testArithmeticOperators<float,int,float>();
     testArithmeticOperators<int,float,float>();
 
     testArithmeticOperators<double,int,double>();
     testArithmeticOperators<int,double,double>();
 
-    // Base long
-    testArithmeticOperators<long,long,long>();
-
-    testArithmeticOperators<float,long,float>();
-    testArithmeticOperators<long,float,float>();
-
-    testArithmeticOperators<double,long,double>();
-    testArithmeticOperators<long,double,double>();
 
     // Base float
     testArithmeticOperators<float,float,float>();
@@ -316,7 +276,6 @@ TEST(BinaryExpressionTest, testLogicalOperators)
     testLogicalOperators<char>();
     testLogicalOperators<short>();
     testLogicalOperators<int>();
-    testLogicalOperators<long>();
     testLogicalOperators<float>();
     testLogicalOperators<double>();
 }
@@ -358,7 +317,6 @@ TEST(BinaryExpressionTest, pointerArithmeticTypeTest)
         {TypeDecl::Type::CHAR,      true},
         {TypeDecl::Type::SHORT,     true},
         {TypeDecl::Type::INT,       true},
-        {TypeDecl::Type::LONG,      true},
         {TypeDecl::Type::FLOAT,     false},
         {TypeDecl::Type::DOUBLE,    false},
     };
@@ -430,7 +388,6 @@ TEST(BinaryExpressionTest, pointerAdditionArithmetics)
         TypeDecl::CHAR,
         TypeDecl::SHORT,
         TypeDecl::INT,
-        TypeDecl::LONG,
         TypeDecl::FLOAT,
         TypeDecl::DOUBLE,
         TypeDecl::getPointer(TypeDecl::VOID),
@@ -438,7 +395,6 @@ TEST(BinaryExpressionTest, pointerAdditionArithmetics)
         TypeDecl::getPointer(TypeDecl::CHAR),
         TypeDecl::getPointer(TypeDecl::SHORT),
         TypeDecl::getPointer(TypeDecl::INT),
-        TypeDecl::getPointer(TypeDecl::LONG),
         TypeDecl::getPointer(TypeDecl::FLOAT),
         TypeDecl::getPointer(TypeDecl::DOUBLE),
     };

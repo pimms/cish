@@ -79,8 +79,6 @@ ExpressionValue IncDecExpression::evaluate(vm::ExecutionContext *context) const
         case TypeDecl::INT:
         case TypeDecl::POINTER:
             return internal::evaluate<uint32_t>(_operation, _varDecl.type, var, delta);
-        case TypeDecl::LONG:
-            return internal::evaluate<uint64_t>(_operation, _varDecl.type, var, delta);
         default:
             Throw(InvalidTypeException, "Type '%s not handled'", _varDecl.type.getName());
     }

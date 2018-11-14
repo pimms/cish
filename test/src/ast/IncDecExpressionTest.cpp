@@ -28,10 +28,9 @@ TEST(IncDecExpressionTest, verifyOperationsOnPointers)
 		TypeDecl::getPointer(TypeDecl::CHAR),
 		TypeDecl::getPointer(TypeDecl::SHORT),
 		TypeDecl::getPointer(TypeDecl::INT),
-		TypeDecl::getPointer(TypeDecl::LONG),
 		TypeDecl::getPointer(TypeDecl::FLOAT),
 		TypeDecl::getPointer(TypeDecl::DOUBLE),
-		TypeDecl::getPointer(TypeDecl::getPointer(TypeDecl::LONG)),
+		TypeDecl::getPointer(TypeDecl::getPointer(TypeDecl::INT)),
 	};
 
 	const std::map<IncDecExpression::Operation, std::tuple<int,int>> expectations = {
@@ -74,7 +73,6 @@ TEST(IncDecExpressionTest, verifyOperationsOnPrimitives)
 		TypeDecl::CHAR,
 		TypeDecl::SHORT,
 		TypeDecl::INT,
-		TypeDecl::LONG,
 	};
 
 	const std::map<IncDecExpression::Operation, std::tuple<int,int>> expectations = {

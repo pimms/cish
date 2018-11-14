@@ -67,7 +67,6 @@ TEST(VariableAssignmentStatementTest, assignmentCastTest)
     testAssignmentCasting<bool,char>();
     testAssignmentCasting<bool,short>();
     testAssignmentCasting<bool,int>();
-    testAssignmentCasting<bool,long>();
     testAssignmentCasting<bool,float>();
     testAssignmentCasting<bool,double>();
 
@@ -75,7 +74,6 @@ TEST(VariableAssignmentStatementTest, assignmentCastTest)
     testAssignmentCasting<char,char>();
     testAssignmentCasting<char,short>();
     testAssignmentCasting<char,int>();
-    testAssignmentCasting<char,long>();
     testAssignmentCasting<char,float>();
     testAssignmentCasting<char,double>();
 
@@ -83,7 +81,6 @@ TEST(VariableAssignmentStatementTest, assignmentCastTest)
     testAssignmentCasting<short,char>();
     testAssignmentCasting<short,short>();
     testAssignmentCasting<short,int>();
-    testAssignmentCasting<short,long>();
     testAssignmentCasting<short,float>();
     testAssignmentCasting<short,double>();
 
@@ -91,23 +88,13 @@ TEST(VariableAssignmentStatementTest, assignmentCastTest)
     testAssignmentCasting<int,char>();
     testAssignmentCasting<int,short>();
     testAssignmentCasting<int,int>();
-    testAssignmentCasting<int,long>();
     testAssignmentCasting<int,float>();
     testAssignmentCasting<int,double>();
-
-    testAssignmentCasting<long,bool>();
-    testAssignmentCasting<long,char>();
-    testAssignmentCasting<long,short>();
-    testAssignmentCasting<long,int>();
-    testAssignmentCasting<long,long>();
-    testAssignmentCasting<long,float>();
-    testAssignmentCasting<long,double>();
 
     testAssignmentCasting<float,bool>();
     testAssignmentCasting<float,char>();
     testAssignmentCasting<float,short>();
     testAssignmentCasting<float,int>();
-    testAssignmentCasting<float,long>();
     testAssignmentCasting<float,float>();
     testAssignmentCasting<float,double>();
 
@@ -115,7 +102,6 @@ TEST(VariableAssignmentStatementTest, assignmentCastTest)
     testAssignmentCasting<double,char>();
     testAssignmentCasting<double,short>();
     testAssignmentCasting<double,int>();
-    testAssignmentCasting<double,long>();
     testAssignmentCasting<double,float>();
     testAssignmentCasting<double,double>();
 }

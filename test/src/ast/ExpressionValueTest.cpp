@@ -49,12 +49,10 @@ TEST(ExpressionValueTest, IntrinsicFloat_GetAsIntTypes)
     ASSERT_EQ(10, ExpressionValue("10.8").get<int8_t>());
     ASSERT_EQ(10, ExpressionValue("10.8").get<int16_t>());
     ASSERT_EQ(10, ExpressionValue("10.8").get<int32_t>());
-    ASSERT_EQ(10, ExpressionValue("10.8").get<int64_t>());
 
     ASSERT_EQ(44,  ExpressionValue("300.1").get<int8_t>());
     ASSERT_EQ(300, ExpressionValue("300.1").get<int16_t>());
     ASSERT_EQ(300, ExpressionValue("300.1").get<int32_t>());
-    ASSERT_EQ(300, ExpressionValue("300.1").get<int64_t>());
 }
 
 
@@ -64,7 +62,6 @@ TEST(ExpressionValueTest, IntrinsicInt_GetAsIntTypes)
     ASSERT_EQ(199, ExpressionValue("199").get<uint8_t>());
     ASSERT_EQ(199, ExpressionValue("199").get<int16_t>());
     ASSERT_EQ(199, ExpressionValue("199").get<int32_t>());
-    ASSERT_EQ(199, ExpressionValue("199").get<int64_t>());
 
     ASSERT_EQ(true, ExpressionValue("199").get<bool>());
     ASSERT_EQ(false, ExpressionValue("0").get<bool>());

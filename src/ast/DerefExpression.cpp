@@ -66,8 +66,6 @@ ExpressionValue DerefExpression::evaluate(vm::ExecutionContext *context) const
             return internal::createExpressionValue<uint32_t>(type, buf);
         case TypeDecl::INT:
             return internal::createExpressionValue<int32_t>(type, buf);
-        case TypeDecl::LONG:
-            return internal::createExpressionValue<int64_t>(type, buf);
         case TypeDecl::FLOAT:
             return internal::createExpressionValue<float>(type, buf);
         case TypeDecl::DOUBLE:

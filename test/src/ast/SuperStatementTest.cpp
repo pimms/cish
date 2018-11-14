@@ -20,7 +20,7 @@ TEST(SuperStatementTest, superStatementsCallAllTheirChildren)
     DeclarationContext dc;
 
     auto *decl1 = new VariableDeclarationStatement(&dc, TypeDecl::INT, "var1", nullptr);
-    auto *decl2 = new VariableDeclarationStatement(&dc, TypeDecl::LONG, "var2", nullptr);
+    auto *decl2 = new VariableDeclarationStatement(&dc, TypeDecl::SHORT, "var2", nullptr);
 
     SuperStatement super;
     super.addStatement(decl1);
@@ -31,8 +31,8 @@ TEST(SuperStatementTest, superStatementsCallAllTheirChildren)
     ASSERT_EQ(TypeDecl::INT, ec.getScope()->getVariable("var1")->getType().getType());
 
     ASSERT_NE(nullptr, ec.getScope()->getVariable("var2"));
-    ASSERT_EQ(TypeDecl::LONG, ec.getScope()->getVariable("var2")->getType().getType());
+    ASSERT_EQ(TypeDecl::SHORT, ec.getScope()->getVariable("var2")->getType().getType());
 
-    ASSERT_EQ(100 - 12, memory.getFreeSize());
+    ASSERT_EQ(100 - 6, memory.getFreeSize());
 }
 

@@ -50,8 +50,6 @@ ExpressionValue VariableReferenceExpression::evaluate(vm::ExecutionContext *ctx)
             return ExpressionValue(_type, alloc->read<short>());
         case TypeDecl::INT:
             return ExpressionValue(_type, alloc->read<int>());
-        case TypeDecl::LONG:
-            return ExpressionValue(_type, alloc->read<long>());
         case TypeDecl::FLOAT:
             return ExpressionValue(_type, alloc->read<float>());
         case TypeDecl::DOUBLE:

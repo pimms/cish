@@ -87,9 +87,6 @@ void VariableAssignmentStatement::executeAssignment(vm::ExecutionContext *contex
         case TypeDecl::INT:
             var->getAllocation()->write(value.get<int>());
             break;
-        case TypeDecl::LONG:
-            var->getAllocation()->write(value.get<long>());
-            break;
         case TypeDecl::FLOAT:
             var->getAllocation()->write(value.get<float>());
             break;

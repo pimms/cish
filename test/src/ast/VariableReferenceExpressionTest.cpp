@@ -111,7 +111,6 @@ TEST(VariableReferenceExpressionTest, simpleEvaluationTest)
     testSimpleVariableReferenceEvaluation<char>();
     testSimpleVariableReferenceEvaluation<short>();
     testSimpleVariableReferenceEvaluation<int>();
-    testSimpleVariableReferenceEvaluation<long>();
     testSimpleVariableReferenceEvaluation<float>();
     testSimpleVariableReferenceEvaluation<double>();
 }

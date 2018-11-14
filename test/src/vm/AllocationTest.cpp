@@ -13,7 +13,6 @@ TEST(AllocationTest, WriteOutOfBoundsThrows)
     auto alloc = memory.allocate(4);
 
     ASSERT_THROW(alloc->write<uint32_t>(25, 1), InvalidAccessException);
-    ASSERT_THROW(alloc->write<uint64_t>(25), InvalidAccessException);
 }
 
 TEST(AllocationTest, ReadOutOfBoundsThrows)
@@ -22,7 +21,6 @@ TEST(AllocationTest, ReadOutOfBoundsThrows)
     auto alloc = memory.allocate(4);
 
     ASSERT_THROW(alloc->read<uint32_t>(1), InvalidAccessException);
-    ASSERT_THROW(alloc->read<uint64_t>(1), InvalidAccessException);
 }
 
 TEST(AllocationTest, WriteAndReadDword)
