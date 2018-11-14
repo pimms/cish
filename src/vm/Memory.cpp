@@ -1,5 +1,7 @@
 #include "Memory.h"
 
+#include "../Exception.h"
+
 #include <cassert>
 
 
@@ -7,6 +9,8 @@ namespace cish
 {
 namespace vm
 {
+
+static const uint32_t FIRST_USABLE_ADDRESS = 0x00400000;
 
 Memory::Memory(uint32_t heapSize, uint32_t minAllocSize):
     _heapSize(heapSize),
@@ -61,7 +65,7 @@ Allocation::Ptr Memory::allocate(uint32_t size)
     const uint32_t byteOffset = unitIndex * _allocationSize;
     const uint32_t byteSize = allocationUnits * _allocationSize;
 
-    return Allocation::create(byteOffset, byteSize, this);
+    return Allocation::create(FIRST_USABLE_ADDRESS + byteOffset, byteSize, this);
 }
 
 
@@ -130,14 +134,20 @@ uint32_t Memory::bytesToAllocations(uint32_t byteCount) const
 
 
 /* MemoryAccess */
-uint8_t* Memory::getHeap()
+uint8_t* Memory::resolve(uint32_t address)
 {
-    return _heap;
+    if (address < FIRST_USABLE_ADDRESS || address >= FIRST_USABLE_ADDRESS + _heapSize) {
+        // TODO: This is a great time to emulate a segfault :)
+        Throw(Exception, "Address out of bounds: %x", address);
+    }
+
+    address -= FIRST_USABLE_ADDRESS;
+    return _heap + address;
 }
 
 void Memory::onDeallocation(Allocation *allocation)
 {
-    const uint32_t startUnit = allocation->getOffset() / _allocationSize;
+    const uint32_t startUnit = (allocation->getOffset() - FIRST_USABLE_ADDRESS) / _allocationSize;
     const uint32_t numUnits = bytesToAllocations(allocation->getSize());
 
     markAsFree(startUnit, numUnits);

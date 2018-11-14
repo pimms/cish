@@ -21,7 +21,7 @@ class MemoryAccess
 {
 public:
     virtual ~MemoryAccess() = default;
-    virtual uint8_t* getHeap() = 0;
+    virtual uint8_t* resolve(uint32_t address) = 0;
     virtual void onDeallocation(Allocation *allocation) = 0;
 };
 
@@ -62,7 +62,7 @@ T Allocation::read(uint32_t offset) const
         throw InvalidAccessException("Read access out of bounds");
     }
 
-    T* castedPtr = (T*)(_memoryAccess->getHeap() + offset + _offset);
+    T* castedPtr = (T*)(_memoryAccess->resolve(offset + _offset));
     return *castedPtr;
 }
 
@@ -74,7 +74,7 @@ void Allocation::write(T value, uint32_t offset)
         throw InvalidAccessException("Write access out of bounds");
     }
 
-    T* castedPtr = (T*)(_memoryAccess->getHeap() + offset + _offset);
+    T* castedPtr = (T*)(_memoryAccess->resolve(offset + _offset));
     *castedPtr = value;
 }
 

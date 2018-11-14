@@ -41,7 +41,7 @@ private:
     uint32_t bytesToAllocations(uint32_t byteCount) const;
 
     /* MemoryAccess */
-    uint8_t* getHeap() override;
+    uint8_t* resolve(uint32_t address) override;
     void onDeallocation(Allocation *allocation) override;
 };
 
