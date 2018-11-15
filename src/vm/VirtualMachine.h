@@ -38,6 +38,7 @@ public:
 
     bool isRunning() const;
     int getExitCode() const;
+    std::shared_ptr<Exception> getRuntimeError() const;
 
     /**
      * Termniate the VM. This method will not return until the

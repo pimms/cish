@@ -54,6 +54,8 @@ ExpressionValue VariableReferenceExpression::evaluate(vm::ExecutionContext *ctx)
             return ExpressionValue(_type, alloc->read<float>());
         case TypeDecl::DOUBLE:
             return ExpressionValue(_type, alloc->read<double>());
+        case TypeDecl::POINTER:
+            return ExpressionValue(_type, alloc->read<uint32_t>());
 
         default:
             Throw(InvalidTypeException, "Unable to evaluate variable with type '%s'", _type.getName());

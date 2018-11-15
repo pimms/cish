@@ -37,6 +37,13 @@ Exception::Exception(std::string file, std::string func, int line, const char *f
 }
 
 Exception::Exception(): _what("") { }
+Exception::Exception(const Exception &o): _what(o._what) { }
+
+Exception& Exception::operator=(const Exception &o)
+{
+    _what = o._what;
+    return *this;
+}
 
 const char* Exception::what() const noexcept
 {

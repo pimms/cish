@@ -49,6 +49,11 @@ int VirtualMachine::getExitCode() const
     return _executor->getExitStatus().get<int>();
 }
 
+std::shared_ptr<Exception> VirtualMachine::getRuntimeError() const
+{
+    return _executor->getRuntimeError();
+}
+
 void VirtualMachine::terminate()
 {
     _executor->terminate();

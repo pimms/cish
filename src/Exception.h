@@ -23,7 +23,7 @@
 
 
 #define DECLARE_EXCEPTION(name)                     \
-    class name : ::cish::Exception                   \
+    class name : public ::cish::Exception                   \
     {                                               \
     public:                                         \
         name(std::string file, std::string func,    \
@@ -46,29 +46,32 @@
             __DBGPRINT_EXCEPTION(#name)             \
         }                                           \
                                                     \
-        virtual const char* what() const noexcept override \
-        {                                           \
-            return _what.c_str();                   \
-        }                                           \
-                                                    \
-    private:                                        \
-        std::string _what;                          \
+        void raise() override { throw *this; }      \
     };
 
 #define Throw(_TYPE, ...) \
-    throw _TYPE(__FILE__, __FUNCTION__, __LINE__, __VA_ARGS__);
+    { \
+        _TYPE __e__(__FILE__, __FUNCTION__, __LINE__, __VA_ARGS__); __e__.raise(); \
+        /* SHOULD NEVER HAPPEN --> */ assert(0); throw __e__;\
+    }
 
 namespace cish
 {
 
-class Exception: ::std::exception
+class Exception
 {
 public:
     Exception(std::string file, std::string func, int line, const char *format, ...);
     Exception();
-    virtual const char* what() const noexcept override;
 
-private:
+    Exception(const Exception &o);
+    Exception& operator=(const Exception &o);
+
+    virtual ~Exception() = default;
+    virtual const char* what() const noexcept;
+    virtual void raise() { throw *this; }
+
+protected:
     std::string _what;
 };
 

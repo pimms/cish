@@ -23,6 +23,9 @@ ExpressionValue::ExpressionValue(const std::string& rawValue)
     } else if (rawValue == "false") {
         _type = TypeDecl::BOOL;
         _value.bval = false;
+    } else if (rawValue == "NULL") {
+        _type = TypeDecl::INT;
+        _value.ival = 0;
     } else if (std::regex_match(rawValue, exprInt)) {
         _type = TypeDecl(TypeDecl::INT);
         _value.ival = std::atoi(rawValue.c_str());

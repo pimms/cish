@@ -6,6 +6,8 @@
 #include <condition_variable>
 #include <atomic>
 
+#include "../Exception.h"
+
 namespace cish
 {
 namespace vm
@@ -65,6 +67,8 @@ public:
 
     bool isRunning() const;
 
+    std::shared_ptr<Exception> getRuntimeError() const;
+
 protected:
     // Must be called from the worker thread only!
     void await();
@@ -100,6 +104,8 @@ private:
     std::atomic_long _nextRequest;
     std::atomic_long _lastRequestReceived;
     std::atomic_long _lastRequestHandled;
+
+    std::shared_ptr<Exception> _runtimeError;
 };
 
 

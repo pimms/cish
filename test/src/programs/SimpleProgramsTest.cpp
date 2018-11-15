@@ -374,6 +374,16 @@ TEST(SimpleProgramsTest, returningADereferencedPointer)
     assertExitCode(source, 100);
 }
 
+TEST(SimpleProgramsTest, returningNullPointerValueEqualsZero)
+{
+    const std::string source =
+        "int main() {"
+        "   int *ptr = NULL;"
+        "   return ptr;"
+        "}";
+    assertExitCode(source, 0);
+}
+
 
 /* COMPILATION FAILURES */
 
@@ -482,3 +492,65 @@ TEST(SimpleProgramsTest, cannotTakeAddressOfLiterals)
     );
 }
 
+
+
+/* RUNTIME FAILURES */
+
+void assertRuntimeFailure(const std::string &source)
+{
+    VmPtr vm = createVm(source);
+    while (vm->isRunning()) {
+        vm->executeNextStatement();
+    }
+
+    ASSERT_FALSE(vm->getRuntimeError().get() == nullptr);
+}
+
+TEST(SimpleProgramsTest, derefNullPointerFails)
+{
+    assertRuntimeFailure(
+        "int main() {"
+        "   int *ptr = 0;"
+        "   *ptr;"
+        "   return 0;"
+        "}"
+    );
+}
+
+TEST(SimpleProgramsTest, derefAssignmentFromNullPointerFails)
+{
+    assertRuntimeFailure(
+        "int main() {"
+        "   int *ptr = 0;"
+        "   int val = *ptr;"
+        "   return 0;"
+        "}"
+    );
+}
+
+TEST(SimpleProgramsTest, derefUnallocatedLocationThrows)
+{
+    assertRuntimeFailure(
+        "int main() {"
+        "   int val = 0;"
+        "   int *ptr = &val;"
+        "   ptr++; ptr++; ptr++;"
+        "   return *ptr;"
+        "}"
+    );
+}
+
+TEST(SimpleProgramsTest, derefDeallocatedLocationThrows)
+{
+    assertRuntimeFailure(
+        "int main() {"
+        "   int *ptr = 0;"
+        "   if (true) {"
+        "       int val = 150;"
+        "       ptr = &val;"
+        "   }"
+        "   *ptr;"
+        "   return 0;"
+        "}"
+    );
+}

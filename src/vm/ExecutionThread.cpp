@@ -141,6 +141,11 @@ bool ExecutionThread::isRunning() const
     return _isRunning;
 }
 
+std::shared_ptr<Exception> ExecutionThread::getRuntimeError() const
+{
+    return _runtimeError;
+}
+
 void ExecutionThread::await()
 {
     // Keep CONTINUE as the default value, in case the spurious callback
@@ -193,8 +198,10 @@ void ExecutionThread::backgroundMain()
         printf("Execution thread exiting normally\n");
     } catch (TerminateSignal tsig) {
         printf("[W] executionthread terminated\n");
-    } catch (cish::Exception e) {
+    } catch (const Exception &e) {
         printf("[W] cish::Exception caught:\n%s\n", e.what());
+        Exception *copy = new Exception(e);
+        _runtimeError = std::shared_ptr<Exception>(copy);
     } catch (std::exception e) {
         printf("[W] std::exception caught:\n%s\n", e.what());
     } catch (...) {
