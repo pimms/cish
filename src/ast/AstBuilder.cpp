@@ -111,9 +111,11 @@ class TreeConverter: public CMBaseVisitor
         return decl;
     }
 
-    Result buildIncDecExpression(IncDecExpression::Operation op, const std::string varName)
+    Result buildIncDecExpression(IncDecExpression::Operation op, CMParser::LvalueContext *lvalueContext)
     {
-        IncDecExpression *expr = new IncDecExpression(&_declContext, op, varName);
+        Lvalue *lvalue = manuallyVisitLvalue(lvalueContext);
+
+        IncDecExpression *expr = new IncDecExpression(&_declContext, op, lvalue);
         return createResult(expr);
     }
 
@@ -224,22 +226,22 @@ public:
 
     virtual antlrcpp::Any visitPOSTFIX_INC_EXPR(CMParser::POSTFIX_INC_EXPRContext *ctx) override
     {
-        return buildIncDecExpression(IncDecExpression::POSTFIX_INCREMENT, ctx->Identifier()->getText());
+        return buildIncDecExpression(IncDecExpression::POSTFIX_INCREMENT, ctx->lvalue());
     }
 
     virtual antlrcpp::Any visitPREFIX_INC_EXPR(CMParser::PREFIX_INC_EXPRContext *ctx) override
     {
-        return buildIncDecExpression(IncDecExpression::PREFIX_INCREMENT, ctx->Identifier()->getText());
+        return buildIncDecExpression(IncDecExpression::PREFIX_INCREMENT, ctx->lvalue());
     }
 
     virtual antlrcpp::Any visitPOSTFIX_DEC_EXPR(CMParser::POSTFIX_DEC_EXPRContext *ctx) override
     {
-        return buildIncDecExpression(IncDecExpression::POSTFIX_DECREMENT, ctx->Identifier()->getText());
+        return buildIncDecExpression(IncDecExpression::POSTFIX_DECREMENT, ctx->lvalue());
     }
 
     virtual antlrcpp::Any visitPREFIX_DEC_EXPR(CMParser::PREFIX_DEC_EXPRContext *ctx) override
     {
-        return buildIncDecExpression(IncDecExpression::PREFIX_DECREMENT, ctx->Identifier()->getText());
+        return buildIncDecExpression(IncDecExpression::PREFIX_DECREMENT, ctx->lvalue());
     }
 
 

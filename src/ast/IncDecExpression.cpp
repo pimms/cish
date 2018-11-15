@@ -16,12 +16,12 @@ namespace internal
 template<typename T>
 static ExpressionValue evaluate(IncDecExpression::Operation op,
                                 TypeDecl returnType,
-                                vm::Variable *var,
+                                vm::MemoryView *memoryView,
                                 int delta)
 {
-    const T preValue = var->getAllocation()->read<T>();
-    var->getAllocation()->write<T>(preValue + delta);
-    const T postValue = var->getAllocation()->read<T>();
+    const T preValue = memoryView->read<T>();
+    memoryView->write<T>(preValue + delta);
+    const T postValue = memoryView->read<T>();
 
     if (op == IncDecExpression::POSTFIX_INCREMENT ||
         op == IncDecExpression::POSTFIX_DECREMENT) {
@@ -36,16 +36,16 @@ static ExpressionValue evaluate(IncDecExpression::Operation op,
 
 IncDecExpression::IncDecExpression(DeclarationContext *context,
                                    IncDecExpression::Operation operation,
-                                   const std::string &varName):
+                                   Lvalue *lvalue):
     _operation(operation),
-    _varDecl(*context->getVariableDeclaration(varName))
+    _lvalue(lvalue)
 {
-    if (!_varDecl.type.isIntegral()) {
+    if (!_lvalue->getType().isIntegral()) {
         Throw(InvalidTypeException,
             "Increment/decrement operator only allowed on integral types");
     }
 
-    if (_varDecl.type.isConst()) {
+    if (_lvalue->getType().isConst()) {
         Throw(InvalidOperationException, "Cannot alter a const variable");
     }
 }
@@ -56,31 +56,26 @@ IncDecExpression::~IncDecExpression()
 
 TypeDecl IncDecExpression::getType() const
 {
-    return _varDecl.type;
+    return _lvalue->getType();
 }
 
 ExpressionValue IncDecExpression::evaluate(vm::ExecutionContext *context) const
 {
-    vm::Variable *var = context->getScope()->getVariable(_varDecl.name);
-    if (var->getType() != _varDecl.type) {
-        Throw(InvalidTypeException,
-            "Expected type '%s', got '%s'",
-            _varDecl.type.getName(), var->getType().getName());
-    }
-
+    vm::MemoryView view = _lvalue->getMemoryView(context);
     const int delta = getMutationValue();
 
-    switch (_varDecl.type.getType()) {
+    const TypeDecl type = _lvalue->getType();
+    switch (type.getType()) {
         case TypeDecl::BOOL:
         case TypeDecl::CHAR:
-            return internal::evaluate<uint8_t>(_operation, _varDecl.type, var, delta);
+            return internal::evaluate<uint8_t>(_operation, type, &view, delta);
         case TypeDecl::SHORT:
-            return internal::evaluate<uint16_t>(_operation, _varDecl.type, var, delta);
+            return internal::evaluate<uint16_t>(_operation, type, &view, delta);
         case TypeDecl::INT:
         case TypeDecl::POINTER:
-            return internal::evaluate<uint32_t>(_operation, _varDecl.type, var, delta);
+            return internal::evaluate<uint32_t>(_operation, type, &view, delta);
         default:
-            Throw(InvalidTypeException, "Type '%s not handled'", _varDecl.type.getName());
+            Throw(InvalidTypeException, "Type '%s not handled'", type.getName());
     }
 }
 
@@ -93,9 +88,10 @@ int IncDecExpression::getMutationValue() const
         delta = -1;
     }
 
-    if (_varDecl.type == TypeDecl::POINTER) {
-        if (_varDecl.type.getReferencedType()->getType() != TypeDecl::VOID) {
-            delta *= _varDecl.type.getReferencedType()->getSize();
+    const TypeDecl &type = _lvalue->getType();
+    if (type == TypeDecl::POINTER) {
+        if (type.getReferencedType()->getType() != TypeDecl::VOID) {
+            delta *= type.getReferencedType()->getSize();
         }
     }
 

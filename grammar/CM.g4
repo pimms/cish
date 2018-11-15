@@ -35,10 +35,10 @@ expr
     | functionCall                              # FUNC_CALL_EXPR
     ;
 incdecexpr
-    : Identifier '++'                           # POSTFIX_INC_EXPR
-    | '++' Identifier                           # PREFIX_INC_EXPR
-    | Identifier '--'                           # POSTFIX_DEC_EXPR
-    | '--' Identifier                           # PREFIX_DEC_EXPR
+    : lvalue '++'                               # POSTFIX_INC_EXPR
+    | '++' lvalue                               # PREFIX_INC_EXPR
+    | lvalue '--'                               # POSTFIX_DEC_EXPR
+    | '--' lvalue                               # PREFIX_DEC_EXPR
     ;
 
 statement
