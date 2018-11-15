@@ -7,12 +7,12 @@
 using namespace cish::vm;
 using namespace cish::ast;
 
-TEST(VariableTest, tooSmallAllocationThrows)
+TEST(VariableTest, tooSmallAllocationDoesNotThrow)
 {
     Memory memory(100, 1);
-    ASSERT_THROW(Variable(TypeDecl::INT, memory.allocate(1)), InvalidAllocationException);
-    ASSERT_THROW(Variable(TypeDecl::INT, memory.allocate(2)), InvalidAllocationException);
-    ASSERT_THROW(Variable(TypeDecl::INT, memory.allocate(3)), InvalidAllocationException);
+    ASSERT_NO_THROW(Variable(TypeDecl::INT, memory.allocate(1)));
+    ASSERT_NO_THROW(Variable(TypeDecl::INT, memory.allocate(2)));
+    ASSERT_NO_THROW(Variable(TypeDecl::INT, memory.allocate(3)));
 }
 
 TEST(VariableTest, getAllocationDoesNotThrow)
@@ -31,8 +31,8 @@ TEST(VariableTest, heapOffsetIsInherited)
     Allocation::Ptr alloc1 = memory.allocate(4);
     Allocation::Ptr alloc2 = memory.allocate(4);
 
-    const uint32_t offset1 = alloc1->getOffset();
-    const uint32_t offset2 = alloc2->getOffset();
+    const uint32_t offset1 = alloc1->getAddress();
+    const uint32_t offset2 = alloc2->getAddress();
 
     auto var1 = Variable(TypeDecl::INT, std::move(alloc1));
     auto var2 = Variable(TypeDecl::INT, std::move(alloc2));

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "AstNodes.h"
-
+#include "Lvalue.h"
 
 namespace cish
 {
@@ -26,10 +26,10 @@ public:
     };
 
     VariableAssignmentStatement(DeclarationContext *context,
-                                const std::string &varName,
+                                Lvalue *lvalue,
                                 Expression *value);
     VariableAssignmentStatement(DeclarationContext *context,
-                                const std::string &varName,
+                                Lvalue *lvalue,
                                 Expression *value,
                                 ConstAwareness constAwareness);
 
@@ -39,7 +39,7 @@ public:
     void executeAssignment(vm::ExecutionContext *context) const;
 
 private:
-    const std::string _varName;
+    Lvalue *_lvalue;
     Expression *_expression;
 };
 

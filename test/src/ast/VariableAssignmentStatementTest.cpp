@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 
+#include "ast/Lvalue.h"
 #include "ast/VariableAssignmentStatement.h"
 #include "ast/DeclarationContext.h"
 #include "ast/LiteralExpression.h"
@@ -51,7 +52,7 @@ void testAssignmentCasting()
         auto expr = new LiteralExpression(exprValue);
 
         ASSERT_NO_THROW({
-            VariableAssignmentStatement stmt(&dc, "var", expr);
+            VariableAssignmentStatement stmt(&dc, new VariableReference(&dc, "var"), expr);
             stmt.execute(&ec);
         });
 
@@ -115,19 +116,8 @@ TEST(VariableAssignmentStatementTest, undefinedVariableThrows)
     declareVariable(dc, TypeDecl::INT, "var");
 
     auto expr = new LiteralExpression(ExpressionValue(TypeDecl::INT, 10));
-    VariableAssignmentStatement stmt(&dc, "var", expr);
+    VariableAssignmentStatement stmt(&dc, new VariableReference(&dc, "var"), expr);
     ASSERT_THROW(stmt.execute(&ec), VariableNotDefinedException);
-}
-
-TEST(VariableAssignmentStatemenTest, undeclaredVariablesThrows)
-{
-    Memory memory(100, 1);
-    DeclarationContext dc;
-    ExecutionContext ec(&memory);
-
-    auto expr = new LiteralExpression(ExpressionValue(TypeDecl::INT, 10));
-    ASSERT_THROW(VariableAssignmentStatement stmt(&dc, "var", expr), VariableNotDeclaredException);
-    delete expr;
 }
 
 TEST(VariableAssignmentStatemenTest, assigningToConstVariablesNotAllowed)
@@ -140,6 +130,8 @@ TEST(VariableAssignmentStatemenTest, assigningToConstVariablesNotAllowed)
     dc.declareVariable(type, "i");
 
     auto expr = new LiteralExpression(ExpressionValue(TypeDecl::INT, 10));
-    ASSERT_THROW(VariableAssignmentStatement stmt(&dc, "i", expr), InvalidOperationException);
+    auto ref = new VariableReference(&dc, "i");
+    ASSERT_THROW(VariableAssignmentStatement stmt(&dc, ref, expr), InvalidOperationException);
     delete expr;
+    delete ref;
 }

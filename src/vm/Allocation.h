@@ -9,74 +9,83 @@ namespace vm
 {
 
 
-class InvalidAccessException : public std::runtime_error
-{
-public:
-    InvalidAccessException(const char *message): std::runtime_error(message) {}
-};
-
-
+/*
+==================
+MemoryAccess
+==================
+*/
 class Allocation;
 class MemoryAccess
 {
 public:
     virtual ~MemoryAccess() = default;
-    virtual uint8_t* resolve(uint32_t address) = 0;
+
     virtual void onDeallocation(Allocation *allocation) = 0;
+    virtual const uint8_t* read(uint32_t address, uint32_t len) = 0;
+    virtual void write(const uint8_t *buffer, uint32_t address, uint32_t len) = 0;
 };
 
-class Allocation
+/*
+==================
+MemoryView
+
+A dumb view into memory with no concept of ownership.
+==================
+*/
+class MemoryView
 {
 public:
-    typedef std::unique_ptr<Allocation> Ptr;
+    MemoryView(MemoryAccess *memAccess, uint32_t address);
+    virtual ~MemoryView() = default;
 
-    static Ptr create(uint32_t offset, uint32_t len, MemoryAccess *memAccess);
-    ~Allocation();
-
-    uint32_t getOffset() const;
-    uint32_t getSize() const;
-
-    Allocation::Ptr read(uint32_t offset, uint32_t len) const;
+    uint32_t getAddress() const;
 
     template<typename T>
     T read(uint32_t offset = 0) const;
-
     template<typename T>
     void write(T value, uint32_t offset = 0);
 
-private:
-    const uint32_t _offset;
-    const uint32_t _length;
-    const bool _owner;
+protected:
     MemoryAccess *_memoryAccess;
 
-    Allocation(uint32_t offset, uint32_t len, MemoryAccess *memAccess, bool owner);
+private:
+    uint32_t _addr;
 };
 
-
 template<typename T>
-T Allocation::read(uint32_t offset) const
+T MemoryView::read(uint32_t offset) const
 {
-    const size_t size = sizeof(T);
-    if (size + offset > _length) {
-        throw InvalidAccessException("Read access out of bounds");
-    }
-
-    T* castedPtr = (T*)(_memoryAccess->resolve(offset + _offset));
+    const size_t tsize = sizeof(T);
+    const uint8_t *rawPtr = _memoryAccess->read(_addr + offset, tsize);
+    const T* castedPtr = (const T*)(rawPtr);
     return *castedPtr;
 }
 
 template<typename T>
-void Allocation::write(T value, uint32_t offset)
+void MemoryView::write(T value, uint32_t offset)
 {
     const size_t size = sizeof(T);
-    if (size + offset > _length) {
-        throw InvalidAccessException("Write access out of bounds");
-    }
-
-    T* castedPtr = (T*)(_memoryAccess->resolve(offset + _offset));
-    *castedPtr = value;
+    const uint8_t *rawPtr = (const uint8_t*)&value;
+    _memoryAccess->write(rawPtr, _addr + offset, sizeof(T));
 }
+
+
+
+/*
+==================
+Allocation
+
+An allocated (i.e., owned & safe) chunk of memory.
+==================
+*/
+class Allocation: public MemoryView
+{
+public:
+    typedef std::unique_ptr<Allocation> Ptr;
+
+    Allocation(MemoryAccess *memAccess, uint32_t addr);
+    ~Allocation();
+};
 
 
 }

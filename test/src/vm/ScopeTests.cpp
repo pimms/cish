@@ -31,7 +31,6 @@ TEST(ScopeTest, StoredVariablesAreRetrievable)
     frame.addVariable("var", var);
 
     ASSERT_NE(nullptr, frame.getVariable("var"));
-    ASSERT_EQ(4, frame.getVariable("var")->getAllocation()->getSize());
 }
 
 TEST(ScopeTest, ParentsVariablesAreAvailableInChildren)
@@ -57,9 +56,6 @@ TEST(ScopeTest, ChildVariablesOvershadowParents)
 
     parent.addVariable("var", v1);
     child.addVariable("var", v2);
-
-    ASSERT_EQ(4, parent.getVariable("var")->getAllocation()->getSize());
-    ASSERT_EQ(8, child.getVariable("var")->getAllocation()->getSize());
 }
 
 

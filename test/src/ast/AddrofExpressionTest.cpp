@@ -26,3 +26,24 @@ TEST(AddrofExpressionTest, verifyReturnValue)
     ASSERT_EQ(TypeDecl::INT, value.getIntrinsicType().getReferencedType()->getType());
     ASSERT_TRUE(value.get<uint32_t>() >= Memory::firstUsableMemoryAddress());
 }
+
+TEST(AddrofExpressionTest, addorfOfPointerEqualsPointerToPointer)
+{
+    Memory memory(100, 1);
+    ExecutionContext ec(&memory);
+    DeclarationContext dc;
+
+    TypeDecl type = TypeDecl::getPointer(TypeDecl::INT);
+    dc.declareVariable(type, "ptr");
+    ec.getScope()->addVariable("ptr", new Variable(type, memory.allocate(4)));
+
+    AddrofExpression expr(&dc, "ptr");
+    ASSERT_EQ(TypeDecl::POINTER, expr.getType().getType());
+    ASSERT_EQ(TypeDecl::POINTER, expr.getType().getReferencedType()->getType());
+    ASSERT_EQ(TypeDecl::INT, expr.getType().getReferencedType()->getReferencedType()->getType());
+
+    ExpressionValue value = expr.evaluate(&ec);
+    ASSERT_EQ(TypeDecl::POINTER, value.getIntrinsicType().getType());
+    ASSERT_EQ(TypeDecl::POINTER, value.getIntrinsicType().getReferencedType()->getType());
+    ASSERT_EQ(TypeDecl::INT, value.getIntrinsicType().getReferencedType()->getReferencedType()->getType());
+}

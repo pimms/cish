@@ -12,26 +12,6 @@ namespace ast
 {
 
 
-namespace internal
-{
-
-    template<typename T>
-    ExpressionValue createExpressionValue(TypeDecl type, std::vector<uint8_t> &buffer)
-    {
-        if (buffer.size() != sizeof(T)) {
-            Throw(InvalidCastException,
-                  "Dereferenced type had unexpected size: %d (expected %d)",
-                  sizeof(T), buffer.size());
-        }
-
-        const uint8_t *rawBuf = buffer.data();
-        return ExpressionValue(type, *((T*)rawBuf));
-    }
-
-}
-
-
-
 DerefExpression::DerefExpression(DeclarationContext *context, const std::string &varName)
 {
     const VarDeclaration *decl = context->getVariableDeclaration(varName);
@@ -54,22 +34,22 @@ ExpressionValue DerefExpression::evaluate(vm::ExecutionContext *context) const
     const uint32_t ptrAddr = var->getAllocation()->read<uint32_t>();
 
     vm::Memory *memory = context->getMemory();
-    std::vector<uint8_t> buf = memory->safeRead(ptrAddr, type.getSize());
+    vm::MemoryView view = memory->getView(ptrAddr);
     switch (type.getType()) {
         case TypeDecl::BOOL:
-            return internal::createExpressionValue<bool>(type, buf);
+            return ExpressionValue(type, view.read<bool>());
         case TypeDecl::CHAR:
-            return internal::createExpressionValue<int8_t>(type, buf);
+            return ExpressionValue(type, view.read<char>());
         case TypeDecl::SHORT:
-            return internal::createExpressionValue<int16_t>(type, buf);
+            return ExpressionValue(type, view.read<short>());
         case TypeDecl::POINTER:
-            return internal::createExpressionValue<uint32_t>(type, buf);
+            return ExpressionValue(type, view.read<uint32_t>());
         case TypeDecl::INT:
-            return internal::createExpressionValue<int32_t>(type, buf);
+            return ExpressionValue(type, view.read<int32_t>());
         case TypeDecl::FLOAT:
-            return internal::createExpressionValue<float>(type, buf);
+            return ExpressionValue(type, view.read<float>());
         case TypeDecl::DOUBLE:
-            return internal::createExpressionValue<double>(type, buf);
+            return ExpressionValue(type, view.read<double>());
 
         default:
             Throw(InvalidTypeException, "Unable to dereference type '%s'", type.getName());

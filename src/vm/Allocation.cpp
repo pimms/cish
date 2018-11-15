@@ -5,45 +5,39 @@ namespace cish
 namespace vm
 {
 
-Allocation::Ptr Allocation::create(uint32_t offset, uint32_t len, MemoryAccess *memAccess)
+
+
+/*
+==================
+MemoryView
+==================
+*/
+MemoryView::MemoryView(MemoryAccess *memAccess, uint32_t address):
+    _memoryAccess(memAccess),
+    _addr(address)
 {
-    return Allocation::Ptr(new Allocation(offset, len, memAccess, true));
+    assert(_memoryAccess != nullptr);
 }
 
-Allocation::Allocation(uint32_t offset, uint32_t len, MemoryAccess *memAccess, bool owner):
-    _offset(offset),
-    _length(len),
-    _owner(owner),
-    _memoryAccess(memAccess)
+uint32_t MemoryView::getAddress() const
 {
-    assert(len > 0);
-    assert(_memoryAccess != nullptr);
+    return _addr;
+}
+
+
+/*
+==================
+Allocation
+==================
+*/
+Allocation::Allocation(MemoryAccess *memAccess, uint32_t offset):
+    MemoryView(memAccess, offset)
+{
 }
 
 Allocation::~Allocation()
 {
-    if (_owner) {
-        _memoryAccess->onDeallocation(this);
-    }
-}
-
-uint32_t Allocation::getOffset() const
-{
-    return _offset;
-}
-
-uint32_t Allocation::getSize() const
-{
-    return _length;
-}
-
-Allocation::Ptr Allocation::read(uint32_t offset, uint32_t len) const
-{
-    if (offset + len > _length) {
-        throw InvalidAccessException("Read access out of bounds");
-    }
-
-    return Allocation::Ptr(new Allocation(_offset + offset, len, _memoryAccess, false));
+    _memoryAccess->onDeallocation(this);
 }
 
 

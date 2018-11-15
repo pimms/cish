@@ -117,7 +117,7 @@ TEST(SimpleProgramsTest, oneLineIf)
     assertExitCode(source, 5);
 }
 
-TEST(SipmleProgramsTest, quiteABitOfIfLogic)
+TEST(SimpleProgramsTest, quiteABitOfIfLogic)
 {
     // A whoole lot of nonsense logic
     const std::string source =
@@ -384,6 +384,71 @@ TEST(SimpleProgramsTest, returningNullPointerValueEqualsZero)
     assertExitCode(source, 0);
 }
 
+TEST(SimpleProgramsTest, derefingPointerInsideFunction)
+{
+    const std::string source =
+        "int foo(int *ptr) {"
+        "   return *ptr + 10;"
+        "}"
+        "int main() {"
+        "   int var = 16;"
+        "   return foo(&var);"
+        "}";
+    assertExitCode(source, 26);
+}
+
+TEST(SimpleProgramsTest, incrementingDereferencedPointer)
+{
+    const std::string source =
+        "int main() {"
+        "   int var = 10;"
+        "   int *ptr = &var;"
+        "   *ptr++;"
+        "   return var;"
+        "}";
+    assertExitCode(source, 11);
+}
+
+TEST(SimpleProgramsTest, assigningToDereferencedPointer)
+{
+    const std::string source =
+        "int main() {"
+        "   int var = 10;"
+        "   int *ptr = &var;"
+        "   *ptr = 20;"
+        "   return var;"
+        "}";
+    assertExitCode(source, 20);
+}
+
+TEST(SimpleProgramsTest, iteratingThroughString)
+{
+    const std::string source =
+        "int main() {"
+        "   int len = 0;"
+        "   const char *str = \"abc\";"
+        "   while (*str++) {"
+        "       sum++;"
+        "   }"
+        "   return len;"
+        "}";
+    assertExitCode(source, 3);
+}
+
+TEST(SimpleProgramsTest, tripleDerefAssignment)
+{
+    const std::string source =
+        "int main() {"
+        "   int core = 0;"
+        "   int *ptr1 = &core;"
+        "   int **ptr2 = &ptr1;"
+        "   int ***ptr3 = &ptr2;"
+        "   ***ptr3 = 9;"
+        "   return core;"
+        "}";
+    assertExitCode(source, 9);
+}
+
 
 /* COMPILATION FAILURES */
 
@@ -400,7 +465,7 @@ TEST(SimpleProgramsTest, cannotReturnValueFromVoidFunction)
     );
 }
 
-TEST(SipmleProgramsTest, cannotAssignVoidFunctionToVariable)
+TEST(SimpleProgramsTest, cannotAssignVoidFunctionToVariable)
 {
     assertCompilationFailure(
         "void foo() {} "

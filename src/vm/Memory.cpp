@@ -63,7 +63,7 @@ uint32_t Memory::getFreeSize() const
 
 Allocation::Ptr Memory::allocate(uint32_t size)
 {
-    const uint32_t allocationUnits = bytesToAllocations(size);
+    const uint32_t allocationUnits = byteCountToUnitCount(size);
     const uint32_t unitIndex = findUnallocatedRun(allocationUnits);
 
     markAsAllocated(unitIndex, allocationUnits);
@@ -71,29 +71,14 @@ Allocation::Ptr Memory::allocate(uint32_t size)
     const uint32_t byteOffset = unitIndex * _allocationSize;
     const uint32_t byteSize = allocationUnits * _allocationSize;
 
-    return Allocation::create(FIRST_USABLE_ADDRESS + byteOffset, byteSize, this);
+    Allocation *alloc = new Allocation(this, FIRST_USABLE_ADDRESS + byteOffset);
+    _allocLen[alloc] = byteSize;
+    return Allocation::Ptr(alloc);
 }
 
-std::vector<uint8_t> Memory::safeRead(uint32_t addr, uint32_t len)
+MemoryView Memory::getView(uint32_t address) noexcept
 {
-    if (addr < FIRST_USABLE_ADDRESS || addr >= FIRST_USABLE_ADDRESS + _heapSize) {
-        Throw(InvalidReadException, "attempted reading unallocated address: %x", addr);
-    }
-
-    const uint32_t offset = addr - FIRST_USABLE_ADDRESS;
-    const uint32_t firstUnit = offset / _allocationSize;
-    const uint32_t numUnits = bytesToAllocations(len);
-
-    for (int i=0; i<numUnits; i++) {
-        if (!isUnitAllocated(firstUnit + i))
-            Throw(InvalidReadException, "attempted reading unallocated address: %x", addr);
-    }
-
-    std::vector<uint8_t> res;
-    for (int i=0; i<len; i++) {
-        res.push_back(_heap[offset + i]);
-    }
-    return res;
+    return MemoryView(this, address);
 }
 
 
@@ -156,7 +141,12 @@ bool Memory::isUnitAllocated(uint32_t unitIndex) const
     return _allocationMap[byte] & (1 << bit);
 }
 
-uint32_t Memory::bytesToAllocations(uint32_t byteCount) const
+uint32_t Memory::byteOffsetToUnit(uint32_t byteOffset) const
+{
+    return byteOffset / _allocationSize;
+}
+
+uint32_t Memory::byteCountToUnitCount(uint32_t byteCount) const
 {
     const uint32_t remainder = byteCount % _allocationSize;
     uint32_t units = byteCount / _allocationSize;
@@ -170,23 +160,58 @@ uint32_t Memory::bytesToAllocations(uint32_t byteCount) const
 
 
 /* MemoryAccess */
-uint8_t* Memory::resolve(uint32_t address)
-{
-    if (address < FIRST_USABLE_ADDRESS || address >= FIRST_USABLE_ADDRESS + _heapSize) {
-        // TODO: This is a great time to emulate a segfault :)
-        Throw(Exception, "Address out of bounds: %x", address);
-    }
-
-    address -= FIRST_USABLE_ADDRESS;
-    return _heap + address;
-}
-
 void Memory::onDeallocation(Allocation *allocation)
 {
-    const uint32_t startUnit = (allocation->getOffset() - FIRST_USABLE_ADDRESS) / _allocationSize;
-    const uint32_t numUnits = bytesToAllocations(allocation->getSize());
+    if (!_allocLen.count(allocation)) {
+        Throw(InvalidFreeException, "unable to free allocation");
+    }
+
+    const uint32_t byteOffset = allocation->getAddress() - FIRST_USABLE_ADDRESS;
+    const uint32_t startUnit = byteOffsetToUnit(byteOffset);
+
+    const uint32_t allocatedBytes = _allocLen[allocation];
+    const uint32_t numUnits = byteCountToUnitCount(allocatedBytes);
 
     markAsFree(startUnit, numUnits);
+    _allocLen.erase(allocation);
+}
+
+const uint8_t* Memory::read(uint32_t address, uint32_t len)
+{
+    if (address < FIRST_USABLE_ADDRESS || address + len > FIRST_USABLE_ADDRESS + _heapSize) {
+        Throw(InvalidAccessException, "cannot access address 0x%x", address);
+    }
+
+    const uint32_t byteOffset = address - FIRST_USABLE_ADDRESS;
+    const uint32_t firstUnit = byteOffsetToUnit(byteOffset);
+    const uint32_t numUnits = byteCountToUnitCount(len);
+
+    for (int i=0; i<numUnits; i++) {
+        if (!isUnitAllocated(firstUnit + i)) {
+            Throw(InvalidAccessException, "cannot access address 0x%x", address);
+        }
+    }
+
+    return _heap + byteOffset;
+}
+
+void Memory::write(const uint8_t *buffer, uint32_t address, uint32_t len)
+{
+    if (address < FIRST_USABLE_ADDRESS || address + len > FIRST_USABLE_ADDRESS + _heapSize) {
+        Throw(InvalidAccessException, "cannot access address 0x%x", address);
+    }
+
+    const uint32_t byteOffset = address - FIRST_USABLE_ADDRESS;
+    const uint32_t firstUnit = byteOffsetToUnit(byteOffset);
+    const uint32_t numUnits = byteCountToUnitCount(len);
+
+    for (int i=0; i<numUnits; i++) {
+        if (!isUnitAllocated(firstUnit + i)) {
+            Throw(InvalidAccessException, "cannot access address 0x%x", address);
+        }
+    }
+
+    memcpy(_heap + byteOffset, buffer, len);
 }
 
 

@@ -85,6 +85,9 @@ vm::Variable* FunctionDefinition::convertToVariable(vm::Memory *memory, const Ex
         case TypeDecl::DOUBLE:
             alloc->write<double>(expr.get<double>());
             break;
+        case TypeDecl::POINTER:
+            alloc->write<uint32_t>(expr.get<uint32_t>());
+            break;
         default:
             Throw(InvalidTypeException, "Unable to allocate variable of type '%s' for function '%s'",
                     type.getName(), _decl.name.c_str());

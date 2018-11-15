@@ -97,7 +97,7 @@ doWhileStatement
 
 
 assignment
-        : identifier '=' expression
+    : lvalue '=' expression
     ;
 
 variableDeclaration
@@ -130,6 +130,10 @@ functionParameter
 
 identifier
     : Identifier
+    ;
+
+lvalue
+    : ('*')* Identifier
     ;
 
 typeIdentifier

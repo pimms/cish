@@ -5,6 +5,8 @@
 
 #include "AstNodes.h"
 
+#include "Lvalue.h"
+
 #include "BinaryExpression.h"
 #include "VariableReferenceExpression.h"
 #include "FunctionCallExpression.h"
@@ -529,14 +531,14 @@ public:
 
     virtual antlrcpp::Any visitAssignment(CMParser::AssignmentContext *ctx) override
     {
-        const std::string varName = ctx->identifier()->Identifier()->getText();
+        Lvalue *lvalue = manuallyVisitLvalue(ctx->lvalue());
 
         Result result = visitChildren(ctx->expression());
         assert(result.size() == 1);
         assert(dynamic_cast<Expression*>(result[0]) != nullptr);
         Expression *expression = (Expression*)result[0];
 
-        return createResult(new VariableAssignmentStatement(&_declContext, varName, expression));
+        return createResult(new VariableAssignmentStatement(&_declContext, lvalue, expression));
     }
 
     virtual antlrcpp::Any visitVariableDeclaration(CMParser::VariableDeclarationContext *ctx) override
@@ -635,6 +637,28 @@ public:
     {
         // Will never be implemented! Use 'manuallyVisitFunctionParameter' instead!
         Throw(AstConversionException, "Internal conversion exception - should never visit FunctionParameter");
+    }
+
+    Lvalue* manuallyVisitLvalue(CMParser::LvalueContext *ctx)
+    {
+        std::string declName = ctx->getText();
+        if (declName[0] != '*') {
+            return new VariableReference(&_declContext, declName);
+        }
+
+        int derefs = 0;
+        while (declName[0] == '*') {
+            derefs++;
+            declName = declName.substr(1);
+        }
+
+        return new DereferencedVariableReference(&_declContext, declName, derefs);
+    }
+
+    virtual antlrcpp::Any visitLvalue(CMParser::LvalueContext *ctx) override
+    {
+        // Will never be implemented!
+        Throw(AstConversionException, "Internal conversion exception - should never visit Lvalue automatically!");
     }
 
     virtual antlrcpp::Any visitIdentifier(CMParser::IdentifierContext *ctx) override
