@@ -12,6 +12,7 @@
 #include "IncDecExpression.h"
 #include "AddrofExpression.h"
 #include "DerefExpression.h"
+#include "NegationExpression.h"
 
 #include "VariableAssignmentStatement.h"
 #include "VariableDeclarationStatement.h"
@@ -250,6 +251,12 @@ public:
     {
         const std::string varName = ctx->Identifier()->getText();
         return createResult(new DerefExpression(&_declContext, varName));
+    }
+
+    virtual antlrcpp::Any visitNEGATION_EXPR(CMParser::NEGATION_EXPRContext *ctx) override
+    {
+        Expression *expr = manuallyVisitExpression(ctx->expression());
+        return createResult(new NegationExpression(expr));
     }
 
     virtual antlrcpp::Any visitMULT_EXPR(CMParser::MULT_EXPRContext *ctx) override

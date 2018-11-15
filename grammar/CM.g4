@@ -24,6 +24,7 @@ expr
     : incdecexpr                                # INCDECEXPR___
     | '&' Identifier                            # ADDROF_EXPR
     | '*' Identifier                            # DEREF_EXPR
+    | '!' expression                            # NEGATION_EXPR
     | expr op=( '*' | '/' | '%' ) expr          # MULT_EXPR
     | expr op=( '+' | '-' ) expr                # ADD_EXPR
     | expr op=( '>=' | '<=' | '>' | '<' ) expr  # COMPARE_EXPR
