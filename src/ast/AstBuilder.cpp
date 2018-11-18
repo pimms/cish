@@ -15,6 +15,7 @@
 #include "AddrofExpression.h"
 #include "DerefExpression.h"
 #include "NegationExpression.h"
+#include "StringLiteralExpression.h"
 
 #include "VariableAssignmentStatement.h"
 #include "VariableDeclarationStatement.h"
@@ -46,6 +47,7 @@ class TreeConverter: public CMBaseVisitor
 {
     typedef std::vector<AstNode*> Result;
     DeclarationContext _declContext;
+    StringTable::Ptr _stringTable;
     std::vector<FuncDeclaration> _funcDecls;
 
     Result createResult(AstNode *node)
@@ -55,13 +57,9 @@ class TreeConverter: public CMBaseVisitor
 
     Expression* manuallyVisitExpression(CMParser::ExpressionContext *ctx)
     {
-        antlrcpp::Any any = visitExpression(ctx);
-        assert(any.isNotNull());
-
-        Result result = any.as<Result>();
+        Result result = visitExpression(ctx).as<Result>();
         assert(result.size() == 1);
         assert(dynamic_cast<Expression*>(result[0]) != nullptr);
-
         return (Expression*)result[0];
     }
 
@@ -111,14 +109,6 @@ class TreeConverter: public CMBaseVisitor
         return decl;
     }
 
-    Result buildIncDecExpression(IncDecExpression::Operation op, CMParser::LvalueContext *lvalueContext)
-    {
-        Lvalue *lvalue = manuallyVisitLvalue(lvalueContext);
-
-        IncDecExpression *expr = new IncDecExpression(&_declContext, op, lvalue);
-        return createResult(expr);
-    }
-
     void verifyAllFunctionsDefined(Ast *ast)
     {
         for (FuncDeclaration decl: _funcDecls) {
@@ -130,12 +120,18 @@ class TreeConverter: public CMBaseVisitor
     }
 
 public:
+    TreeConverter()
+    {
+        _stringTable = StringTable::create();
+    }
+
     Ast::Ptr convertTree(const AntlrContext *antlrContext)
     {
         antlr4::tree::ParseTree *tree = antlrContext->getParseTree();
         Ast *ast = visit(tree);
 
         verifyAllFunctionsDefined(ast);
+        ast->setStringTable(std::move(_stringTable));
 
         return Ast::Ptr(ast);
     }
@@ -226,22 +222,30 @@ public:
 
     virtual antlrcpp::Any visitPOSTFIX_INC_EXPR(CMParser::POSTFIX_INC_EXPRContext *ctx) override
     {
-        return buildIncDecExpression(IncDecExpression::POSTFIX_INCREMENT, ctx->lvalue());
+        IncDecExpression::Operation op = IncDecExpression::POSTFIX_INCREMENT;
+        const std::string varName = ctx->Identifier()->getText();
+        return createResult(new IncDecExpression(&_declContext, op, varName));
     }
 
     virtual antlrcpp::Any visitPREFIX_INC_EXPR(CMParser::PREFIX_INC_EXPRContext *ctx) override
     {
-        return buildIncDecExpression(IncDecExpression::PREFIX_INCREMENT, ctx->lvalue());
+        IncDecExpression::Operation op = IncDecExpression::PREFIX_INCREMENT;
+        const std::string varName = ctx->Identifier()->getText();
+        return createResult(new IncDecExpression(&_declContext, op, varName));
     }
 
     virtual antlrcpp::Any visitPOSTFIX_DEC_EXPR(CMParser::POSTFIX_DEC_EXPRContext *ctx) override
     {
-        return buildIncDecExpression(IncDecExpression::POSTFIX_DECREMENT, ctx->lvalue());
+        IncDecExpression::Operation op = IncDecExpression::POSTFIX_DECREMENT;
+        const std::string varName = ctx->Identifier()->getText();
+        return createResult(new IncDecExpression(&_declContext, op, varName));
     }
 
     virtual antlrcpp::Any visitPREFIX_DEC_EXPR(CMParser::PREFIX_DEC_EXPRContext *ctx) override
     {
-        return buildIncDecExpression(IncDecExpression::PREFIX_DECREMENT, ctx->lvalue());
+        IncDecExpression::Operation op = IncDecExpression::PREFIX_DECREMENT;
+        const std::string varName = ctx->Identifier()->getText();
+        return createResult(new IncDecExpression(&_declContext, op, varName));
     }
 
 
@@ -253,13 +257,19 @@ public:
 
     virtual antlrcpp::Any visitDEREF_EXPR(CMParser::DEREF_EXPRContext *ctx) override
     {
-        const std::string varName = ctx->Identifier()->getText();
-        return createResult(new DerefExpression(&_declContext, varName));
+        Result result = visitChildren(ctx).as<Result>();
+        assert(result.size() == 1);
+        assert(dynamic_cast<Expression*>(result[0]) != nullptr);
+        Expression *expr = (Expression*)result[0];
+        return createResult(new DerefExpression(&_declContext, expr));
     }
 
     virtual antlrcpp::Any visitNEGATION_EXPR(CMParser::NEGATION_EXPRContext *ctx) override
     {
-        Expression *expr = manuallyVisitExpression(ctx->expression());
+        Result result = visitChildren(ctx).as<Result>();
+        assert(result.size() == 1);
+        assert(dynamic_cast<Expression*>(result[0]) != nullptr);
+        Expression *expr = (Expression*)result[0];
         return createResult(new NegationExpression(expr));
     }
 
@@ -534,11 +544,15 @@ public:
     virtual antlrcpp::Any visitAssignment(CMParser::AssignmentContext *ctx) override
     {
         Lvalue *lvalue = manuallyVisitLvalue(ctx->lvalue());
+        Expression *expression = nullptr;
 
-        Result result = visitChildren(ctx->expression());
-        assert(result.size() == 1);
-        assert(dynamic_cast<Expression*>(result[0]) != nullptr);
-        Expression *expression = (Expression*)result[0];
+        if (ctx->expression()) {
+            expression = manuallyVisitExpression(ctx->expression());
+        } else if (ctx->stringLiteral()) {
+            expression = manuallyVisitStringLiteral(ctx->stringLiteral());
+        } else {
+            Throw(AstConversionException, "no rvalue for assignment");
+        }
 
         return createResult(new VariableAssignmentStatement(&_declContext, lvalue, expression));
     }
@@ -550,13 +564,14 @@ public:
         const TypeDecl type = visitTypeIdentifier(ctx->typeIdentifier()).as<TypeDecl>();;
         const std::string varName = ctx->identifier()->getText();
 
-        CMParser::ExpressionContext *exprContext = ctx->expression();
-        if (exprContext) {
-            Expression *expr = manuallyVisitExpression(exprContext);
-            return createResult(new VariableDeclarationStatement(&_declContext, type, varName, expr));
-        } else {
-            return createResult(new VariableDeclarationStatement(&_declContext, type, varName, nullptr));
+        Expression *expression = nullptr;
+        if (ctx->expression()) {
+            expression = manuallyVisitExpression(ctx->expression());
+        } else if (ctx->stringLiteral()) {
+            expression = manuallyVisitStringLiteral(ctx->stringLiteral());
         }
+
+        return createResult(new VariableDeclarationStatement(&_declContext, type, varName, expression));
     }
 
     virtual antlrcpp::Any visitFunctionDeclaration(CMParser::FunctionDeclarationContext *ctx) override
@@ -657,6 +672,19 @@ public:
         return new DereferencedVariableReference(&_declContext, declName, derefs);
     }
 
+    StringLiteralExpression* manuallyVisitStringLiteral(CMParser::StringLiteralContext *ctx)
+    {
+        std::string str = ctx->getText();
+        str = str.substr(1, str.length() - 2);
+        const StringId stringId = _stringTable->insert(str);
+        return new StringLiteralExpression(stringId);
+    }
+
+    virtual antlrcpp::Any visitStringLiteral(CMParser::StringLiteralContext *ctx) override
+    {
+        return createResult(manuallyVisitStringLiteral(ctx));
+    }
+
     virtual antlrcpp::Any visitLvalue(CMParser::LvalueContext *ctx) override
     {
         // Will never be implemented!
@@ -671,25 +699,11 @@ public:
 
     virtual antlrcpp::Any visitTypeIdentifier(CMParser::TypeIdentifierContext *ctx) override
     {
-        if (ctx->mutableTypeIdentifier()) {
-            return visitMutableTypeIdentifier(ctx->mutableTypeIdentifier());
-       } else if (ctx->constTypeIdentifier()) {
-            return visitConstTypeIdentifier(ctx->constTypeIdentifier());
-       }
-
-        return TypeDecl::getFromString(ctx->getText());
-    }
-
-    virtual antlrcpp::Any visitMutableTypeIdentifier(CMParser::MutableTypeIdentifierContext *ctx) override
-    {
-        return TypeDecl::getFromString(ctx->getText());
-    }
-
-    virtual antlrcpp::Any visitConstTypeIdentifier(CMParser::ConstTypeIdentifierContext *ctx) override
-    {
-        std::string text = ctx->getText().substr(5);
-        TypeDecl type = TypeDecl::getFromString(text);
-        type.setConst(true);
+        std::vector<std::string> tokens;
+        for (auto child: ctx->children) {
+            tokens.push_back(child->getText());
+        }
+        TypeDecl type = TypeDecl::getFromTokens(tokens);
         return type;
     }
 };

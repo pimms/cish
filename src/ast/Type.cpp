@@ -34,6 +34,32 @@ TypeDecl TypeDecl::getFromString(const std::string &str)
     return TypeDecl(map.at(str));
 }
 
+TypeDecl TypeDecl::getFromTokens(const std::vector<std::string> &tokens)
+{
+    auto it = tokens.begin();
+    bool constant = false;
+    if (*it == "const") {
+        constant = true;
+        it++;
+    }
+
+    if (it == tokens.end())
+        Throw(Exception, "too few tokens to work with");
+
+    TypeDecl type = getFromString(*it);
+    type.setConst(constant);
+    it++;
+
+    while (it != tokens.end()) {
+        if (*it != "*")
+            Throw(Exception, "Unexpected token: %s", it->c_str());
+        type = getPointer(type);
+        it++;
+    }
+
+    return type;
+}
+
 TypeDecl TypeDecl::getPointer(Type referencedType)
 {
     TypeDecl type;

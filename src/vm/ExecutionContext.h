@@ -9,6 +9,7 @@
 #include "../Exception.h"
 
 #include "../ast/ExpressionValue.h"
+#include "../ast/StringTable.h"
 
 
 namespace cish
@@ -35,6 +36,19 @@ class ExecutionContext
 public:
     ExecutionContext(Memory *memory);
     virtual ~ExecutionContext();
+
+    /**
+     * Copies all stirngs from the StringTable into the Memory-memoryspace
+     * and makes the strings resolvable. This method should be called exactly
+     * once.
+     */
+    void copyStringTable(const ast::StringTable *stringTable);
+
+    /**
+     * Resolve a StringId into its first allocated memory address. If the
+     * StringId is not defined, a NULL-MemoryView is returned.
+     */
+    MemoryView resolveString(ast::StringId stringId) const;
 
     void pushScope();
     void popScope();
@@ -63,6 +77,7 @@ private:
     std::vector<FunctionFrame> _frameStack;
 
     Memory *_memory;
+    std::map<ast::StringId, Allocation::Ptr> _stringMap;
 };
 
 

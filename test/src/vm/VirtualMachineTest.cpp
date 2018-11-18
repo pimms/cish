@@ -18,6 +18,7 @@ using namespace cish::ast;
 TEST(VirtualMachineTest, globalStatementsAreExecutedOneByOne)
 {
     VmPtr vm = createVm("int a = 15;  int b = 15 + a; int c; void main(){}");
+    vm->executeNextStatement();
     ASSERT_EQ(nullptr, getVar(vm, "a"));
     ASSERT_EQ(nullptr, getVar(vm, "b"));
     ASSERT_EQ(nullptr, getVar(vm, "c"));
@@ -58,6 +59,7 @@ TEST(VirtualMachineTest, terminationIdempotence)
 TEST(VirtualMachineTest, terminatingVmHaltsExecution)
 {
     VmPtr vm = createVm("int a = 15;  int b = 15 + a; int c; void main(){}");
+    vm->executeNextStatement();
     ASSERT_EQ(nullptr, getVar(vm, "a"));
     ASSERT_EQ(nullptr, getVar(vm, "b"));
     ASSERT_EQ(nullptr, getVar(vm, "c"));
@@ -82,13 +84,14 @@ TEST(VirtualMachineTest, isRunningReturnsFalsePostTermination)
     ASSERT_TRUE(vm->isRunning());
     vm->executeNextStatement();
     vm->executeNextStatement();
+    vm->executeNextStatement();
     ASSERT_FALSE(vm->isRunning());
 }
 
 TEST(VirtualMachineTest, executingBeyondLastStatementThrows)
 {
     VmPtr vm = createVm("int a = 15; void main() {}");
-
+    vm->executeNextStatement();
     vm->executeNextStatement();
     vm->executeNextStatement();
     ASSERT_FALSE(vm->isRunning());

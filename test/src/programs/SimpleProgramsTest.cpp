@@ -25,7 +25,7 @@ void assertExitCode(const std::string &source, int expectedExitCode)
         vm->executeNextStatement();
     }
 
-    ASSERT_EQ(expectedExitCode, vm->getExitCode());
+    EXPECT_EQ(expectedExitCode, vm->getExitCode());
 }
 
 
@@ -363,6 +363,57 @@ TEST(SimpleProgramsTest, assigningFromConstant)
     assertExitCode(source, 50);
 }
 
+TEST(SimpleProgramsTest, returningCharacters)
+{
+    assertExitCode("int main(){ return '\\n'; }", (int)'\n');
+    assertExitCode("int main(){ return '\\t'; }", (int)'\t');
+    assertExitCode("int main(){ return '0'; }", (int)'0');
+    assertExitCode("int main(){ return 'a'; }", (int)'a');
+    assertExitCode("int main(){ return '\\0'; }", 0);
+}
+
+TEST(SimpleProgramsTest, nullPointerIsNotEqualToValidPointer)
+{
+    assertExitCode(
+        "int main() {"
+        "   int raw = 15;"
+        "   int *ptr1 = NULL;"
+        "   int *ptr2 = &raw;"
+        "   return ptr1 == ptr2;"
+        "}", 0);
+}
+
+TEST(SimpleProgramsTest, pointersPointingToSameAddressAreEqual)
+{
+    assertExitCode(
+        "int main() {"
+        "   int raw = 15;"
+        "   int *ptr1 = &raw;"
+        "   int *ptr2 = &raw;"
+        "   return ptr1 == ptr2;"
+        "}", 1);
+}
+
+TEST(SimpleProgramsTest, addrofPointerEqualsPointerPointingToIt)
+{
+    assertExitCode(
+        "int main() {"
+        "   int *ptr1 = NULL;"
+        "   int **ptr2 = &ptr1;"
+        "   return &ptr1 == ptr2;"
+        "}", 1);
+}
+
+TEST(SimpleProgramsTest, dereferencingPointerPointerEqualsPointer)
+{
+    assertExitCode(
+        "int main() {"
+        "   int *ptr1 = NULL;"
+        "   int **ptr2 = &ptr1;"
+        "   return ptr1 == *ptr2;"
+        "}", 1);
+}
+
 TEST(SimpleProgramsTest, returningADereferencedPointer)
 {
     const std::string source =
@@ -403,7 +454,7 @@ TEST(SimpleProgramsTest, incrementingDereferencedPointer)
         "int main() {"
         "   int var = 10;"
         "   int *ptr = &var;"
-        "   *ptr++;"
+        "   *ptr = *ptr + 1;"
         "   return var;"
         "}";
     assertExitCode(source, 11);
@@ -421,18 +472,63 @@ TEST(SimpleProgramsTest, assigningToDereferencedPointer)
     assertExitCode(source, 20);
 }
 
+TEST(SimpleProgramsTest, derefingCharFromString)
+{
+    assertExitCode(
+        "int main() {"
+        "   const char *str = \"abc\";"
+        "   return *str;"
+        "}", 'a');
+    assertExitCode(
+        "int main() {"
+        "   const char *str = \"abc\";"
+        "   str++;"
+        "   return *str;"
+        "}", 'b');
+    assertExitCode(
+        "int main() {"
+        "   const char *str = \"abc\";"
+        "   str++;"
+        "   str++;"
+        "   return *str;"
+        "}", 'c');
+    assertExitCode(
+        "int main() {"
+        "   const char *str = \"abc\";"
+        "   str++;"
+        "   str++;"
+        "   str++;"
+        "   return *str;"
+        "}", 0);
+}
+
 TEST(SimpleProgramsTest, iteratingThroughString)
 {
     const std::string source =
         "int main() {"
         "   int len = 0;"
         "   const char *str = \"abc\";"
-        "   while (*str++) {"
-        "       sum++;"
+        "   while (*str) {"
+        "       len++;"
+        "       str++;"
         "   }"
         "   return len;"
         "}";
     assertExitCode(source, 3);
+}
+
+TEST(SimpleProgramsTest, addingValuesOfString)
+{
+    const std::string source =
+        "int main() {"
+        "   int sum = 0;"
+        "   const char *str = \"abc\";"
+        "   do {"
+        "       sum = sum + *str++;"
+        "   } while (*str);"
+        "   return sum;"
+        "}";
+    assertExitCode(source, 'a' + 'b' + 'c');
 }
 
 TEST(SimpleProgramsTest, tripleDerefAssignment)
@@ -553,6 +649,37 @@ TEST(SimpleProgramsTest, cannotTakeAddressOfLiterals)
     assertCompilationFailure(
         "void main() {"
         "   int *ptr = &100;"
+        "}"
+    );
+}
+
+TEST(SimpleProgramsTest, assigningIntWithStringFails)
+{
+    assertCompilationFailure(
+        "void main() {"
+        "   int var = 0;"
+        "   var = \"str\";"
+        "}"
+    );
+}
+
+TEST(SimpleProgramsTest, declaringIntWithStringFails)
+{
+    assertCompilationFailure(
+        "void main() {"
+        "   int var = \"str\";"
+        "}"
+    );
+}
+
+TEST(SimpleProgramsTest, CONSIDER_changingConstThroughPointer)
+{
+    assertCompilationFailure(
+        "void main() {"
+        "   const int var c = 5;"
+        "   int *ptr = &var;"
+        "   *ptr = 6;"
+        "   return var;"
         "}"
     );
 }

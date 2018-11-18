@@ -19,13 +19,6 @@ VariableAssignmentStatement
 VariableAssignmentStatement::VariableAssignmentStatement(
         DeclarationContext *context,
         Lvalue *lvalue,
-        Expression *value):
-    VariableAssignmentStatement(context, lvalue, value, ConstAwareness::STRICT)
-{ }
-
-VariableAssignmentStatement::VariableAssignmentStatement(
-        DeclarationContext *context,
-        Lvalue *lvalue,
         Expression *value,
         VariableAssignmentStatement::ConstAwareness constAwareness):
     _lvalue(lvalue),

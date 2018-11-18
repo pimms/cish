@@ -27,11 +27,8 @@ public:
 
     VariableAssignmentStatement(DeclarationContext *context,
                                 Lvalue *lvalue,
-                                Expression *value);
-    VariableAssignmentStatement(DeclarationContext *context,
-                                Lvalue *lvalue,
                                 Expression *value,
-                                ConstAwareness constAwareness);
+                                ConstAwareness constAwareness = ConstAwareness::STRICT);
 
     virtual ~VariableAssignmentStatement();
     virtual void execute(vm::ExecutionContext *context) const override;

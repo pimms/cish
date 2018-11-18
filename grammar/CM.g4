@@ -23,22 +23,22 @@ expression
 expr
     : incdecexpr                                # INCDECEXPR___
     | '&' Identifier                            # ADDROF_EXPR
-    | '*' Identifier                            # DEREF_EXPR
-    | '!' expression                            # NEGATION_EXPR
+    | '*' expr                                  # DEREF_EXPR
+    | '!' expr                                  # NEGATION_EXPR
     | expr op=( '*' | '/' | '%' ) expr          # MULT_EXPR
     | expr op=( '+' | '-' ) expr                # ADD_EXPR
     | expr op=( '>=' | '<=' | '>' | '<' ) expr  # COMPARE_EXPR
     | expr op=( '==' | '!=' ) expr              # EQUALITY_EXPR
     | expr op=( '&&' | '||' ) expr              # AND_EXPR
-    | (String|Integer|Floating|Boolean|Null)    # LITERAL_EXPR
+    | (Char|Integer|Floating|Boolean|Null)      # LITERAL_EXPR
     | Identifier                                # VAR_REF_EXPR
     | functionCall                              # FUNC_CALL_EXPR
     ;
 incdecexpr
-    : lvalue '++'                               # POSTFIX_INC_EXPR
-    | '++' lvalue                               # PREFIX_INC_EXPR
-    | lvalue '--'                               # POSTFIX_DEC_EXPR
-    | '--' lvalue                               # PREFIX_DEC_EXPR
+    : Identifier '++'                           # POSTFIX_INC_EXPR
+    | Identifier '--'                           # POSTFIX_DEC_EXPR
+    | '++' Identifier                           # PREFIX_INC_EXPR
+    | '--' Identifier                           # PREFIX_DEC_EXPR
     ;
 
 statement
@@ -98,10 +98,12 @@ doWhileStatement
 
 assignment
     : lvalue '=' expression
+    | lvalue '=' stringLiteral
     ;
 
 variableDeclaration
     : typeIdentifier identifier ('=' expression)?
+    | typeIdentifier identifier ('=' stringLiteral)?
     ;
 
 functionDeclaration
@@ -137,14 +139,11 @@ lvalue
     ;
 
 typeIdentifier
-    : mutableTypeIdentifier
-    | constTypeIdentifier
+    : (Const)? identifier Asterisk*
     ;
-mutableTypeIdentifier
-    : identifier Asterisk*
-    ;
-constTypeIdentifier
-    : Const identifier Asterisk*
+
+stringLiteral
+    : String
     ;
 
 
@@ -186,7 +185,10 @@ Boolean
 
 String
     : ["] ( ~["\r\n\\] | '\\' ~[\r\n] )* ["]
-    | ['] ( ~['\r\n\\] | '\\' ~[\r\n] )* [']
+    ;
+
+Char
+    : ['] ( ~['\r\n\\] | '\\' ~[\r\n] )* [']
     ;
 
 

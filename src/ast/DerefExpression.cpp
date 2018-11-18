@@ -1,5 +1,7 @@
 #include "DerefExpression.h"
 
+#include "IncDecExpression.h"
+
 #include "../vm/ExecutionContext.h"
 #include "../vm/Memory.h"
 #include "../vm/Variable.h"
@@ -12,29 +14,31 @@ namespace ast
 {
 
 
-DerefExpression::DerefExpression(DeclarationContext *context, const std::string &varName)
+DerefExpression::DerefExpression(DeclarationContext *context, Expression *expression):
+    _expression(expression)
 {
-    const VarDeclaration *decl = context->getVariableDeclaration(varName);
-    if (decl == nullptr) {
-        Throw(VariableNotDeclaredException, "Variable '%s' not declared in current scope", varName.c_str());
-    }
+    const bool isPointer = _expression->getType() == TypeDecl::POINTER;
 
-    if (decl->type != TypeDecl::POINTER) {
+    if (!isPointer) {
         Throw(InvalidOperationException, "Can only dereference pointers");
     }
+}
 
-    _varDecl = *decl;
+DerefExpression::~DerefExpression()
+{
+    delete _expression;
 }
 
 ExpressionValue DerefExpression::evaluate(vm::ExecutionContext *context) const
 {
     TypeDecl type = getType();
+    ExpressionValue value = _expression->evaluate(context);
 
-    vm::Variable *var = context->getScope()->getVariable(_varDecl.name);
-    const uint32_t ptrAddr = var->getAllocation()->read<uint32_t>();
+    uint32_t address = 0;
+    address = value.get<uint32_t>();
 
     vm::Memory *memory = context->getMemory();
-    vm::MemoryView view = memory->getView(ptrAddr);
+    vm::MemoryView view = memory->getView(address);
     switch (type.getType()) {
         case TypeDecl::BOOL:
             return ExpressionValue(type, view.read<bool>());
@@ -58,7 +62,7 @@ ExpressionValue DerefExpression::evaluate(vm::ExecutionContext *context) const
 
 TypeDecl DerefExpression::getType() const
 {
-    return *_varDecl.type.getReferencedType();
+    return *_expression->getType().getReferencedType();
 }
 
 

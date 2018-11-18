@@ -52,7 +52,7 @@ TEST(IncDecExpressionTest, verifyOperationsOnPointers)
 			dc.declareVariable(type, "i");
 			ec.getScope()->addVariable("i", var);
 
-			IncDecExpression expr(&dc, pair.first, new VariableReference(&dc, "i"));
+			IncDecExpression expr(&dc, pair.first, "i");
 			ExpressionValue value = expr.evaluate(&ec);
 
             const auto refType = *type.getReferencedType();
@@ -94,7 +94,7 @@ TEST(IncDecExpressionTest, verifyOperationsOnPrimitives)
 			dc.declareVariable(type, "i");
 			ec.getScope()->addVariable("i", var);
 
-			IncDecExpression expr(&dc, pair.first, new VariableReference(&dc, "i"));
+			IncDecExpression expr(&dc, pair.first, "i");
 			ExpressionValue value = expr.evaluate(&ec);
 			ASSERT_EQ(10 + std::get<0>(pair.second), value.get<uint8_t>());
 			ASSERT_EQ(10 + std::get<1>(pair.second), var->getAllocation()->read<uint8_t>());
@@ -114,7 +114,7 @@ TEST(IncDecExpressionTest, charOverflow)
     dc.declareVariable(TypeDecl::CHAR, "i");
     ec.getScope()->addVariable("i", var);
 
-    IncDecExpression expr(&dc, IncDecExpression::POSTFIX_INCREMENT, new VariableReference(&dc, "i"));
+    IncDecExpression expr(&dc, IncDecExpression::POSTFIX_INCREMENT, "i");
     ExpressionValue value = expr.evaluate(&ec);
 
     ASSERT_EQ(-128, var->getAllocation()->read<char>());
@@ -133,7 +133,7 @@ TEST(IncDecExpressionTest, charUnderflow)
     dc.declareVariable(TypeDecl::CHAR, "i");
     ec.getScope()->addVariable("i", var);
 
-    IncDecExpression expr(&dc, IncDecExpression::POSTFIX_DECREMENT, new VariableReference(&dc, "i"));
+    IncDecExpression expr(&dc, IncDecExpression::POSTFIX_DECREMENT, "i");
     ExpressionValue value = expr.evaluate(&ec);
 
     ASSERT_EQ(127, var->getAllocation()->read<char>());
@@ -148,9 +148,7 @@ TEST(IncDecExpressionTest, operatingOnConstVariablesNotAllowed)
     type.setConst(true);
     dc.declareVariable(type, "i");
 
-    auto ref = new VariableReference(&dc, "i");
-    ASSERT_THROW(IncDecExpression expr(&dc, IncDecExpression::POSTFIX_DECREMENT, ref),
+    ASSERT_THROW(IncDecExpression expr(&dc, IncDecExpression::POSTFIX_DECREMENT, "i"),
                  InvalidOperationException);
-    delete ref;
 }
 

@@ -1,7 +1,8 @@
 #pragma once
 
 #include "AstNodes.h"
-#include "DeclarationContext.h"
+#include "StringTable.h"
+
 
 namespace cish
 {
@@ -9,17 +10,17 @@ namespace ast
 {
 
 
-class DerefExpression: public Expression
+class StringLiteralExpression: public Expression
 {
 public:
-    DerefExpression(DeclarationContext *context, Expression *expr);
-   ~DerefExpression();
+    StringLiteralExpression(StringId stringId);
 
     ExpressionValue evaluate(vm::ExecutionContext *context) const override;
     TypeDecl getType() const override;
 
 private:
-    Expression *_expression;
+    StringId _stringId;
+    TypeDecl _type;
 };
 
 

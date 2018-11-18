@@ -69,6 +69,19 @@ std::vector<const Statement*> Ast::getRootStatements() const
     return copy;
 }
 
+void Ast::setStringTable(StringTable::Ptr stringTable)
+{
+    _stringTable = std::move(stringTable);
+}
+
+const StringTable* Ast::getStringTable() const
+{
+    if (_stringTable == nullptr)
+        return nullptr;
+    return _stringTable.get();
+}
+
+
 
 }
 }

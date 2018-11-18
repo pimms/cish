@@ -3,6 +3,7 @@
 #include "vm/ExecutionContext.h"
 
 #include "ast/LiteralExpression.h"
+#include "ast/StringTable.h"
 
 
 using namespace cish::vm;
@@ -181,4 +182,66 @@ TEST(ExecutionContextTest, functionReturnValueDefaultsToZeroIfUndefined)
 
     context.pushFunctionFrame();
     ASSERT_EQ(0, context.getCurrentFunctionReturnValue().get<int>());
+}
+
+TEST(ExecutionContextTest, resolvingUndefinedStringsReturnsNull)
+{
+    Memory memory(100, 1);
+    ExecutionContext context(&memory);
+
+    MemoryView view = context.resolveString(1);
+    ASSERT_EQ(0, view.getAddress());
+}
+
+TEST(ExecutionContextTest, resolvingDefinedFunctionsAllocatesBytes)
+{
+    Memory memory(100, 1);
+    ExecutionContext context(&memory);
+
+    StringTable table;
+    table.insert("abc");
+
+    ASSERT_EQ(100, memory.getFreeSize());
+    context.copyStringTable(&table);
+    ASSERT_EQ(96, memory.getFreeSize());
+}
+
+TEST(ExecutionContextTest, resolvingDefinedFunctionsReturnsUniqueAddresses)
+{
+    Memory memory(100, 1);
+    ExecutionContext context(&memory);
+
+    StringTable table;
+    StringId id1 = table.insert("abc");
+    StringId id2 = table.insert("hello world!");
+    StringId id3 = table.insert("hi mom");
+    context.copyStringTable(&table);
+
+    MemoryView view1 = context.resolveString(id1);
+    MemoryView view2 = context.resolveString(id2);
+    MemoryView view3 = context.resolveString(id3);
+
+    ASSERT_NE(0, view1.getAddress());
+    ASSERT_NE(0, view2.getAddress());
+    ASSERT_NE(0, view3.getAddress());
+
+    ASSERT_NE(view1.getAddress(), view2.getAddress());
+    ASSERT_NE(view1.getAddress(), view3.getAddress());
+    ASSERT_NE(view2.getAddress(), view3.getAddress());
+}
+
+TEST(ExecutionContextTest, copiedStringsAreDefinedCorrectly)
+{
+    Memory memory(100, 1);
+    ExecutionContext context(&memory);
+
+    StringTable table;
+    StringId id = table.insert("abc");
+    context.copyStringTable(&table);
+
+    MemoryView view = context.resolveString(id);
+    ASSERT_EQ('a', view.read<char>(0));
+    ASSERT_EQ('b', view.read<char>(1));
+    ASSERT_EQ('c', view.read<char>(2));
+    ASSERT_EQ(0, view.read<char>(3));
 }

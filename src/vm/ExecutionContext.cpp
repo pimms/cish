@@ -28,6 +28,27 @@ ExecutionContext::~ExecutionContext()
     delete _globalScope;
 }
 
+void ExecutionContext::copyStringTable(const ast::StringTable *stringTable)
+{
+    auto map = stringTable->getMap();
+    for (const auto& pair: map) {
+        const uint32_t allocLen = pair.second.length() + 1;
+        Allocation::Ptr alloc = _memory->allocate(allocLen);
+        alloc->copy(pair.second.data(), allocLen);
+        _stringMap[pair.first] = std::move(alloc);
+    }
+}
+
+MemoryView ExecutionContext::resolveString(ast::StringId stringId) const
+{
+    if (_stringMap.count(stringId) == 0) {
+        return _memory->getView(0);
+    }
+
+    const uint32_t addr = _stringMap.at(stringId)->getAddress();
+    return _memory->getView(addr);
+}
+
 
 void ExecutionContext::pushScope()
 {

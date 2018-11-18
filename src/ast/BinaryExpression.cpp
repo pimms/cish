@@ -91,33 +91,41 @@ ExpressionValue BinaryExpression::evaluate(vm::ExecutionContext *ctx) const
 
 ExpressionValue BinaryExpression::evaluatePtrT(vm::ExecutionContext *ctx) const
 {
-    Expression *ptr, *nonPtr;
+    // We're dealing with a few different cases here:
+    //  - Comparison between pointers
+    //  - Arithmetics performed on pointers
+    // In either case, we know that at least one of the expressions is of type
+    // pointer, while the other may be integral or a pointer.
+    Expression *ptr, *maybePtr;
     if (_left->getType().getType() == TypeDecl::POINTER) {
         ptr = _left;
-        nonPtr = _right;
+        maybePtr = _right;
     } else {
         ptr = _right;
-        nonPtr = _left;
+        maybePtr = _left;
     }
 
-    // Arithmetics on pointers operates in multiples of the referenced
-    // type, with 'void*' having an intrinsic type of 1.
-    uint32_t sizeContext;
-    if (ptr->getType().getReferencedType()->getType() == TypeDecl::VOID) {
-        sizeContext = 1;
-    } else {
-        sizeContext = ptr->getType().getReferencedType()->getSize();
-    }
-
-    // Evaluate both terms, multiply the non-pointer value with the context
+    // Evaluate both terms
     const uint32_t ptrVal = ptr->evaluate(ctx).get<uint32_t>();
-    uint32_t otherVal = nonPtr->evaluate(ctx).get<uint32_t>();
-    otherVal *= sizeContext;
+    uint32_t otherVal = maybePtr->evaluate(ctx).get<uint32_t>();
+
+    // If the other type is not of type pointer, and the operation is arithmetic
+    // in nature, we need to multiply the non-pointer operand.
+    if (_operator < Operator::__BOOLEAN_BOUNDARY && maybePtr->getType().getType() != TypeDecl::POINTER) {
+        uint32_t sizeContext = 1;
+        if (ptr->getType().getReferencedType()->getType() == TypeDecl::VOID) {
+            sizeContext = 1;
+        } else {
+            sizeContext = ptr->getType().getReferencedType()->getSize();
+        }
+        otherVal *= sizeContext;
+    }
 
     // Perform the operation, generate a result with the same type
     // as the pointer-type.
     auto func = getFunction<uint32_t>();
     const uint32_t resultValue = func(ptrVal, otherVal);
+
     return ExpressionValue(ptr->getType(), resultValue);
 }
 

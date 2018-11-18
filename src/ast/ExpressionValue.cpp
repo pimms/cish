@@ -1,6 +1,8 @@
 #include "ExpressionValue.h"
+#include "StringEscape.h"
 
 #include <regex>
+#include <map>
 
 
 namespace cish
@@ -9,11 +11,11 @@ namespace ast
 {
 
 
-
 ExpressionValue::ExpressionValue(const std::string& rawValue)
 {
     const std::regex exprInt("[0-9]+");
     const std::regex exprFloat("(\\.[0-9]+|[0-9]+(\\.[0-9]+)?)[fF]?");
+    const std::regex exprChar("'(\\\\.|[^'\\\\])'");
 
     memset(&_value, 0, sizeof(_value));
 
@@ -32,8 +34,11 @@ ExpressionValue::ExpressionValue(const std::string& rawValue)
     } else if (std::regex_match(rawValue, exprFloat)) {
         _type = TypeDecl(TypeDecl::FLOAT);
         _value.fval = std::atof(rawValue.c_str());
+    } else if (std::regex_match(rawValue, exprChar)) {
+        _type = TypeDecl(TypeDecl::CHAR);
+        _value.chval = string::unescapeChar(rawValue);
     } else {
-        Throw(ExpressionTypeException, "Unable to determine intrinsic type of expression '%s'", rawValue.c_str());
+        Throw(ExpressionTypeException, "Unable to determine intrinsic type of expression: %s", rawValue.c_str());
     }
 }
 

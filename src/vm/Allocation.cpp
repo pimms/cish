@@ -24,6 +24,10 @@ uint32_t MemoryView::getAddress() const
     return _addr;
 }
 
+void MemoryView::copy(const void *buffer, uint32_t len, uint32_t offset)
+{
+    _memoryAccess->write((const uint8_t*)buffer, _addr+offset, len);
+}
 
 /*
 ==================

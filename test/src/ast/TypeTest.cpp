@@ -199,3 +199,20 @@ TEST(TypeTest, pointerTypeDeclWithPointerTypeIsShallow)
     ASSERT_FALSE(intPtr == voidPtr);
 }
 
+TEST(TypeTest, getFromTokens)
+{
+    TypeDecl constIntPtrPtr = TypeDecl::INT;
+    constIntPtrPtr.setConst(true);
+    constIntPtrPtr = TypeDecl::getPointer(constIntPtrPtr);
+    constIntPtrPtr = TypeDecl::getPointer(constIntPtrPtr);
+    std::vector<std::string> cippTokens = {"const", "int", "*", "*"};
+    ASSERT_EQ(constIntPtrPtr, TypeDecl::getFromTokens(cippTokens));
+
+    TypeDecl intPtr = TypeDecl::getPointer(TypeDecl::INT);
+    std::vector<std::string> ipTokens = {"int", "*"};
+    ASSERT_EQ(intPtr, TypeDecl::getFromTokens(ipTokens));
+
+    std::vector<std::string> iTokens = { "int" };
+    ASSERT_EQ(TypeDecl(TypeDecl::INT), TypeDecl::getFromTokens(iTokens));
+}
+

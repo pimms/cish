@@ -13,6 +13,11 @@ namespace vm
 namespace internal
 {
 
+
+//#define DBGLOG(...) printf(__VA_ARGS__)
+#define DBGLOG(...) do{}while(0);
+
+
 Signal::Signal()
 {
 
@@ -86,7 +91,7 @@ void ExecutionThread::start()
             var.notify_one();
         }
 
-        // printf("[W] thread started\n");
+        DBGLOG("[W] thread started\n");
         backgroundMain();
     });
 
@@ -100,7 +105,7 @@ void ExecutionThread::resume()
     if (_isRunning) {
         _orgToWorker.signal([this]() {
             _nextRequest++;
-            // printf("[O] resume/signaling next request (%d)\n", (int)_nextRequest.load());
+            DBGLOG("[O] resume/signaling next request (%d)\n", (int)_nextRequest.load());
         });
     }
 }
@@ -110,13 +115,13 @@ void ExecutionThread::cycle()
     if (_isRunning) {
         _orgToWorker.signal([this]() {
             _nextRequest++;
-            // printf("[O] cycle/signaling next request (%d)\n", (int)_nextRequest.load());
+            DBGLOG("[O] cycle/signaling next request (%d)\n", (int)_nextRequest.load());
         });
 
         _workerToOrg.wait([this]() {
             return _lastRequestHandled == _nextRequest;
         });
-        // printf("[O] cycle/received process ack (%d)\n", (int)_nextRequest.load());
+        DBGLOG("[O] cycle/received process ack (%d)\n", (int)_nextRequest.load());
     }
 }
 
@@ -124,15 +129,15 @@ void ExecutionThread::terminate()
 {
     if (_isRunning) {
         _orgToWorker.signal([this]() {
-            // printf("[O] sending termination request\n");
+            DBGLOG("[O] sending termination request\n");
             _execOrder = ExecOrder::TERMINATE;
         });
 
-        // printf("[O] joining...\n");
+        DBGLOG("[O] joining...\n");
         if (_thread.joinable()) {
             _thread.join();
         }
-        // printf("[O] joined\n");
+        DBGLOG("[O] joined\n");
     }
 }
 
@@ -153,17 +158,17 @@ void ExecutionThread::await()
     ContinuationState state = ContinuationState::CONTINUE;
 
     if (_execOrder == ExecOrder::WAIT_FOR_RESUME) {
-        // printf("[W] sending process ack (%d)\n", (int)_lastRequestReceived.load());
+        DBGLOG("[W] sending process ack (%d)\n", (int)_lastRequestReceived.load());
         _workerToOrg.signal([this]() {
             _lastRequestHandled.store(_lastRequestReceived);
         });
 
-        // printf("[W] awaiting process request\n");
+        DBGLOG("[W] awaiting process request\n");
         _orgToWorker.wait([this, &state]() -> bool {
             state = getContinuationState();
             return state != ContinuationState::SLEEP;
         });
-        // printf("[W] received worker signal\n");
+        DBGLOG("[W] received worker signal\n");
 
         _lastRequestReceived.store(_nextRequest);
     } else {
@@ -195,17 +200,17 @@ void ExecutionThread::backgroundMain()
 {
     try {
         execute();
-        printf("Execution thread exiting normally\n");
+        DBGLOG("[W] Execution thread exiting normally\n");
     } catch (TerminateSignal tsig) {
-        printf("[W] executionthread terminated\n");
+        DBGLOG("[W] executionthread terminated\n");
     } catch (const Exception &e) {
-        printf("[W] cish::Exception caught:\n%s\n", e.what());
+        DBGLOG("[W] cish::Exception caught:\n%s\n", e.what());
         Exception *copy = new Exception(e);
         _runtimeError = std::shared_ptr<Exception>(copy);
     } catch (std::exception e) {
-        printf("[W] std::exception caught:\n%s\n", e.what());
+        DBGLOG("[W] std::exception caught:\n%s\n", e.what());
     } catch (...) {
-        printf("[W] unknown throwable caught\n");
+        DBGLOG("[W] unknown throwable caught\n");
     }
 
     // If we are being called in a synchronous manner, the worker thread

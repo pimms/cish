@@ -2,6 +2,7 @@
 
 #include "AstNodes.h"
 #include "FunctionDefinition.h"
+#include "StringTable.h"
 
 #include <memory>
 #include <vector>
@@ -29,9 +30,13 @@ public:
     void addRootStatement(Statement *statement);
     std::vector<const Statement*> getRootStatements() const;
 
+    void setStringTable(StringTable::Ptr stringTable);
+    const StringTable* getStringTable() const;
+
 private:
     std::vector<Statement*> _rootStatements;
     std::map<std::string,FunctionDefinition*> _funcDefs;
+    StringTable::Ptr _stringTable;
 };
 
 

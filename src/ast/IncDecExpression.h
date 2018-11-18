@@ -21,7 +21,7 @@ public:
         POSTFIX_DECREMENT,
     };
 
-    IncDecExpression(DeclarationContext *context, Operation type, Lvalue *lvalue);
+    IncDecExpression(DeclarationContext *context, Operation type, const std::string& varName);
     ~IncDecExpression();
 
     virtual TypeDecl getType() const override;
@@ -31,7 +31,8 @@ private:
     int getMutationValue() const;
 
     Operation _operation;
-    Lvalue *_lvalue;
+    TypeDecl _type;
+    std::string _varName;
 };
 
 

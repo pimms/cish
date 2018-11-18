@@ -45,6 +45,9 @@ ast::ExpressionValue Executor::getExitStatus() const
 
 void Executor::execute()
 {
+    await();
+    copyStringTable(_ast->getStringTable());
+
     const ast::FunctionDefinition *main = _ast->getFunctionDefinition("main");
     if (!main) {
         Throw(NoEntryPointException, "Entrypoint 'main' not found");

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <vector>
 #include <string>
 
 
@@ -31,6 +32,7 @@ public:
     template<typename T>
     static TypeDecl getFromNative();
     static TypeDecl getFromString(const std::string &str);
+    static TypeDecl getFromTokens(const std::vector<std::string>& tokens);
     static TypeDecl getPointer(Type referencedType);
     static TypeDecl getPointer(const TypeDecl &referencedType);
 

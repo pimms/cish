@@ -76,6 +76,19 @@ TEST(AstBuilderTest, constVariableDeclaration)
     ASSERT_TRUE(type.isConst());
 }
 
+TEST(AstBuilderTest, constPointerDeclaration)
+{
+    Ast::Ptr ast = buildAst("const int* var = 15;");
+    auto statements = ast->getRootStatements();
+    auto *stmt = dynamic_cast<const VariableDeclarationStatement*>(statements[0]);
+
+    TypeDecl type = stmt->getDeclaredType();
+    ASSERT_EQ(TypeDecl::POINTER, type.getType());
+    ASSERT_FALSE(type.isConst());
+    ASSERT_EQ(TypeDecl::INT, type.getReferencedType()->getType());
+    ASSERT_TRUE(type.getReferencedType()->isConst());
+}
+
 TEST(AstBuilderTest, compilationPassingSmokeTest)
 {
     // Not really checking anything of significance here, but

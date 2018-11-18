@@ -36,6 +36,27 @@ TEST(ExpressionValueTest, BoolIsCorrectlyIdentifiedFromString)
     ASSERT_EQ(TypeDecl::BOOL, ExpressionValue("false").getIntrinsicType().getType());
 }
 
+TEST(ExpressionValueTest, charactersAreCorrectlyResolved)
+{
+    ASSERT_EQ(TypeDecl::CHAR, ExpressionValue("'a'").getIntrinsicType().getType());
+    ASSERT_EQ('a', ExpressionValue("'a'").get<char>());
+
+    ASSERT_EQ(TypeDecl::CHAR, ExpressionValue("'z'").getIntrinsicType().getType());
+    ASSERT_EQ('z', ExpressionValue("'z'").get<char>());
+
+    ASSERT_EQ(TypeDecl::CHAR, ExpressionValue("'\\0'").getIntrinsicType().getType());
+    ASSERT_EQ('\0', ExpressionValue("'\\0'").get<char>());
+
+    ASSERT_EQ(TypeDecl::CHAR, ExpressionValue("'.'").getIntrinsicType().getType());
+    ASSERT_EQ('.', ExpressionValue("'.'").get<char>());
+
+    ASSERT_EQ(TypeDecl::CHAR, ExpressionValue("'\\''").getIntrinsicType().getType());
+    ASSERT_EQ('\'', ExpressionValue("'\\''").get<char>());
+
+    ASSERT_EQ(TypeDecl::CHAR, ExpressionValue("'\"'").getIntrinsicType().getType());
+    ASSERT_EQ('"', ExpressionValue("'\"'").get<char>());
+}
+
 
 TEST(ExpressionValueTest, IntrinsicFloat_GetAsFloatTypes)
 {

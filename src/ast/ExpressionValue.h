@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <stdexcept>
 #include <string>
+#include <map>
 
 #include "Type.h"
 #include "../Exception.h"
@@ -10,6 +11,7 @@
 
 namespace cish
 {
+namespace vm { class Variable; }
 namespace ast
 {
 
@@ -42,6 +44,7 @@ private:
     TypeDecl _type;
     union {
         int32_t ival;
+        int8_t chval;
         float fval;
         bool bval;
     } _value;
