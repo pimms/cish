@@ -17,17 +17,6 @@ using namespace cish::ast;
 
 /* VALID PROGRAMS */
 
-void assertExitCode(const std::string &source, int expectedExitCode)
-{
-    VmPtr vm = createVm(source);
-
-    while (vm->isRunning()) {
-        vm->executeNextStatement();
-    }
-
-    EXPECT_EQ(expectedExitCode, vm->getExitCode());
-}
-
 
 TEST(SimpleProgramsTest, returningFooFromMain)
 {
@@ -698,6 +687,14 @@ TEST(SimpleProgramsTest, cannotPassStringLiteralToCharPtrArgument)
     assertCompilationFailure(
         "void foo(char *str) {}"
         "void main() { foo(\"heisann\"); }"
+    );
+}
+
+TEST(SimpleProgramsTest, includingUndefinedModulesThrows)
+{
+    assertCompilationFailure(
+        "#include <undefined.h>"
+        "int main() {return 0;}"
     );
 }
 

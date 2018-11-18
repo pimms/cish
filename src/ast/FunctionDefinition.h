@@ -17,9 +17,9 @@ class FunctionDefinition: public SuperStatement, public vm::Callable
 {
 public:
     FunctionDefinition(DeclarationContext *context, FuncDeclaration decl);
-    ~FunctionDefinition();
+    virtual ~FunctionDefinition();
 
-    const FuncDeclaration* getDeclaration() const;
+    const FuncDeclaration* getDeclaration() const override;
 
     ExpressionValue execute(vm::ExecutionContext *context, const std::vector<ExpressionValue>& params) const override;
 

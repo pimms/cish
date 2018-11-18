@@ -1,26 +1,60 @@
 #include "TestHelpers.h"
+#include "module/ModuleContext.h"
+
+using namespace cish::vm;
+using namespace cish::ast;
+using namespace cish::module;
 
 
-cish::ast::Ast::Ptr createAst(const std::string &source)
+Ast::Ptr createAst(const std::string &source)
 {
-    cish::ast::AntlrContext antlrContext(source);
-    cish::ast::AstBuilder builder(&antlrContext);
-    cish::ast::Ast::Ptr ast = builder.buildAst();
+    return createAst(ModuleContext::create(), source);
+}
+
+Ast::Ptr createAst(ModuleContext::Ptr moduleContext, const std::string &source)
+{
+
+    AntlrContext antlrContext(source);
+
+    AstBuilder builder(&antlrContext, moduleContext);
+    Ast::Ptr ast = builder.buildAst();
     return ast;
 }
 
 VmPtr createVm(const std::string &source)
 {
-    cish::ast::Ast::Ptr ast = createAst(source);
-
-    cish::vm::VmOptions opts;
-    opts.heapSize = 512;
-    opts.minAllocSize = 4;
-    return VmPtr(new cish::vm::VirtualMachine(opts, std::move(ast)));
+    return createVm(ModuleContext::create(), source);
 }
 
-cish::vm::Variable* getVar(VmPtr vm, const std::string &name)
+VmPtr createVm(ModuleContext::Ptr moduleContext, const std::string &source)
+{
+    Ast::Ptr ast = createAst(moduleContext, source);
+
+    VmOptions opts;
+    opts.heapSize = 512;
+    opts.minAllocSize = 4;
+    return VmPtr(new VirtualMachine(opts, std::move(ast)));
+}
+
+Variable* getVar(VmPtr vm, const std::string &name)
 {
     return vm->getExecutionContext()->getScope()->getVariable(name);
 }
 
+
+
+void assertExitCode(const std::string &source, int expectedExitCode)
+{
+    assertExitCode(ModuleContext::create(), source, expectedExitCode);
+}
+
+void assertExitCode(ModuleContext::Ptr moduleContext, const std::string &source, int expectedExitCode)
+{
+    VmPtr vm = createVm(moduleContext, source);
+
+    while (vm->isRunning()) {
+        vm->executeNextStatement();
+    }
+
+    EXPECT_EQ(expectedExitCode, vm->getExitCode());
+}

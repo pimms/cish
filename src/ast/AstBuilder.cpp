@@ -37,6 +37,9 @@ namespace cish
 namespace ast
 {
 
+using module::Module;
+using module::ModuleContext;
+
 namespace internal
 {
 
@@ -49,6 +52,7 @@ class TreeConverter: public CMBaseVisitor
     DeclarationContext _declContext;
     StringTable::Ptr _stringTable;
     std::vector<FuncDeclaration> _funcDecls;
+    const ModuleContext::Ptr _moduleContext;
 
     Result createResult(AstNode *node)
     {
@@ -120,7 +124,8 @@ class TreeConverter: public CMBaseVisitor
     }
 
 public:
-    TreeConverter()
+    TreeConverter(const ModuleContext::Ptr moduleContext):
+        _moduleContext(moduleContext)
     {
         _stringTable = StringTable::create();
     }
@@ -171,7 +176,7 @@ public:
             CMParser::SystemIncludeContext *systemInclude = rootItem->systemInclude();
 
             // If this assert ever fails, the grammar has likely changed
-            assert(varDecl || funcDef || funcDecl);
+            assert(varDecl || funcDef || funcDecl || systemInclude);
 
             if (varDecl != nullptr) {
                 Result res = visitVariableDeclaration(varDecl).as<Result>();
@@ -182,14 +187,21 @@ public:
                 Result res = visitFunctionDefinition(funcDef).as<Result>();
                 assert(res.size() == 1);
                 assert(dynamic_cast<FunctionDefinition*>(res[0]) != nullptr);
-                ast->addFunctionDefinition((FunctionDefinition*)res[0]);
+
+                vm::Callable::Ptr funcPtr = vm::Callable::Ptr((FunctionDefinition*)res[0]);
+                ast->addFunctionDefinition(funcPtr);
             } else if (funcDecl != nullptr) {
                 Result res = visitFunctionDeclaration(funcDecl);
                 assert(res.size() == 1);
                 assert(dynamic_cast<FunctionDeclarationStatement*>(res[0]) != nullptr);
                 ast->addRootStatement((FunctionDeclarationStatement*)res[0]);
             } else if (systemInclude != nullptr) {
-                visitSystemInclude(systemInclude);
+                Module::Ptr module = visitSystemInclude(systemInclude).as<Module::Ptr>();
+                auto functions = module->getFunctions();
+                for (const auto &func: functions) {
+                    _declContext.declareFunction(*func->getDeclaration());
+                }
+                ast->addModule(module);
             }
         }
 
@@ -204,8 +216,15 @@ public:
 
     virtual antlrcpp::Any visitSystemInclude(CMParser::SystemIncludeContext *ctx) override
     {
-        printf("-- INCLUDE: '%s' --\n", ctx->moduleName()->getText().c_str());
-        return nullptr;
+        std::string moduleName = ctx->sysModuleName()->getText();
+        moduleName = moduleName.substr(1, moduleName.length() - 2);
+
+        const module::Module::Ptr module = _moduleContext->getModule(moduleName);
+        if (!module) {
+            Throw(ModuleNotFoundException, "Could not include module '%s'", moduleName.c_str());
+        }
+
+        return module;
     }
 
     virtual antlrcpp::Any visitExpression(CMParser::ExpressionContext *ctx) override
@@ -717,8 +736,9 @@ public:
 
 
 
-AstBuilder::AstBuilder(const AntlrContext *antlrContext):
-    _antlrContext(antlrContext)
+AstBuilder::AstBuilder(const AntlrContext *antlrContext, const ModuleContext::Ptr moduleContext):
+    _antlrContext(antlrContext),
+    _moduleContext(moduleContext)
 {
 
 }
@@ -736,7 +756,7 @@ Ast::Ptr AstBuilder::buildAst()
         Throw(SyntaxErrorException, "There are syntax errors");
     }
 
-    internal::TreeConverter converter;
+    internal::TreeConverter converter(_moduleContext);
     Ast::Ptr ast = converter.convertTree(_antlrContext);
     return std::move(ast);
 }

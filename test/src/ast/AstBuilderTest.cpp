@@ -1,5 +1,7 @@
 #include <gtest/gtest.h>
 
+#include "module/ModuleContext.h"
+
 #include "ast/AstBuilder.h"
 #include "ast/AntlrContext.h"
 #include "ast/LiteralExpression.h"
@@ -7,11 +9,12 @@
 
 using namespace cish::vm;
 using namespace cish::ast;
+using namespace cish::module;
+
 Ast::Ptr buildAst(const std::string &source)
 {
     AntlrContext context(source);
-
-    AstBuilder builder(&context);
+    AstBuilder builder(&context, ModuleContext::create());
     return std::move(builder.buildAst());
 }
 

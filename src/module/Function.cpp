@@ -13,9 +13,9 @@ Function::Function(ast::FuncDeclaration declaration):
 
 }
 
-const ast::FuncDeclaration& Function::getDeclaration() const
+const ast::FuncDeclaration* Function::getDeclaration() const
 {
-    return _declaration;
+    return &_declaration;
 }
 
 

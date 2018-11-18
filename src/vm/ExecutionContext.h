@@ -63,7 +63,7 @@ public:
     Memory* getMemory() const;
 
     virtual void yieldOnStatement(const ast::Statement *statement);
-    virtual const Callable* getFunctionDefinition(const std::string &funcName) const;
+    virtual const Callable::Ptr getFunctionDefinition(const std::string &funcName) const;
 
 private:
     struct FunctionFrame

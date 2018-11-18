@@ -147,10 +147,10 @@ stringLiteral
     ;
 
 systemInclude
-    : '#include' '<' moduleName '>'
+    : '#include' sysModuleName
     ;
-moduleName
-    : ModuleName
+sysModuleName
+    : SysModuleName
     ;
 
 
@@ -212,6 +212,6 @@ Comment
 Space
     : [ \t\r\n\u000C] -> skip
     ;
-ModuleName
-    : ('a'..'z'|'A'..'Z'|'0'..'9'|'/'|'.'|'_'|'-')+
+SysModuleName
+    : '<' ('a'..'z'|'A'..'Z'|'0'..'9'|'/'|'.'|'_'|'-')+ '>'
     ;

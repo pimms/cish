@@ -46,7 +46,7 @@ TypeDecl FunctionCallExpression::getType() const
 
 ExpressionValue FunctionCallExpression::evaluate(vm::ExecutionContext *context) const
 {
-    const vm::Callable *funcDef = context->getFunctionDefinition(_funcDecl.name);
+    const vm::Callable::Ptr funcDef = context->getFunctionDefinition(_funcDecl.name);
 
     std::vector<ExpressionValue> params;
     for (Expression *expr: _params) {

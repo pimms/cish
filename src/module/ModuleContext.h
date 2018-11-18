@@ -15,8 +15,11 @@ namespace module
 class ModuleContext
 {
 public:
+    typedef std::shared_ptr<ModuleContext> Ptr;
+    static Ptr create();
+
     void addModule(Module::Ptr module);
-    const Module* getModule(const std::string &name) const;
+    const Module::Ptr getModule(const std::string &name) const;
 
 private:
     std::map<std::string, Module::Ptr> _modules;

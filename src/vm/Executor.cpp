@@ -29,7 +29,7 @@ void Executor::yieldOnStatement(const ast::Statement *statement)
     await();
 }
 
-const Callable* Executor::getFunctionDefinition(const std::string &funcName) const
+const Callable::Ptr Executor::getFunctionDefinition(const std::string &funcName) const
 {
     return _ast->getFunctionDefinition(funcName);
 }
@@ -48,7 +48,7 @@ void Executor::execute()
     await();
     copyStringTable(_ast->getStringTable());
 
-    const ast::FunctionDefinition *main = _ast->getFunctionDefinition("main");
+    const Callable::Ptr main = _ast->getFunctionDefinition("main");
     if (!main) {
         Throw(NoEntryPointException, "Entrypoint 'main' not found");
     }

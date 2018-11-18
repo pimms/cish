@@ -3,6 +3,8 @@
 #include "AstNodes.h"
 #include "FunctionDefinition.h"
 #include "StringTable.h"
+#include "../module/Module.h"
+#include "../vm/Callable.h"
 
 #include <memory>
 #include <vector>
@@ -23,9 +25,10 @@ public:
     Ast();
     ~Ast();
 
-    void addFunctionDefinition(FunctionDefinition *funcDef);
-    const FunctionDefinition* getFunctionDefinition(const std::string &funcName);
-    std::vector<const FunctionDefinition*> getFunctionDefinitions() const;
+    void addFunctionDefinition(vm::Callable::Ptr funcDef);
+    void addModule(const module::Module::Ptr module);
+    const vm::Callable::Ptr getFunctionDefinition(const std::string &funcName);
+    std::vector<const vm::Callable::Ptr> getFunctionDefinitions() const;
 
     void addRootStatement(Statement *statement);
     std::vector<const Statement*> getRootStatements() const;
@@ -35,7 +38,7 @@ public:
 
 private:
     std::vector<Statement*> _rootStatements;
-    std::map<std::string,FunctionDefinition*> _funcDefs;
+    std::map<std::string,vm::Callable::Ptr> _funcDefs;
     StringTable::Ptr _stringTable;
 };
 

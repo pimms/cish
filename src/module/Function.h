@@ -16,11 +16,10 @@ namespace module
 class Function: public vm::Callable
 {
 public:
-    typedef std::shared_ptr<Function> Ptr;
-
     Function(ast::FuncDeclaration declaration);
+    virtual ~Function() = default;
 
-    const ast::FuncDeclaration& getDeclaration() const;
+    const ast::FuncDeclaration* getDeclaration() const override;
     virtual ast::ExpressionValue execute(vm::ExecutionContext *context,
                                          const std::vector<ast::ExpressionValue>& params) const override = 0;
 private:

@@ -19,15 +19,11 @@ Ast::~Ast()
     for (Statement *s: _rootStatements) {
         delete s;
     }
-
-    for (auto pair: _funcDefs) {
-        delete pair.second;
-    }
 }
 
-void Ast::addFunctionDefinition(FunctionDefinition *funcDef)
+void Ast::addFunctionDefinition(vm::Callable::Ptr callable)
 {
-    const std::string funcName = funcDef->getDeclaration()->name;
+    const std::string funcName = callable->getDeclaration()->name;
 
     if (_funcDefs.count(funcName)) {
         Throw(FunctionAlreadyDefinedException,
@@ -35,19 +31,27 @@ void Ast::addFunctionDefinition(FunctionDefinition *funcDef)
               funcName.c_str());
     }
 
-    _funcDefs[funcName] = funcDef;
+    _funcDefs[funcName] = callable;
 }
 
-const FunctionDefinition* Ast::getFunctionDefinition(const std::string &funcName)
+void Ast::addModule(const module::Module::Ptr module)
+{
+    auto funcs = module->getFunctions();
+    for (auto f: funcs) {
+        addFunctionDefinition(f);
+    }
+}
+
+const vm::Callable::Ptr Ast::getFunctionDefinition(const std::string &funcName)
 {
     if (_funcDefs.count(funcName) == 0)
         return nullptr;
     return _funcDefs[funcName];
 }
 
-std::vector<const FunctionDefinition*> Ast::getFunctionDefinitions() const
+std::vector<const vm::Callable::Ptr> Ast::getFunctionDefinitions() const
 {
-    std::vector<const FunctionDefinition*> funcs;
+    std::vector<const vm::Callable::Ptr> funcs;
     for (auto pair: _funcDefs) {
         funcs.push_back(pair.second);
     }
