@@ -146,7 +146,7 @@ void ExecutionContext::yieldOnStatement(const ast::Statement *statement)
     // No body! This method must be overriden to serve any purpose.
 }
 
-const ast::FunctionDefinition* ExecutionContext::getFunctionDefinition(const std::string &funcName) const
+const Callable* ExecutionContext::getFunctionDefinition(const std::string &funcName) const
 {
     // Nothing we can do! This method must be overridden to serve any purpose.
     printf("WARNING! getFunctionDefinition called on ExecutionContext");

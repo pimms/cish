@@ -168,6 +168,7 @@ public:
             CMParser::VariableDeclarationContext *varDecl = rootItem->variableDeclaration();
             CMParser::FunctionDefinitionContext *funcDef = rootItem->functionDefinition();
             CMParser::FunctionDeclarationContext *funcDecl = rootItem->functionDeclaration();
+            CMParser::SystemIncludeContext *systemInclude = rootItem->systemInclude();
 
             // If this assert ever fails, the grammar has likely changed
             assert(varDecl || funcDef || funcDecl);
@@ -187,6 +188,8 @@ public:
                 assert(res.size() == 1);
                 assert(dynamic_cast<FunctionDeclarationStatement*>(res[0]) != nullptr);
                 ast->addRootStatement((FunctionDeclarationStatement*)res[0]);
+            } else if (systemInclude != nullptr) {
+                visitSystemInclude(systemInclude);
             }
         }
 
@@ -197,6 +200,12 @@ public:
     {
         // We parse the RootBlock's children explicitly, so this method should never get hit
         Throw(AstConversionException, "Internal conversion exception - should never visit RootItem");
+    }
+
+    virtual antlrcpp::Any visitSystemInclude(CMParser::SystemIncludeContext *ctx) override
+    {
+        printf("-- INCLUDE: '%s' --\n", ctx->moduleName()->getText().c_str());
+        return nullptr;
     }
 
     virtual antlrcpp::Any visitExpression(CMParser::ExpressionContext *ctx) override

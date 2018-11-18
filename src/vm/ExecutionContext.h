@@ -5,6 +5,7 @@
 #include "Scope.h"
 #include "Memory.h"
 #include "ExecutionThread.h"
+#include "Callable.h"
 
 #include "../Exception.h"
 
@@ -17,7 +18,6 @@ namespace cish
 namespace ast
 {
 
-class FunctionDefinition;
 class Statement;
 
 }
@@ -63,7 +63,7 @@ public:
     Memory* getMemory() const;
 
     virtual void yieldOnStatement(const ast::Statement *statement);
-    virtual const ast::FunctionDefinition* getFunctionDefinition(const std::string &funcName) const;
+    virtual const Callable* getFunctionDefinition(const std::string &funcName) const;
 
 private:
     struct FunctionFrame

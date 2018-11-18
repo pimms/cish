@@ -12,6 +12,7 @@ rootItem
     : functionDefinition
     | functionDeclaration
     | variableDeclaration ';'
+    | systemInclude
     ;
 
 
@@ -145,6 +146,13 @@ stringLiteral
     : String
     ;
 
+systemInclude
+    : '#include' '<' moduleName '>'
+    ;
+moduleName
+    : ModuleName
+    ;
+
 
 
 Asterisk : '*';
@@ -203,4 +211,7 @@ Comment
 
 Space
     : [ \t\r\n\u000C] -> skip
+    ;
+ModuleName
+    : ('a'..'z'|'A'..'Z'|'0'..'9'|'/'|'.'|'_'|'-')+
     ;

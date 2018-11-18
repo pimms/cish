@@ -6,6 +6,8 @@
 #include "Type.h"
 #include "../Exception.h"
 #include "SuperStatement.h"
+#include "VarDeclaration.h"
+#include "FuncDeclaration.h"
 
 
 namespace cish
@@ -18,21 +20,6 @@ DECLARE_EXCEPTION(FunctionAlreadyDeclaredException);
 DECLARE_EXCEPTION(FunctionAlreadyDefinedException);
 
 DECLARE_EXCEPTION(InvalidDeclarationScope);
-
-
-struct VarDeclaration
-{
-    TypeDecl type;
-    std::string name;
-};
-
-
-struct FuncDeclaration
-{
-    TypeDecl returnType;
-    std::string name;
-    std::vector<VarDeclaration> params;
-};
 
 
 class FunctionDefinition;

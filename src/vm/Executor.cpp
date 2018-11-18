@@ -29,7 +29,7 @@ void Executor::yieldOnStatement(const ast::Statement *statement)
     await();
 }
 
-const ast::FunctionDefinition* Executor::getFunctionDefinition(const std::string &funcName) const
+const Callable* Executor::getFunctionDefinition(const std::string &funcName) const
 {
     return _ast->getFunctionDefinition(funcName);
 }

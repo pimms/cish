@@ -3,6 +3,7 @@
 #include "AstNodes.h"
 #include "DeclarationContext.h"
 #include "SuperStatement.h"
+#include "../vm/Callable.h"
 
 
 namespace cish
@@ -12,7 +13,7 @@ namespace ast
 {
 
 
-class FunctionDefinition: public SuperStatement
+class FunctionDefinition: public SuperStatement, public vm::Callable
 {
 public:
     FunctionDefinition(DeclarationContext *context, FuncDeclaration decl);
@@ -20,7 +21,7 @@ public:
 
     const FuncDeclaration* getDeclaration() const;
 
-    ExpressionValue execute(vm::ExecutionContext *context, const std::vector<ExpressionValue>& params) const;
+    ExpressionValue execute(vm::ExecutionContext *context, const std::vector<ExpressionValue>& params) const override;
 
     bool hasReturned() const;
     ExpressionValue getReturnValue() const;

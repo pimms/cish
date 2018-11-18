@@ -20,7 +20,7 @@ public:
 
     // From ExecutionContext
     virtual void yieldOnStatement(const ast::Statement *statement) override;
-    virtual const ast::FunctionDefinition* getFunctionDefinition(const std::string &funcName) const override;
+    virtual const Callable* getFunctionDefinition(const std::string &funcName) const override;
 
     ast::ExpressionValue getExitStatus() const;
 

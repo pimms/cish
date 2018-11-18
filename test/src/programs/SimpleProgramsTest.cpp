@@ -665,7 +665,7 @@ TEST(SimpleProgramsTest, CONSIDER_changingConstThroughPointer)
 {
     assertCompilationFailure(
         "void main() {"
-        "   const int var c = 5;"
+        "   const int var = 5;"
         "   int *ptr = &var;"
         "   *ptr = 6;"
         "   return var;"
