@@ -76,6 +76,13 @@ TypeDecl TypeDecl::getPointer(const TypeDecl &referencedType)
     return type;
 }
 
+TypeDecl TypeDecl::getConst(const TypeDecl &type)
+{
+    TypeDecl copy = type;
+    copy.setConst(true);
+    return copy;
+}
+
 
 TypeDecl::TypeDecl():
     _type(VOID),
@@ -200,15 +207,26 @@ bool TypeDecl::operator==(const TypeDecl::Type &o) const
 
 bool TypeDecl::castableTo(const TypeDecl &o) const
 {
-    return castableTo(o.getType());
-}
+    Type t = o.getType();
 
-bool TypeDecl::castableTo(const TypeDecl::Type &t) const
-{
     if ((_type == VOID) != (t == VOID))
         return false;
 
-    if (_type == POINTER || t == POINTER) {
+    if (_type == POINTER && t == POINTER) {
+        // Only check for const-compatibility, we don't
+        // care about the actual types at this point.
+        const TypeDecl *myInner = getReferencedType();
+        const TypeDecl *theirInner = o.getReferencedType();
+
+        while (myInner->getType() == Type::POINTER && myInner->getReferencedType())
+            myInner = myInner->getReferencedType();
+        while (theirInner->getType() == Type::POINTER && theirInner->getReferencedType())
+            theirInner = theirInner->getReferencedType();
+
+        if (myInner->isConst())
+            return theirInner->isConst();
+        return true;
+    } if (_type == POINTER || t == POINTER) {
         Type other;
         if (_type == POINTER) {
             other = t;
@@ -219,6 +237,7 @@ bool TypeDecl::castableTo(const TypeDecl::Type &t) const
         switch (other) {
             case FLOAT:
             case DOUBLE:
+            case VOID:
                 return false;
             default:
                 return true;

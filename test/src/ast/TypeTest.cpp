@@ -216,3 +216,28 @@ TEST(TypeTest, getFromTokens)
     ASSERT_EQ(TypeDecl(TypeDecl::INT), TypeDecl::getFromTokens(iTokens));
 }
 
+TEST(TypeTest, primitivesDoesntCareAboutConstInCasting)
+{
+    std::vector<TypeDecl::Type> primitives = {
+        TypeDecl::BOOL,
+        TypeDecl::CHAR,
+        TypeDecl::SHORT,
+        TypeDecl::INT,
+        TypeDecl::FLOAT,
+        TypeDecl::DOUBLE,
+    };
+
+    for (auto type: primitives) {
+        ASSERT_TRUE(TypeDecl::getConst(type).castableTo(type));
+        ASSERT_TRUE(TypeDecl(type).castableTo(TypeDecl::getConst(type)));
+    }
+}
+
+TEST(TypeTest, castingConstPointersToMutablePointersNotAllowed)
+{
+    TypeDecl iPtr = TypeDecl::getPointer(TypeDecl::INT);
+    TypeDecl ciPtr = TypeDecl::getPointer(TypeDecl::getConst(TypeDecl::INT));
+
+    ASSERT_TRUE(iPtr.castableTo(ciPtr));
+    ASSERT_FALSE(ciPtr.castableTo(iPtr));
+}

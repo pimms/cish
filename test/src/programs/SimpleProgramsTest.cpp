@@ -661,25 +661,6 @@ TEST(SimpleProgramsTest, cannotTakeAddressOfLiterals)
     );
 }
 
-TEST(SimpleProgramsTest, assigningIntWithStringFails)
-{
-    assertCompilationFailure(
-        "void main() {"
-        "   int var = 0;"
-        "   var = \"str\";"
-        "}"
-    );
-}
-
-TEST(SimpleProgramsTest, declaringIntWithStringFails)
-{
-    assertCompilationFailure(
-        "void main() {"
-        "   int var = \"str\";"
-        "}"
-    );
-}
-
 TEST(SimpleProgramsTest, CONSIDER_changingConstThroughPointer)
 {
     assertCompilationFailure(
@@ -689,6 +670,34 @@ TEST(SimpleProgramsTest, CONSIDER_changingConstThroughPointer)
         "   *ptr = 6;"
         "   return var;"
         "}"
+    );
+}
+
+TEST(SimpleProgramsTest, cannotAssignStringLiteralToMutableCharPtr)
+{
+    assertCompilationFailure(
+        "void main() {"
+        "   char *str = \"abc\";"
+        "}"
+    );
+}
+
+TEST(SimpleProgramsTest, cannotAssignMutablePtrWithConstPtr)
+{
+    assertCompilationFailure(
+        "void main() {"
+        "   int val = 15;"
+        "   const int *cptr = &val;"
+        "   int *ptr = cptr;"
+        "}"
+    );
+}
+
+TEST(SimpleProgramsTest, cannotPassStringLiteralToCharPtrArgument)
+{
+    assertCompilationFailure(
+        "void foo(char *str) {}"
+        "void main() { foo(\"heisann\"); }"
     );
 }
 

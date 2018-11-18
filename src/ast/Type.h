@@ -35,6 +35,7 @@ public:
     static TypeDecl getFromTokens(const std::vector<std::string>& tokens);
     static TypeDecl getPointer(Type referencedType);
     static TypeDecl getPointer(const TypeDecl &referencedType);
+    static TypeDecl getConst(const TypeDecl &type);
 
 
     TypeDecl();
@@ -58,7 +59,6 @@ public:
     bool operator!=(const TypeDecl::Type &o) const { return !(*this == o); }
 
     bool castableTo(const TypeDecl &o) const;
-    bool castableTo(const TypeDecl::Type &o) const;
 
     bool isIntegral() const;
     bool isFloating() const;
