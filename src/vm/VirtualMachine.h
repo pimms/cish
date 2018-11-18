@@ -16,6 +16,10 @@ DECLARE_EXCEPTION(VmException);
 
 struct VmOptions
 {
+    VmOptions() {
+        heapSize = 1 << 10;
+        minAllocSize = 4;
+    }
     // The total size of the memory in bytes
     uint32_t heapSize;
 
@@ -34,6 +38,16 @@ public:
 
     const ExecutionContext* getExecutionContext() const;
 
+    /**
+     * Blocks until the underlying program has terminated.
+     */
+    void executeBlocking();
+
+    /**
+     * Starts the program, but does not execute any operations.
+     * executeNextStatement must be called for each statement.
+     */
+    void startSync();
     void executeNextStatement();
 
     bool isRunning() const;
@@ -50,6 +64,7 @@ public:
 private:
     Memory *_memory;
     Executor *_executor;
+    bool _started;
 };
 
 

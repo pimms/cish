@@ -41,7 +41,7 @@ private:
 TEST(ExecutionThreadTest, terminationIdempotence)
 {
     CounterThread thread;
-    thread.start();
+    thread.startAsync();
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
     thread.terminate();
     thread.terminate();
@@ -53,7 +53,7 @@ TEST(ExecutionThreadTest, exceptionsTerminateThread)
     CounterThread thread([]() { Throw(cish::Exception, "hei"); });
     thread.setWaitForResume(true);
 
-    thread.start();
+    thread.startAsync();
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
     printf("Sending initial signal\n");
     ASSERT_TRUE(thread.isRunning());
@@ -68,7 +68,7 @@ TEST(ExecutionThreadTest, executionThreadWaitsForResume)
     CounterThread thread;
     thread.setWaitForResume(true);
 
-    thread.start();
+    thread.startAsync();
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
     ASSERT_EQ(0, thread.getCount());
 
@@ -86,7 +86,7 @@ TEST(ExecutionThread, terminationWorksWithRunningFree)
     CounterThread thread;
     thread.setWaitForResume(false);
 
-    thread.start();
+    thread.startAsync();
 
     // By sleeping for 10ms we should have looped at least five times
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -99,7 +99,7 @@ TEST(ExecutionThread, resumeDoesNotBlock)
 {
     CounterThread thread([](){ std::this_thread::sleep_for(std::chrono::milliseconds(100)); });
     thread.setWaitForResume(true);
-    thread.start();
+    thread.startAsync();
 
     thread.resume();
     ASSERT_EQ(0, thread.getCount());
@@ -110,7 +110,7 @@ TEST(ExecutionThread, cycleDoesBlock)
 {
     CounterThread thread([](){ std::this_thread::sleep_for(std::chrono::milliseconds(100)); });
     thread.setWaitForResume(true);
-    thread.start();
+    thread.startAsync();
 
     thread.cycle();
     ASSERT_EQ(1, thread.getCount());

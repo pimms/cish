@@ -40,7 +40,8 @@ public:
 
     void setWaitForResume(bool waitForResume);
 
-    void start();
+    void startAsync();
+    void runBlocking();
 
     /**
      * Allow the background thread to continue. Has no effect if
@@ -88,6 +89,8 @@ private:
         CONTINUE,
         TERMINATE,
     };
+
+    void start(bool waitForCompletion);
 
     // Called in the std::condition_variable callback to
     // handle spurious wakeups

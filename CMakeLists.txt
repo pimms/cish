@@ -70,6 +70,8 @@ target_link_libraries(cish ${ANTLR_LIBRARY})
 include_directories(${ANTLR_INCLUDE_DIR})
 
 
+add_subdirectory(cli)
+
 
 # -- Add tests -- #
 if (test)

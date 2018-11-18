@@ -219,6 +219,7 @@ TEST(SimpleProgramsTest, infiniteForLoop)
     // not returned... :)
     const std::string source = "int main() { for (;;); }";
     VmPtr vm = createVm(source);
+    vm->startSync();
 
     for (int i=0; i<200; i++) {
         ASSERT_TRUE(vm->isRunning());
@@ -705,6 +706,7 @@ TEST(SimpleProgramsTest, includingUndefinedModulesThrows)
 void assertRuntimeFailure(const std::string &source)
 {
     VmPtr vm = createVm(source);
+    vm->startSync();
     while (vm->isRunning()) {
         vm->executeNextStatement();
     }

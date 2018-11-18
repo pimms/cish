@@ -18,6 +18,7 @@ using namespace cish::ast;
 TEST(VirtualMachineTest, globalStatementsAreExecutedOneByOne)
 {
     VmPtr vm = createVm("int a = 15;  int b = 15 + a; int c; void main(){}");
+    vm->startSync();
     vm->executeNextStatement();
     ASSERT_EQ(nullptr, getVar(vm, "a"));
     ASSERT_EQ(nullptr, getVar(vm, "b"));
@@ -42,6 +43,7 @@ TEST(VirtualMachineTest, globalStatementsAreExecutedOneByOne)
 TEST(VirtualMachineTest, executingNextStatementWhenStoppedThrows)
 {
     VmPtr vm = createVm("int a = 15;  int b = 15 + a; int c; void main(){}");
+    vm->startSync();
     vm->executeNextStatement();
     vm->terminate();
 
@@ -51,6 +53,7 @@ TEST(VirtualMachineTest, executingNextStatementWhenStoppedThrows)
 TEST(VirtualMachineTest, terminationIdempotence)
 {
     VmPtr vm = createVm("int a = 15;  int b = 15 + a; int c; void main(){}");
+    vm->startSync();
     vm->executeNextStatement();
     vm->terminate();
     ASSERT_NO_THROW(vm->terminate());
@@ -59,6 +62,7 @@ TEST(VirtualMachineTest, terminationIdempotence)
 TEST(VirtualMachineTest, terminatingVmHaltsExecution)
 {
     VmPtr vm = createVm("int a = 15;  int b = 15 + a; int c; void main(){}");
+    vm->startSync();
     vm->executeNextStatement();
     ASSERT_EQ(nullptr, getVar(vm, "a"));
     ASSERT_EQ(nullptr, getVar(vm, "b"));
@@ -80,6 +84,7 @@ TEST(VirtualMachineTest, terminatingVmHaltsExecution)
 TEST(VirtualMachineTest, isRunningReturnsFalsePostTermination)
 {
     VmPtr vm = createVm("int a = 15; void main() {}");
+    vm->startSync();
 
     ASSERT_TRUE(vm->isRunning());
     vm->executeNextStatement();
@@ -91,6 +96,7 @@ TEST(VirtualMachineTest, isRunningReturnsFalsePostTermination)
 TEST(VirtualMachineTest, executingBeyondLastStatementThrows)
 {
     VmPtr vm = createVm("int a = 15; void main() {}");
+    vm->startSync();
     vm->executeNextStatement();
     vm->executeNextStatement();
     vm->executeNextStatement();
@@ -101,6 +107,7 @@ TEST(VirtualMachineTest, executingBeyondLastStatementThrows)
 TEST(VirtualMachineTest, gettingExitCodeThrowsIfVmIsRunning)
 {
     VmPtr vm = createVm("void main() {}");
+    vm->startSync();
 
     ASSERT_TRUE(vm->isRunning());
     ASSERT_ANY_THROW(vm->getExitCode());

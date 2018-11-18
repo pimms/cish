@@ -13,10 +13,9 @@ namespace vm
 
 VirtualMachine::VirtualMachine(const VmOptions &opts, Ast::Ptr ast):
     _memory(new Memory(opts.heapSize, opts.minAllocSize)),
-    _executor(new Executor(_memory, std::move(ast)))
+    _executor(new Executor(_memory, std::move(ast))),
+    _started(false)
 {
-    _executor->setWaitForResume(true);
-    _executor->start();
 }
 
 VirtualMachine::~VirtualMachine()
@@ -30,13 +29,33 @@ const ExecutionContext* VirtualMachine::getExecutionContext() const
     return _executor;
 }
 
+void VirtualMachine::executeBlocking()
+{
+    _started = true;
+    _executor->setWaitForResume(false);
+    _executor->runBlocking();
+}
+
+void VirtualMachine::startSync()
+{
+    _started = true;
+    _executor->setWaitForResume(true);
+    _executor->startAsync();
+}
+
 void VirtualMachine::executeNextStatement()
 {
-    if (!_executor->isRunning()) {
-        Throw(VmException, "Virtual machine not running");
+    if (_started) {
+        if (_executor->isRunning()) {
+            _executor->cycle();
+        } else {
+            Throw(VmException, "Virtual machine not running");
+        }
+    } else {
+        Throw(VmException,
+            "Virtual machine not started "
+            "(did you forget to call startSync()?)");
     }
-
-    _executor->cycle();
 }
 
 bool VirtualMachine::isRunning() const

@@ -51,6 +51,7 @@ void assertExitCode(const std::string &source, int expectedExitCode)
 void assertExitCode(ModuleContext::Ptr moduleContext, const std::string &source, int expectedExitCode)
 {
     VmPtr vm = createVm(moduleContext, source);
+    vm->startSync();
 
     while (vm->isRunning()) {
         vm->executeNextStatement();

@@ -54,13 +54,10 @@ void Executor::execute()
     }
 
     for (const ast::Statement *statement: _ast->getRootStatements()) {
-        printf("Executing root statement\n");
         statement->execute(this);
     }
 
-    printf("exec main\n");
     _exitStatus = main->execute(this, {});
-    printf("main returned\n");
     _hasTerminated = true;
 }
 

@@ -14,7 +14,7 @@ namespace internal
 {
 
 
-//#define DBGLOG(...) printf(__VA_ARGS__)
+// #define DBGLOG(...) printf(__VA_ARGS__)
 #define DBGLOG(...) do{}while(0);
 
 
@@ -73,31 +73,14 @@ void ExecutionThread::setWaitForResume(bool waitForResume)
     }
 }
 
-void ExecutionThread::start()
+void ExecutionThread::startAsync()
 {
-    if (_isRunning) {
-        throw std::runtime_error("ExecutionThread has already been started");
-    }
+    start(false);
+}
 
-
-    std::mutex mutex;
-    std::condition_variable var;
-    std::atomic_bool ready = false;
-
-    _thread = std::thread([&]() {
-        {
-            std::lock_guard<std::mutex> lock(mutex);
-            ready = true;
-            var.notify_one();
-        }
-
-        DBGLOG("[W] thread started\n");
-        backgroundMain();
-    });
-
-    std::unique_lock<std::mutex> lock(mutex);
-    var.wait(lock, [&]() { return ready.load(); });
-    _isRunning = true;
+void ExecutionThread::runBlocking()
+{
+    start(true);
 }
 
 void ExecutionThread::resume()
@@ -177,6 +160,46 @@ void ExecutionThread::await()
 
     if (state == ContinuationState::TERMINATE) {
         throw TerminateSignal { "Received termination signal" };
+    }
+}
+
+void ExecutionThread::start(bool waitForCompletion)
+{
+    if (_isRunning) {
+        throw std::runtime_error("ExecutionThread has already been started");
+    }
+
+    std::mutex mutex;
+    std::condition_variable var;
+    std::atomic_bool ready = false;
+    std::atomic_bool done = false;
+
+    _thread = std::thread([&]() {
+        {
+            std::lock_guard<std::mutex> lock(mutex);
+            ready = true;
+            var.notify_one();
+        }
+
+        DBGLOG("[W] thread started\n");
+        backgroundMain();
+
+        if (waitForCompletion) {
+            std::lock_guard<std::mutex> lock(mutex);
+            done = true;
+            var.notify_one();
+        }
+    });
+
+    {
+        std::unique_lock<std::mutex> lock(mutex);
+        var.wait(lock, [&]() { return ready.load(); });
+        _isRunning = true;
+    }
+
+    if (waitForCompletion) {
+        std::unique_lock<std::mutex> lock(mutex);
+        var.wait(lock, [&]() { return done.load(); });
     }
 }
 
