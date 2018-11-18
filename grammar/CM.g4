@@ -33,6 +33,7 @@ expr
     | (Char|Integer|Floating|Boolean|Null)      # LITERAL_EXPR
     | Identifier                                # VAR_REF_EXPR
     | functionCall                              # FUNC_CALL_EXPR
+    | stringLiteral                             # STR_LITERAL_EXPR
     ;
 incdecexpr
     : Identifier '++'                           # POSTFIX_INC_EXPR
@@ -98,12 +99,10 @@ doWhileStatement
 
 assignment
     : lvalue '=' expression
-    | lvalue '=' stringLiteral
     ;
 
 variableDeclaration
     : typeIdentifier identifier ('=' expression)?
-    | typeIdentifier identifier ('=' stringLiteral)?
     ;
 
 functionDeclaration

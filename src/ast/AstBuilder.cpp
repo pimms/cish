@@ -548,8 +548,6 @@ public:
 
         if (ctx->expression()) {
             expression = manuallyVisitExpression(ctx->expression());
-        } else if (ctx->stringLiteral()) {
-            expression = manuallyVisitStringLiteral(ctx->stringLiteral());
         } else {
             Throw(AstConversionException, "no rvalue for assignment");
         }
@@ -567,8 +565,6 @@ public:
         Expression *expression = nullptr;
         if (ctx->expression()) {
             expression = manuallyVisitExpression(ctx->expression());
-        } else if (ctx->stringLiteral()) {
-            expression = manuallyVisitStringLiteral(ctx->stringLiteral());
         }
 
         return createResult(new VariableDeclarationStatement(&_declContext, type, varName, expression));

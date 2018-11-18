@@ -545,6 +545,14 @@ TEST(SimpleProgramsTest, tripleDerefAssignment)
     assertExitCode(source, 9);
 }
 
+TEST(SimpleProgramsTest, passingStringAsArgument)
+{
+    const std::string source =
+        "char firstChar(const char *str) { return *str; }"
+        "int main() { return firstChar(\"1234\"); }";
+    assertExitCode(source, (int)'1');
+}
+
 
 /* COMPILATION FAILURES */
 
