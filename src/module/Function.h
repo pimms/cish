@@ -13,6 +13,8 @@ namespace module
 {
 
 
+typedef const std::vector<ast::ExpressionValue>& FuncParams;
+
 class Function: public vm::Callable
 {
 public:
@@ -21,7 +23,7 @@ public:
 
     const ast::FuncDeclaration* getDeclaration() const override;
     virtual ast::ExpressionValue execute(vm::ExecutionContext *context,
-                                         const std::vector<ast::ExpressionValue>& params) const override = 0;
+                                         FuncParams params) const override = 0;
 private:
     ast::FuncDeclaration _declaration;
 };

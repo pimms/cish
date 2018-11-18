@@ -2,6 +2,7 @@
 #include "../ast/FunctionDefinition.h"
 #include "../ast/AstNodes.h"
 
+
 namespace cish
 {
 namespace vm
@@ -12,7 +13,8 @@ const int MAX_STACK_FRAMES = 100;
 
 
 ExecutionContext::ExecutionContext(Memory *memory):
-    _memory(memory)
+    _memory(memory),
+    _stdout(&std::cout)
 {
     _globalScope = new Scope();
 }
@@ -151,6 +153,11 @@ const Callable::Ptr ExecutionContext::getFunctionDefinition(const std::string &f
     // Nothing we can do! This method must be overridden to serve any purpose.
     printf("WARNING! getFunctionDefinition called on ExecutionContext");
     return nullptr;
+}
+
+std::ostream* ExecutionContext::getStdout()
+{
+    return _stdout;
 }
 
 

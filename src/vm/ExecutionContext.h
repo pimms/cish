@@ -1,7 +1,5 @@
 #pragma once
 
-#include <vector>
-
 #include "Scope.h"
 #include "Memory.h"
 #include "ExecutionThread.h"
@@ -11,6 +9,9 @@
 
 #include "../ast/ExpressionValue.h"
 #include "../ast/StringTable.h"
+
+#include <vector>
+#include <iostream>
 
 
 namespace cish
@@ -65,6 +66,8 @@ public:
     virtual void yieldOnStatement(const ast::Statement *statement);
     virtual const Callable::Ptr getFunctionDefinition(const std::string &funcName) const;
 
+    std::ostream* getStdout();
+
 private:
     struct FunctionFrame
     {
@@ -78,6 +81,8 @@ private:
 
     Memory *_memory;
     std::map<ast::StringId, Allocation::Ptr> _stringMap;
+
+    std::ostream *_stdout;
 };
 
 

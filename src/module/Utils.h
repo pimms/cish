@@ -1,0 +1,27 @@
+#pragma once
+
+#include "../vm/Allocation.h"
+
+#include <vector>
+#include <string>
+
+
+namespace cish
+{
+namespace module
+{
+namespace utils
+{
+
+
+/**
+ * Reads a strings from the MemoryView into the output-vector.
+ * This function assumes that the string pointer to by 'src'
+ * is null-terminated.
+ */
+void readString(const vm::MemoryView &src, std::vector<char>& out);
+
+
+}
+}
+}
