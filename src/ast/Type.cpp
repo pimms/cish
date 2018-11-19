@@ -90,7 +90,8 @@ TypeDecl::TypeDecl():
     _const(false)
  {}
 
-TypeDecl::TypeDecl(const TypeDecl &o)
+TypeDecl::TypeDecl(const TypeDecl &o):
+    _referencedType(nullptr)
 {
     *this = o;
 }
@@ -118,6 +119,8 @@ TypeDecl& TypeDecl::operator=(const TypeDecl &o)
     if (o._referencedType != nullptr) {
         // NB! potentially recursive initialization
         assert(_type == POINTER);
+        if (_referencedType)
+            delete _referencedType;
         _referencedType = new TypeDecl(*o._referencedType);
     } else {
         _referencedType = nullptr;

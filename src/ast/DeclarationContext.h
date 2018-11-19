@@ -8,6 +8,7 @@
 #include "SuperStatement.h"
 #include "VarDeclaration.h"
 #include "FuncDeclaration.h"
+#include "FunctionDefinition.h"
 
 
 namespace cish
@@ -40,9 +41,9 @@ public:
     void pushVariableScope();
     void popVariableScope();
 
-    void enterFunction(FunctionDefinition *funcDef);
+    void enterFunction(FunctionDefinition::Ptr funcDef);
     void exitFunction();
-    FunctionDefinition* getCurrentFunction() const;
+    FunctionDefinition::Ptr getCurrentFunction() const;
 
     void declareFunction(FuncDeclaration decl);
     const FuncDeclaration* getFunctionDeclaration(const std::string &name) const;
@@ -50,9 +51,8 @@ public:
 private:
     typedef std::vector<VarDeclaration> VariableScope;
     std::vector<VariableScope> _varScope;
-    FunctionDefinition *_currentFunction;
+    FunctionDefinition::Ptr _currentFunction;
     std::map<std::string, FuncDeclaration> _funcs;
-    std::vector<SuperStatement*> _superStack;
 
     VarDeclaration* findInScope(const std::string &name, VariableScope *scope);
     void verifyIdenticalDeclarations(const FuncDeclaration *existing, const FuncDeclaration *redecl);

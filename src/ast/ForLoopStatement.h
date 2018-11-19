@@ -13,19 +13,20 @@ namespace ast
 class ForLoopStatement: public SuperStatement
 {
 public:
-    ForLoopStatement(Statement *init,
-                     Expression *condition,
-                     Statement *iter);
-    ~ForLoopStatement();
+    typedef std::shared_ptr<ForLoopStatement> Ptr;
+
+    ForLoopStatement(Statement::Ptr init,
+                     Expression::Ptr condition,
+                     Statement::Ptr iter);
 
     void execute(vm::ExecutionContext *context) const override;
 
 private:
     bool evaluateCondition(vm::ExecutionContext *context) const;
 
-    Statement *_initialization;
-    Expression *_condition;
-    Statement *_iterator;
+    Statement::Ptr _initialization;
+    Expression::Ptr _condition;
+    Statement::Ptr _iterator;
 };
 
 

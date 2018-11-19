@@ -10,7 +10,7 @@ namespace ast
 
 FunctionCallExpression::FunctionCallExpression(DeclarationContext *context,
                                                const std::string &funName,
-                                               std::vector<Expression*> params):
+                                               std::vector<Expression::Ptr> params):
     _params(params)
 {
     // First off, make sure that the function is actually declared
@@ -35,7 +35,7 @@ ExpressionValue FunctionCallExpression::evaluate(vm::ExecutionContext *context) 
     const vm::Callable::Ptr funcDef = context->getFunctionDefinition(_funcDecl.name);
 
     std::vector<ExpressionValue> params;
-    for (Expression *expr: _params) {
+    for (const Expression::Ptr& expr: _params) {
         params.push_back(expr->evaluate(context));
     }
 

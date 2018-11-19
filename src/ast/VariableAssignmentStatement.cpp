@@ -18,8 +18,8 @@ VariableAssignmentStatement
 */
 VariableAssignmentStatement::VariableAssignmentStatement(
         DeclarationContext *context,
-        Lvalue *lvalue,
-        Expression *value,
+        Lvalue::Ptr lvalue,
+        Expression::Ptr value,
         VariableAssignmentStatement::ConstAwareness constAwareness):
     _lvalue(lvalue),
     _expression(value)
@@ -33,12 +33,6 @@ VariableAssignmentStatement::VariableAssignmentStatement(
     if (constAwareness == ConstAwareness::STRICT && _lvalue->getType().isConst()) {
         Throw(InvalidOperationException, "Cannot assign to a constant variable");
     }
-}
-
-VariableAssignmentStatement::~VariableAssignmentStatement()
-{
-    delete _expression;
-    delete _lvalue;
 }
 
 void VariableAssignmentStatement::execute(vm::ExecutionContext *context) const

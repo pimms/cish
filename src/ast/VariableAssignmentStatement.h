@@ -26,18 +26,18 @@ public:
     };
 
     VariableAssignmentStatement(DeclarationContext *context,
-                                Lvalue *lvalue,
-                                Expression *value,
+                                Lvalue::Ptr lvalue,
+                                Expression::Ptr value,
                                 ConstAwareness constAwareness = ConstAwareness::STRICT);
 
-    virtual ~VariableAssignmentStatement();
+    virtual ~VariableAssignmentStatement() = default;
     virtual void execute(vm::ExecutionContext *context) const override;
 
     void executeAssignment(vm::ExecutionContext *context) const;
 
 private:
-    Lvalue *_lvalue;
-    Expression *_expression;
+    Lvalue::Ptr _lvalue;
+    Expression::Ptr _expression;
 };
 
 

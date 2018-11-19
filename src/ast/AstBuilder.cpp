@@ -21,7 +21,6 @@
 #include "VariableDeclarationStatement.h"
 #include "FunctionDeclarationStatement.h"
 #include "FunctionDefinition.h"
-#include "FunctionCallStatement.h"
 #include "ReturnStatement.h"
 #include "IfStatement.h"
 #include "ElseStatement.h"
@@ -48,7 +47,7 @@ DECLARE_EXCEPTION(AstConversionException);
 
 class TreeConverter: public CMBaseVisitor
 {
-    typedef std::vector<AstNode*> Result;
+    typedef std::vector<AstNode::Ptr> Result;
     DeclarationContext _declContext;
     StringTable::Ptr _stringTable;
     std::vector<FuncDeclaration> _funcDecls;
@@ -56,40 +55,61 @@ class TreeConverter: public CMBaseVisitor
 
     Result createResult(AstNode *node)
     {
+        return Result { AstNode::Ptr(node) };
+    }
+
+    Result createResult(AstNode::Ptr node)
+    {
         return Result { node };
     }
 
-    Expression* manuallyVisitExpression(CMParser::ExpressionContext *ctx)
+    Expression::Ptr castToExpression(AstNode::Ptr node)
+    {
+        Expression::Ptr expr = std::dynamic_pointer_cast<Expression>(node);
+        assert(expr != nullptr);
+        return expr;
+    }
+
+    Statement::Ptr castToStatement(AstNode::Ptr node)
+    {
+        Statement::Ptr stmt = std::dynamic_pointer_cast<Statement>(node);
+        assert(stmt != nullptr);
+        return stmt;
+    }
+
+    Expression::Ptr manuallyVisitExpression(CMParser::ExpressionContext *ctx)
     {
         Result result = visitExpression(ctx).as<Result>();
         assert(result.size() == 1);
-        assert(dynamic_cast<Expression*>(result[0]) != nullptr);
-        return (Expression*)result[0];
+        return castToExpression(result[0]);
     }
 
-    Statement* manuallyVisitStatement(CMParser::StatementContext *ctx)
+    Statement::Ptr manuallyVisitStatement(CMParser::StatementContext *ctx)
     {
         if (ctx->getText() == ";")
-            return new NoOpStatement();
+            return std::make_shared<NoOpStatement>();
 
         antlrcpp::Any any = visitStatement(ctx);
         assert(any.isNotNull());
 
         Result result = any.as<Result>();
         assert(result.size() == 1);
-        assert(dynamic_cast<Statement*>(result[0]) != nullptr);
 
-        return (Statement*)result[0];
+        Statement::Ptr statement = std::dynamic_pointer_cast<Statement>(result[0]);
+        assert(statement != nullptr);
+        return statement;
     }
 
     Result buildBinaryExpression(BinaryExpression::Operator op, antlr4::tree::ParseTree *tree)
     {
         Result result = visitChildren(tree).as<Result>();
         assert(result.size() == 2);
-        assert(dynamic_cast<Expression*>(result[0]) != nullptr);
-        assert(dynamic_cast<Expression*>(result[1]) != nullptr);
 
-        return createResult(new BinaryExpression(op, (Expression*)result[0], (Expression*)result[1]));
+        auto leftExpr = castToExpression(result[0]);
+        auto rightExpr = castToExpression(result[1]);
+
+        auto binaryExpr = std::make_shared<BinaryExpression>(op, leftExpr, rightExpr);
+        return createResult(binaryExpr);
     }
 
     std::vector<VarDeclaration> manuallyVisitIdentifierList(CMParser::IdentifierListContext *ctx)
@@ -133,12 +153,12 @@ public:
     Ast::Ptr convertTree(const AntlrContext *antlrContext)
     {
         antlr4::tree::ParseTree *tree = antlrContext->getParseTree();
-        Ast *ast = visit(tree);
+        Ast::Ptr ast = visit(tree).as<Ast::Ptr>();
 
-        verifyAllFunctionsDefined(ast);
+        verifyAllFunctionsDefined(ast.get());
         ast->setStringTable(std::move(_stringTable));
 
-        return Ast::Ptr(ast);
+        return ast;
     }
 
     virtual antlrcpp::Any visitChildren(antlr4::tree::ParseTree *node) override
@@ -167,7 +187,7 @@ public:
 
     virtual antlrcpp::Any visitRootBlock(CMParser::RootBlockContext *ctx) override
     {
-        Ast *ast = new Ast();
+        Ast::Ptr ast = std::make_shared<Ast>();
 
         for (CMParser::RootItemContext *rootItem: ctx->rootItem()) {
             CMParser::VariableDeclarationContext *varDecl = rootItem->variableDeclaration();
@@ -181,20 +201,20 @@ public:
             if (varDecl != nullptr) {
                 Result res = visitVariableDeclaration(varDecl).as<Result>();
                 assert(res.size() == 1);
-                assert(dynamic_cast<VariableDeclarationStatement*>(res[0]) != nullptr);
-                ast->addRootStatement((VariableDeclarationStatement*)res[0]);
+                ast->addRootStatement(castToStatement(res[0]));
             } else if (funcDef != nullptr) {
                 Result res = visitFunctionDefinition(funcDef).as<Result>();
                 assert(res.size() == 1);
-                assert(dynamic_cast<FunctionDefinition*>(res[0]) != nullptr);
 
-                vm::Callable::Ptr funcPtr = vm::Callable::Ptr((FunctionDefinition*)res[0]);
-                ast->addFunctionDefinition(funcPtr);
+                vm::Callable::Ptr callable = std::dynamic_pointer_cast<vm::Callable>(res[0]);
+                assert(callable != nullptr);
+                ast->addFunctionDefinition(callable);
             } else if (funcDecl != nullptr) {
                 Result res = visitFunctionDeclaration(funcDecl);
                 assert(res.size() == 1);
-                assert(dynamic_cast<FunctionDeclarationStatement*>(res[0]) != nullptr);
-                ast->addRootStatement((FunctionDeclarationStatement*)res[0]);
+                assert(dynamic_cast<FunctionDeclarationStatement*>(res[0].get()) != nullptr);
+                Statement::Ptr funcDeclStmt = castToStatement(res[0]);
+                ast->addRootStatement(funcDeclStmt);
             } else if (systemInclude != nullptr) {
                 Module::Ptr module = visitSystemInclude(systemInclude).as<Module::Ptr>();
                 auto functions = module->getFunctions();
@@ -252,53 +272,51 @@ public:
     {
         IncDecExpression::Operation op = IncDecExpression::POSTFIX_INCREMENT;
         const std::string varName = ctx->Identifier()->getText();
-        return createResult(new IncDecExpression(&_declContext, op, varName));
+        return createResult(std::make_shared<IncDecExpression>(&_declContext, op, varName));
     }
 
     virtual antlrcpp::Any visitPREFIX_INC_EXPR(CMParser::PREFIX_INC_EXPRContext *ctx) override
     {
         IncDecExpression::Operation op = IncDecExpression::PREFIX_INCREMENT;
         const std::string varName = ctx->Identifier()->getText();
-        return createResult(new IncDecExpression(&_declContext, op, varName));
+        return createResult(std::make_shared<IncDecExpression>(&_declContext, op, varName));
     }
 
     virtual antlrcpp::Any visitPOSTFIX_DEC_EXPR(CMParser::POSTFIX_DEC_EXPRContext *ctx) override
     {
         IncDecExpression::Operation op = IncDecExpression::POSTFIX_DECREMENT;
         const std::string varName = ctx->Identifier()->getText();
-        return createResult(new IncDecExpression(&_declContext, op, varName));
+        return createResult(std::make_shared<IncDecExpression>(&_declContext, op, varName));
     }
 
     virtual antlrcpp::Any visitPREFIX_DEC_EXPR(CMParser::PREFIX_DEC_EXPRContext *ctx) override
     {
         IncDecExpression::Operation op = IncDecExpression::PREFIX_DECREMENT;
         const std::string varName = ctx->Identifier()->getText();
-        return createResult(new IncDecExpression(&_declContext, op, varName));
+        return createResult(std::make_shared<IncDecExpression>(&_declContext, op, varName));
     }
 
 
     virtual antlrcpp::Any visitADDROF_EXPR(CMParser::ADDROF_EXPRContext *ctx) override
     {
         const std::string varName = ctx->Identifier()->getText();
-        return createResult(new AddrofExpression(&_declContext, varName));
+        return createResult(std::make_shared<AddrofExpression>(&_declContext, varName));
     }
 
     virtual antlrcpp::Any visitDEREF_EXPR(CMParser::DEREF_EXPRContext *ctx) override
     {
         Result result = visitChildren(ctx).as<Result>();
         assert(result.size() == 1);
-        assert(dynamic_cast<Expression*>(result[0]) != nullptr);
-        Expression *expr = (Expression*)result[0];
-        return createResult(new DerefExpression(&_declContext, expr));
+        Expression::Ptr expr = castToExpression(result[0]);
+        return createResult(std::make_shared<DerefExpression>(&_declContext, expr));
     }
 
     virtual antlrcpp::Any visitNEGATION_EXPR(CMParser::NEGATION_EXPRContext *ctx) override
     {
         Result result = visitChildren(ctx).as<Result>();
         assert(result.size() == 1);
-        assert(dynamic_cast<Expression*>(result[0]) != nullptr);
-        Expression *expr = (Expression*)result[0];
-        return createResult(new NegationExpression(expr));
+        Expression::Ptr expr = castToExpression(result[0]);
+        return createResult(std::make_shared<NegationExpression>(expr));
     }
 
     virtual antlrcpp::Any visitMULT_EXPR(CMParser::MULT_EXPRContext *ctx) override
@@ -334,7 +352,7 @@ public:
     virtual antlrcpp::Any visitLITERAL_EXPR(CMParser::LITERAL_EXPRContext *ctx) override
     {
         const std::string literal = ctx->getText();
-        return createResult(new LiteralExpression(literal));
+        return createResult(std::make_shared<LiteralExpression>(literal));
     }
 
     virtual antlrcpp::Any visitFUNC_CALL_EXPR(CMParser::FUNC_CALL_EXPRContext *ctx) override
@@ -373,7 +391,7 @@ public:
     virtual antlrcpp::Any visitVAR_REF_EXPR(CMParser::VAR_REF_EXPRContext *ctx) override
     {
         const std::string varName = ctx->Identifier()->getText();
-        return createResult(new VariableReferenceExpression(&_declContext, varName));
+        return createResult(std::make_shared<VariableReferenceExpression>(&_declContext, varName));
     }
 
     virtual antlrcpp::Any visitCOMPARE_EXPR(CMParser::COMPARE_EXPRContext *ctx) override
@@ -399,59 +417,50 @@ public:
         return visitChildren(ctx).as<Result>();
     }
 
-    virtual antlrcpp::Any visitFunctionCallStatement(CMParser::FunctionCallStatementContext *ctx) override
-    {
-        Result res = visitChildren(ctx);
-        assert(res.size() == 1);
-        assert(dynamic_cast<FunctionCallExpression*>(res[0]) != nullptr);
-        return createResult(new FunctionCallStatement((FunctionCallExpression*)res[0]));
-    }
-
     virtual antlrcpp::Any visitReturnStatement(CMParser::ReturnStatementContext *ctx) override
     {
-        Expression *expression = nullptr;
+        Expression::Ptr expression = nullptr;
         if (ctx->expression()) {
             expression = manuallyVisitExpression(ctx->expression());
         }
 
-        ReturnStatement *statement = new ReturnStatement(&_declContext, expression);
+        ReturnStatement::Ptr statement = std::make_shared<ReturnStatement>(&_declContext, expression);
         return createResult(statement);
     }
 
     virtual antlrcpp::Any visitIfStatement(CMParser::IfStatementContext *ctx) override
     {
-        // Parse the else-branch first
-        ElseStatement *elseStatement = nullptr;
+        ElseStatement::Ptr elseStatement = nullptr;
         if (ctx->elseStatement() != nullptr) {
             Result res = visitElseStatement(ctx->elseStatement()).as<Result>();
             assert(res.size() == 1);
-            assert(dynamic_cast<ElseStatement*>(res[0]) != nullptr);
-            elseStatement = (ElseStatement*)res[0];
+
+            elseStatement = std::dynamic_pointer_cast<ElseStatement>(castToStatement(res[0]));
+            assert(elseStatement != nullptr);
         }
 
-        Expression *expr = manuallyVisitExpression(ctx->expression());
-        IfStatement *ifStatement = new IfStatement(expr, elseStatement);
+        Expression::Ptr expr = manuallyVisitExpression(ctx->expression());
+        IfStatement::Ptr ifStatement = std::make_shared<IfStatement>(expr, elseStatement);
 
         _declContext.pushVariableScope();
 
-        std::vector<Statement*> statements;
         for (CMParser::StatementContext *stmtContext: ctx->statement()) {
-            Statement *statement = manuallyVisitStatement(stmtContext);
+            Statement::Ptr statement = manuallyVisitStatement(stmtContext);
             ifStatement->addStatement(statement);
         }
 
         _declContext.popVariableScope();
-        return createResult(ifStatement);
+        return createResult(std::dynamic_pointer_cast<AstNode>(ifStatement));
     }
 
     virtual antlrcpp::Any visitElseStatement(CMParser::ElseStatementContext *ctx) override
     {
-        ElseStatement *elseStatement = new ElseStatement();
+        ElseStatement::Ptr elseStatement = std::make_shared<ElseStatement>();
         _declContext.pushVariableScope();
 
         std::vector<Statement*> statements;
         for (CMParser::StatementContext *stmtContext: ctx->statement()) {
-            Statement *statement = manuallyVisitStatement(stmtContext);
+            Statement::Ptr statement = manuallyVisitStatement(stmtContext);
             elseStatement->addStatement(statement);
         }
 
@@ -461,9 +470,9 @@ public:
 
     virtual antlrcpp::Any visitForStatement(CMParser::ForStatementContext *ctx) override
     {
-        Statement *initializer = nullptr;
-        Expression *condition = nullptr;
-        Statement *iterator = nullptr;
+        Statement::Ptr initializer = nullptr;
+        Expression::Ptr condition = nullptr;
+        Statement::Ptr iterator = nullptr;
 
         _declContext.pushVariableScope();
 
@@ -474,11 +483,11 @@ public:
         if (ctx->forIterator())
             iterator = manuallyVisitForIterator(ctx->forIterator());
 
-        ForLoopStatement *forLoop = new ForLoopStatement(initializer, condition, iterator);
+        ForLoopStatement::Ptr forLoop = std::make_shared<ForLoopStatement>(initializer, condition, iterator);
 
         std::vector<Statement*> statements;
         for (CMParser::StatementContext *stmtContext: ctx->statement()) {
-            Statement *statement = manuallyVisitStatement(stmtContext);
+            Statement::Ptr statement = manuallyVisitStatement(stmtContext);
             forLoop->addStatement(statement);
         }
 
@@ -486,7 +495,7 @@ public:
         return createResult(forLoop);
     }
 
-    Statement* manuallyVisitForInitializer(CMParser::ForInitializerContext *ctx)
+    Statement::Ptr manuallyVisitForInitializer(CMParser::ForInitializerContext *ctx)
     {
         Result res;
         if (ctx->assignment()) {
@@ -498,30 +507,26 @@ public:
         }
 
         assert(res.size() == 1);
-        assert(dynamic_cast<Statement*>(res[0]) != nullptr);
-        return (Statement*)res[0];
+        return castToStatement(res[0]);
     }
 
-    Statement* manuallyVisitForIterator(CMParser::ForIteratorContext *ctx)
+    Statement::Ptr manuallyVisitForIterator(CMParser::ForIteratorContext *ctx)
     {
         Result res;
         if (ctx->assignment()) {
             res = visitAssignment(ctx->assignment()).as<Result>();
             assert(res.size() == 1);
-            assert(dynamic_cast<Statement*>(res[0]) != nullptr);
-            return (Statement*)res[0];
+            return castToStatement(res[0]);
         } else if (ctx->functionCall()) {
             res = visitFunctionCall(ctx->functionCall()).as<Result>();
             assert(res.size() == 1);
-            assert(dynamic_cast<FunctionCallExpression*>(res[0]) != nullptr);
-            auto expr = (FunctionCallExpression*)res[0];
-            return new FunctionCallStatement(expr);
+            auto functionCallExpression = castToExpression(res[0]);
+            return std::make_shared<ExpressionStatement>(functionCallExpression);
         } else if (ctx->incdecexpr()) {
             res = manuallyVisitIncdecexpr(ctx->incdecexpr()).as<Result>();
             assert(res.size() == 1);
-            assert(dynamic_cast<IncDecExpression*>(res[0]) != nullptr);
-            auto expr = (IncDecExpression*)res[0];
-            return new ExpressionStatement(expr);
+            auto incDecExpr = castToExpression(res[0]);
+            return std::make_shared<ExpressionStatement>(incDecExpr);
         } else {
             Throw(Exception, "Unsupported initialization in for-loop");
         }
@@ -530,14 +535,13 @@ public:
 
     virtual antlrcpp::Any visitWhileStatement(CMParser::WhileStatementContext *ctx) override
     {
-        Expression *condition = manuallyVisitExpression(ctx->expression());
+        Expression::Ptr condition = manuallyVisitExpression(ctx->expression());
         _declContext.pushVariableScope();
 
-        WhileStatement *whileStatement = new WhileStatement(condition);
+        WhileStatement::Ptr whileStatement = std::make_shared<WhileStatement>(condition);
 
-        std::vector<Statement*> statements;
         for (CMParser::StatementContext *stmtContext: ctx->statement()) {
-            Statement *statement = manuallyVisitStatement(stmtContext);
+            Statement::Ptr statement = manuallyVisitStatement(stmtContext);
             whileStatement->addStatement(statement);
         }
 
@@ -547,14 +551,13 @@ public:
 
     virtual antlrcpp::Any visitDoWhileStatement(CMParser::DoWhileStatementContext *ctx) override
     {
-        Expression *condition = manuallyVisitExpression(ctx->expression());
+        Expression::Ptr condition = manuallyVisitExpression(ctx->expression());
         _declContext.pushVariableScope();
 
-        DoWhileStatement *doWhileStatement = new DoWhileStatement(condition);
+        DoWhileStatement::Ptr doWhileStatement = std::make_shared<DoWhileStatement>(condition);
 
-        std::vector<Statement*> statements;
         for (CMParser::StatementContext *stmtContext: ctx->statement()) {
-            Statement *statement = manuallyVisitStatement(stmtContext);
+            Statement::Ptr statement = manuallyVisitStatement(stmtContext);
             doWhileStatement->addStatement(statement);
         }
 
@@ -564,15 +567,15 @@ public:
 
     virtual antlrcpp::Any visitExpressionStatement(CMParser::ExpressionStatementContext *ctx) override
     {
-        Expression *expression = manuallyVisitExpression(ctx->expression());
-        return createResult(new ExpressionStatement(expression));
+        Expression::Ptr expression = manuallyVisitExpression(ctx->expression());
+        return createResult(std::make_shared<ExpressionStatement>(expression));
     }
 
 
     virtual antlrcpp::Any visitAssignment(CMParser::AssignmentContext *ctx) override
     {
-        Lvalue *lvalue = manuallyVisitLvalue(ctx->lvalue());
-        Expression *expression = nullptr;
+        Lvalue::Ptr lvalue = manuallyVisitLvalue(ctx->lvalue());
+        Expression::Ptr expression = nullptr;
 
         if (ctx->expression()) {
             expression = manuallyVisitExpression(ctx->expression());
@@ -580,7 +583,9 @@ public:
             Throw(AstConversionException, "no rvalue for assignment");
         }
 
-        return createResult(new VariableAssignmentStatement(&_declContext, lvalue, expression));
+        auto varAssign = std::make_shared<VariableAssignmentStatement>(&_declContext, lvalue, expression);
+
+        return createResult(varAssign);
     }
 
     virtual antlrcpp::Any visitVariableDeclaration(CMParser::VariableDeclarationContext *ctx) override
@@ -590,12 +595,14 @@ public:
         const TypeDecl type = visitTypeIdentifier(ctx->typeIdentifier()).as<TypeDecl>();;
         const std::string varName = ctx->identifier()->getText();
 
-        Expression *expression = nullptr;
+        Expression::Ptr expression = nullptr;
         if (ctx->expression()) {
             expression = manuallyVisitExpression(ctx->expression());
         }
 
-        return createResult(new VariableDeclarationStatement(&_declContext, type, varName, expression));
+        auto varDecl = std::make_shared<VariableDeclarationStatement>(&_declContext, type, varName, expression);
+
+        return createResult(varDecl);
     }
 
     virtual antlrcpp::Any visitFunctionDeclaration(CMParser::FunctionDeclarationContext *ctx) override
@@ -610,7 +617,8 @@ public:
 
         _funcDecls.push_back(funcDecl);
 
-        return createResult(new FunctionDeclarationStatement(&_declContext, funcDecl));
+        auto funcDeclStatement = std::make_shared<FunctionDeclarationStatement>(&_declContext, funcDecl);
+        return createResult(funcDeclStatement);
     }
 
     virtual antlrcpp::Any visitFunctionDefinition(CMParser::FunctionDefinitionContext *ctx) override
@@ -626,20 +634,18 @@ public:
         // Potentially dirty - we need to perform all the logic related to the DeclarationContext
         // and variable declaration in a very specific order, and this is the best - if somewhat
         // awkward - place to do that.
-        FunctionDefinition *funcDef = new FunctionDefinition(&_declContext, funcDecl);
+        FunctionDefinition::Ptr funcDef = std::make_shared<FunctionDefinition>(&_declContext, funcDecl);
         _declContext.enterFunction(funcDef);
         for (const VarDeclaration &varDecl: params) {
             _declContext.declareVariable(varDecl.type, varDecl.name);
         }
 
-        std::vector<Statement*> statements;
         for (CMParser::StatementContext *stmtContext: ctx->statement()) {
-            Statement *statement = manuallyVisitStatement(stmtContext);
+            Statement::Ptr statement = manuallyVisitStatement(stmtContext);
             funcDef->addStatement(statement);
         }
 
         _declContext.exitFunction();
-
         return createResult(funcDef);
     }
 
@@ -648,21 +654,21 @@ public:
         Result paramsResult = visitExpressionList(ctx->expressionList());
         const std::string funcName = ctx->identifier()->getText();
 
-        std::vector<Expression*> params;
-        for (AstNode *node: paramsResult) {
-            assert(dynamic_cast<Expression*>(node) != nullptr);
-            params.push_back((Expression*)node);
+        std::vector<Expression::Ptr> params;
+        for (AstNode::Ptr node: paramsResult) {
+            Expression::Ptr expr = castToExpression(node);
+            params.push_back(expr);
         }
 
-        FunctionCallExpression *expr = new FunctionCallExpression(&_declContext, funcName, params);
-        return createResult(expr);
+        auto callExpr = std::make_shared<FunctionCallExpression>(&_declContext, funcName, params);
+        return createResult(callExpr);
     }
 
     virtual antlrcpp::Any visitExpressionList(CMParser::ExpressionListContext *ctx) override
     {
         Result result;
         for (CMParser::ExpressionContext *exprContext: ctx->expression()) {
-            Expression *expr = manuallyVisitExpression(exprContext);
+            Expression::Ptr expr = manuallyVisitExpression(exprContext);
             result.push_back(expr);
         }
 
@@ -680,11 +686,11 @@ public:
         Throw(AstConversionException, "Internal conversion exception - should never visit FunctionParameter");
     }
 
-    Lvalue* manuallyVisitLvalue(CMParser::LvalueContext *ctx)
+    Lvalue::Ptr manuallyVisitLvalue(CMParser::LvalueContext *ctx)
     {
         std::string declName = ctx->getText();
         if (declName[0] != '*') {
-            return new VariableReference(&_declContext, declName);
+            return std::make_shared<VariableReference>(&_declContext, declName);
         }
 
         int derefs = 0;
@@ -693,16 +699,16 @@ public:
             declName = declName.substr(1);
         }
 
-        return new DereferencedVariableReference(&_declContext, declName, derefs);
+        return std::make_shared<DereferencedVariableReference>(&_declContext, declName, derefs);
     }
 
-    StringLiteralExpression* manuallyVisitStringLiteral(CMParser::StringLiteralContext *ctx)
+    StringLiteralExpression::Ptr manuallyVisitStringLiteral(CMParser::StringLiteralContext *ctx)
     {
         std::string str = ctx->getText();
         str = str.substr(1, str.length() - 2);
         str = ast::string::unescapeString(str);
         const StringId stringId = _stringTable->insert(str);
-        return new StringLiteralExpression(stringId);
+        return std::make_shared<StringLiteralExpression>(stringId);
     }
 
     virtual antlrcpp::Any visitStringLiteral(CMParser::StringLiteralContext *ctx) override

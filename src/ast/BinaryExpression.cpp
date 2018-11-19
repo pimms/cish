@@ -11,7 +11,7 @@ namespace ast
 BinaryExpression
 ==============
 */
-BinaryExpression::BinaryExpression(Operator op, Expression *left, Expression *right):
+BinaryExpression::BinaryExpression(Operator op, Expression::Ptr left, Expression::Ptr right):
     _operator(op),
     _left(left),
     _right(right)
@@ -59,12 +59,6 @@ BinaryExpression::BinaryExpression(Operator op, Expression *left, Expression *ri
     }
 }
 
-BinaryExpression::~BinaryExpression()
-{
-    delete _left;
-    delete _right;
-}
-
 TypeDecl BinaryExpression::getType() const
 {
     return _returnType;
@@ -98,11 +92,11 @@ ExpressionValue BinaryExpression::evaluatePtrT(vm::ExecutionContext *ctx) const
     // pointer, while the other may be integral or a pointer.
     Expression *ptr, *maybePtr;
     if (_left->getType().getType() == TypeDecl::POINTER) {
-        ptr = _left;
-        maybePtr = _right;
+        ptr = _left.get();
+        maybePtr = _right.get();
     } else {
-        ptr = _right;
-        maybePtr = _left;
+        ptr = _right.get();
+        maybePtr = _left.get();
     }
 
     // Evaluate both terms

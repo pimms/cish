@@ -12,14 +12,13 @@ namespace ast
 class DerefExpression: public Expression
 {
 public:
-    DerefExpression(DeclarationContext *context, Expression *expr);
-   ~DerefExpression();
+    DerefExpression(DeclarationContext *context, Expression::Ptr expr);
 
     ExpressionValue evaluate(vm::ExecutionContext *context) const override;
     TypeDecl getType() const override;
 
 private:
-    Expression *_expression;
+    Expression::Ptr _expression;
 };
 
 

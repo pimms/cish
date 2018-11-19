@@ -22,7 +22,6 @@ public:
     };
 
     IncDecExpression(DeclarationContext *context, Operation type, const std::string& varName);
-    ~IncDecExpression();
 
     virtual TypeDecl getType() const override;
     virtual ExpressionValue evaluate(vm::ExecutionContext*) const override;

@@ -50,7 +50,6 @@ incdecexpr
 statement
     : ifStatement
     | assignment ';'
-    | functionCallStatement
     | variableDeclaration ';'
     | returnStatement
     | forStatement
@@ -62,9 +61,6 @@ statement
 
 expressionStatement
     : expression ';'
-    ;
-functionCallStatement
-    : functionCall ';'
     ;
 returnStatement
     : 'return' expression? ';'

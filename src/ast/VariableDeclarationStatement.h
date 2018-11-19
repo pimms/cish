@@ -21,8 +21,8 @@ public:
             DeclarationContext *declContext,
             TypeDecl type,
             const std::string &varName,
-            Expression *value);
-    virtual ~VariableDeclarationStatement();
+            Expression::Ptr value);
+    virtual ~VariableDeclarationStatement() = default;
     virtual void execute(vm::ExecutionContext *context) const override;
 
     const TypeDecl& getDeclaredType() const;
@@ -30,7 +30,7 @@ public:
 private:
     const TypeDecl _type;
     const std::string _varName;
-    VariableAssignmentStatement *_assignment;
+    VariableAssignmentStatement::Ptr _assignment;
 };
 
 

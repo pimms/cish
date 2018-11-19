@@ -12,13 +12,12 @@ namespace ast
 class ExpressionStatement: public Statement
 {
 public:
-    ExpressionStatement(Expression *expression);
-    ~ExpressionStatement();
+    ExpressionStatement(Expression::Ptr expression);
 
     void execute(vm::ExecutionContext *ctx) const override;
 
 private:
-    Expression *_expression;
+    Expression::Ptr _expression;
 };
 
 

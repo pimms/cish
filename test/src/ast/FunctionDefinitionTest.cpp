@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include "ast/FunctionDefinition.h"
+#include "ast/DeclarationContext.h"
 
 using namespace cish::ast;
 

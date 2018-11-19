@@ -7,6 +7,8 @@
 #include "vm/Variable.h"
 #include "vm/ExecutionContext.h"
 
+#include <memory>
+
 using namespace cish::ast;
 using namespace cish::vm;
 
@@ -119,8 +121,8 @@ TEST(VariableReferenceExpressionTest, shadowingWorksAsExpected)
 {
     Memory memory(100, 1);
     DeclarationContext dc;
-    FunctionDefinition func(&dc, FuncDeclaration{TypeDecl::INT, "foo"});
-    dc.enterFunction(&func);
+    auto func = std::make_shared<FunctionDefinition>(&dc, FuncDeclaration(TypeDecl::INT, "foo"));
+    dc.enterFunction(func);
 
     ExecutionContext ec(&memory);
     ec.pushFunctionFrame();
@@ -162,5 +164,4 @@ TEST(VariableReferenceExpressionTest, shadowingWorksAsExpected)
 
     ec.popFunctionFrame();
 }
-
 

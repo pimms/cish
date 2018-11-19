@@ -1,6 +1,9 @@
 #include "FunctionDefinition.h"
-#include "../vm/ExecutionContext.h"
+
+#include "DeclarationContext.h"
 #include "FunctionCallExpression.h"
+
+#include "../vm/ExecutionContext.h"
 
 
 namespace cish
@@ -17,10 +20,6 @@ FunctionDefinition::FunctionDefinition(DeclarationContext *context,
 
     // TODO: Consider verifying that we actually return someting (if the returntype is
     // non-void), but I don't believe it's in any of the C-standards, so maybe just don't.
-}
-
-FunctionDefinition::~FunctionDefinition()
-{
 }
 
 const FuncDeclaration* FunctionDefinition::getDeclaration() const

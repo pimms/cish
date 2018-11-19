@@ -15,7 +15,7 @@ VariableDeclarationStatement::VariableDeclarationStatement(
         DeclarationContext *context,
         TypeDecl type,
         const std::string &varName,
-        Expression *value):
+        Expression::Ptr value):
     _type(type),
     _varName(varName),
     _assignment(nullptr)
@@ -23,17 +23,9 @@ VariableDeclarationStatement::VariableDeclarationStatement(
     context->declareVariable(type, _varName);
 
     if (value != nullptr) {
-        VariableReference *varRef = new VariableReference(context, varName);
-
+        Lvalue::Ptr varRef = Lvalue::Ptr(new VariableReference(context, varName));
         auto constAwareness = VariableAssignmentStatement::ConstAwareness::IGNORE;
-        _assignment = new VariableAssignmentStatement(context, varRef, value, constAwareness);
-    }
-}
-
-VariableDeclarationStatement::~VariableDeclarationStatement()
-{
-    if (_assignment) {
-        delete _assignment;
+        _assignment = Statement::Ptr(new VariableAssignmentStatement(context, varRef, value, constAwareness));
     }
 }
 
@@ -50,7 +42,7 @@ void VariableDeclarationStatement::execute(vm::ExecutionContext *context) const
     context->getScope()->addVariable(_varName, var);
 
     if (_assignment != nullptr) {
-        _assignment->executeAssignment(context);
+        ((const VariableAssignmentStatement*)_assignment.get())->executeAssignment(context);
     }
 }
 

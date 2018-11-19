@@ -12,14 +12,13 @@ namespace ast
 class NegationExpression: public Expression
 {
 public:
-    NegationExpression(Expression *expression);
-    ~NegationExpression();
+    NegationExpression(Expression::Ptr expression);
 
     ExpressionValue evaluate(vm::ExecutionContext *context) const override;
 	TypeDecl getType() const override;
 
 private:
-    Expression *_expression;
+    Expression::Ptr _expression;
 };
 
 

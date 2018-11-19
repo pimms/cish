@@ -8,14 +8,9 @@ namespace ast
 {
 
 
-ExpressionStatement::ExpressionStatement(Expression *expression):
+ExpressionStatement::ExpressionStatement(Expression::Ptr expression):
     _expression(expression)
 { }
-
-ExpressionStatement::~ExpressionStatement()
-{
-    delete _expression;
-}
 
 void ExpressionStatement::execute(vm::ExecutionContext *context) const
 {

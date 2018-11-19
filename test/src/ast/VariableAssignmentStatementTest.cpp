@@ -49,10 +49,10 @@ void testAssignmentCasting()
         ec.getScope()->addVariable("var", var);
 
         ExpressionValue exprValue(TypeDecl::getFromNative<From>(), val);
-        auto expr = new LiteralExpression(exprValue);
+        auto expr = std::make_shared<LiteralExpression>(exprValue);
 
         ASSERT_NO_THROW({
-            VariableAssignmentStatement stmt(&dc, new VariableReference(&dc, "var"), expr);
+            VariableAssignmentStatement stmt(&dc, std::make_shared<VariableReference>(&dc, "var"), expr);
             stmt.execute(&ec);
         });
 
@@ -115,8 +115,8 @@ TEST(VariableAssignmentStatementTest, undefinedVariableThrows)
 
     declareVariable(dc, TypeDecl::INT, "var");
 
-    auto expr = new LiteralExpression(ExpressionValue(TypeDecl::INT, 10));
-    VariableAssignmentStatement stmt(&dc, new VariableReference(&dc, "var"), expr);
+    auto expr = std::make_shared<LiteralExpression>(ExpressionValue(TypeDecl::INT, 10));
+    VariableAssignmentStatement stmt(&dc, std::make_shared<VariableReference>(&dc, "var"), expr);
     ASSERT_THROW(stmt.execute(&ec), VariableNotDefinedException);
 }
 
@@ -129,9 +129,7 @@ TEST(VariableAssignmentStatemenTest, assigningToConstVariablesNotAllowed)
 
     dc.declareVariable(type, "i");
 
-    auto expr = new LiteralExpression(ExpressionValue(TypeDecl::INT, 10));
-    auto ref = new VariableReference(&dc, "i");
+    auto expr = std::make_shared<LiteralExpression>(ExpressionValue(TypeDecl::INT, 10));
+    auto ref = std::make_shared<VariableReference>(&dc, "i");
     ASSERT_THROW(VariableAssignmentStatement stmt(&dc, ref, expr), InvalidOperationException);
-    delete expr;
-    delete ref;
 }

@@ -4,15 +4,17 @@
 #include "ast/LiteralExpression.h"
 #include "vm/ExecutionContext.h"
 
+#include <memory>
+
 using namespace cish::ast;
 
 
 template<typename T>
-static LiteralExpression* expr(T value)
+static LiteralExpression::Ptr expr(T value)
 {
     TypeDecl type = TypeDecl::getFromNative<T>();
     ExpressionValue exprValue(type, value);
-    return new LiteralExpression(exprValue);
+    return std::make_shared<LiteralExpression>(exprValue);
 }
 
 template<typename LHST, typename RHST, typename ResT>
@@ -129,7 +131,6 @@ static void testArithmeticOperators()
         operators = {
             {BinaryExpression::MULTIPLY, std::multiplies<ResT>() },
             {BinaryExpression::DIVIDE, std::divides<ResT>() },
-          /*{BinaryExpression::MODULO, std::modulus<ResT>() },*/
             {BinaryExpression::PLUS, std::plus<ResT>() },
             {BinaryExpression::MINUS, std::minus<ResT>() },
         };
@@ -286,12 +287,12 @@ TEST(BinaryExpressionTest, simpleTestOfNestedBinaryExpressions)
     // int(100) * float(2) = float(200)
     auto i100 = expr<int>(100);
     auto f2 = expr<float>(2);
-    BinaryExpression *left = new BinaryExpression(BinaryExpression::MULTIPLY, i100, f2);
+    BinaryExpression::Ptr left = std::make_shared<BinaryExpression>(BinaryExpression::MULTIPLY, i100, f2);
 
     // char(-5) + int(295) = int(290)
     auto cm5 = expr<char>(-5);
     auto i295 = expr<int>(295);
-    BinaryExpression *right = new BinaryExpression(BinaryExpression::PLUS, cm5, i295);
+    BinaryExpression::Ptr right = std::make_shared<BinaryExpression>(BinaryExpression::PLUS, cm5, i295);
 
     // float(200) - int(290) = float(-90)
     BinaryExpression expr(BinaryExpression::MINUS, left, right);
@@ -304,8 +305,8 @@ TEST(BinaryExpressionTest, simpleTestOfNestedBinaryExpressions)
 
 TEST(BinaryExpressionTest, pointerOnPointerActionIsSinful)
 {
-    auto left = new LiteralExpression(ExpressionValue(TypeDecl::getPointer(TypeDecl::INT), 100));
-    auto right = new LiteralExpression(ExpressionValue(TypeDecl::getPointer(TypeDecl::INT), 100));
+    auto left = std::make_shared<LiteralExpression>(ExpressionValue(TypeDecl::getPointer(TypeDecl::INT), 100));
+    auto right = std::make_shared<LiteralExpression>(ExpressionValue(TypeDecl::getPointer(TypeDecl::INT), 100));
     ASSERT_THROW(BinaryExpression expr(BinaryExpression::PLUS, left, right), InvalidOperationException);
 }
 
@@ -323,20 +324,18 @@ TEST(BinaryExpressionTest, pointerArithmeticTypeTest)
 
     for (auto pair: typeMap) {
         if (pair.second) {
-            auto ptr = new LiteralExpression(ExpressionValue(TypeDecl::getPointer(TypeDecl::INT), 100));
-            auto other = new LiteralExpression(ExpressionValue(pair.first, 1));
+            auto ptr = std::make_shared<LiteralExpression>(ExpressionValue(TypeDecl::getPointer(TypeDecl::INT), 100));
+            auto other = std::make_shared<LiteralExpression>(ExpressionValue(pair.first, 1));
             ASSERT_NO_THROW(BinaryExpression expr(BinaryExpression::PLUS, ptr, other));
 
-            ptr = new LiteralExpression(ExpressionValue(TypeDecl::getPointer(TypeDecl::INT), 100));
-            other = new LiteralExpression(ExpressionValue(pair.first, 1));
+            ptr = std::make_shared<LiteralExpression>(ExpressionValue(TypeDecl::getPointer(TypeDecl::INT), 100));
+            other = std::make_shared<LiteralExpression>(ExpressionValue(pair.first, 1));
             ASSERT_NO_THROW(BinaryExpression expr(BinaryExpression::PLUS, other, ptr));
         } else {
-            auto ptr = new LiteralExpression(ExpressionValue(TypeDecl::getPointer(TypeDecl::INT), 100));
-            auto other = new LiteralExpression(ExpressionValue(pair.first, 1));
+            auto ptr = std::make_shared<LiteralExpression>(ExpressionValue(TypeDecl::getPointer(TypeDecl::INT), 100));
+            auto other = std::make_shared<LiteralExpression>(ExpressionValue(pair.first, 1));
             ASSERT_ANY_THROW(BinaryExpression expr(BinaryExpression::PLUS, ptr, other));
             ASSERT_ANY_THROW(BinaryExpression expr(BinaryExpression::PLUS, other, ptr));
-            delete ptr;
-            delete other;
         }
     }
 }
@@ -361,20 +360,18 @@ TEST(BinaryExpressionTest, verifyValidPointerOperations)
 
     for (auto pair: expected) {
         if (pair.second) {
-            auto eint = new LiteralExpression(ExpressionValue(TypeDecl::INT, 1));
-            auto eptr = new LiteralExpression(ExpressionValue(TypeDecl::getPointer(TypeDecl::INT), 100));
+            auto eint = std::make_shared<LiteralExpression>(ExpressionValue(TypeDecl::INT, 1));
+            auto eptr = std::make_shared<LiteralExpression>(ExpressionValue(TypeDecl::getPointer(TypeDecl::INT), 100));
             ASSERT_NO_THROW(BinaryExpression expr(pair.first, eptr, eint));
 
-            eint = new LiteralExpression(ExpressionValue(TypeDecl::INT, 1));
-            eptr = new LiteralExpression(ExpressionValue(TypeDecl::getPointer(TypeDecl::INT), 100));
+            eint = std::make_shared<LiteralExpression>(ExpressionValue(TypeDecl::INT, 1));
+            eptr = std::make_shared<LiteralExpression>(ExpressionValue(TypeDecl::getPointer(TypeDecl::INT), 100));
             ASSERT_NO_THROW(BinaryExpression expr(pair.first, eint, eptr));
         } else {
-            auto eint = new LiteralExpression(ExpressionValue(TypeDecl::INT, 1));
-            auto eptr = new LiteralExpression(ExpressionValue(TypeDecl::getPointer(TypeDecl::INT), 100));
+            auto eint = std::make_shared<LiteralExpression>(ExpressionValue(TypeDecl::INT, 1));
+            auto eptr = std::make_shared<LiteralExpression>(ExpressionValue(TypeDecl::getPointer(TypeDecl::INT), 100));
             ASSERT_THROW(BinaryExpression expr(pair.first, eptr, eint), InvalidOperationException);
             ASSERT_THROW(BinaryExpression expr(pair.first, eint, eptr), InvalidOperationException);
-            delete eint;
-            delete eptr;
         }
     }
 }
@@ -411,8 +408,8 @@ TEST(BinaryExpressionTest, pointerAdditionArithmetics)
 
             TypeDecl ptrTermType = TypeDecl::getPointer(ptrType);
 
-            auto ptrTerm = new LiteralExpression(ExpressionValue(ptrTermType, initial));
-            auto addTerm = new LiteralExpression(ExpressionValue(i));
+            auto ptrTerm = std::make_shared<LiteralExpression>(ExpressionValue(ptrTermType, initial));
+            auto addTerm = std::make_shared<LiteralExpression>(ExpressionValue(i));
             BinaryExpression expr(BinaryExpression::PLUS, addTerm, ptrTerm);
             auto result = expr.evaluate(&econtext);
             ASSERT_EQ(expected, result.get<int>());

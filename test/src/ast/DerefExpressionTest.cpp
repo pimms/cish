@@ -8,6 +8,8 @@
 #include "vm/Memory.h"
 #include "vm/Variable.h"
 
+#include <memory>
+
 using namespace cish::vm;
 using namespace cish::ast;
 
@@ -26,7 +28,7 @@ TEST(DerefExpressionTest, simpleDereference)
     ec.getScope()->addVariable("ptr", var);
 
     ExpressionValue exprVal(type, var->getAllocation()->getAddress());
-    auto literal = new LiteralExpression(exprVal);
+    auto literal = std::make_shared<LiteralExpression>(exprVal);
 
     DerefExpression deref(&dc, literal);
     ASSERT_EQ(TypeDecl::INT, deref.getType().getType());
@@ -49,9 +51,11 @@ TEST(DerefExpressionTest, testWithIncrementalOperand)
     ptrVar->getAllocation()->write<int>(rawVal->getAllocation()->getAddress());
     ec.getScope()->addVariable("ptr", ptrVar);
 
-    auto inc = new IncDecExpression(&dc, IncDecExpression::POSTFIX_INCREMENT, "ptr");
+    auto inc = std::make_shared<IncDecExpression>(&dc, IncDecExpression::POSTFIX_INCREMENT, "ptr");
 
     DerefExpression deref(&dc, inc);
     ASSERT_EQ(TypeDecl::INT, deref.getType().getType());
     ASSERT_EQ(15, deref.evaluate(&ec).get<int>());
+
+    delete rawVal;
 }

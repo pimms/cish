@@ -3,6 +3,8 @@
 #include "DeclarationContext.h"
 #include "../vm/Allocation.h"
 
+#include <memory>
+
 namespace cish
 {
 namespace vm { class ExecutionContext; }
@@ -18,6 +20,8 @@ Lvalue
 class Lvalue
 {
 public:
+    typedef std::shared_ptr<Lvalue> Ptr;
+
     virtual ~Lvalue() = default;
     virtual const TypeDecl& getType() const = 0;
     virtual vm::MemoryView getMemoryView(vm::ExecutionContext *context) = 0;

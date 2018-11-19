@@ -12,15 +12,15 @@ namespace ast
 {
 
 
-ReturnStatement::ReturnStatement(DeclarationContext *context, Expression *expr):
-    _expression(expr),
-    _functionDefinition(context->getCurrentFunction())
+ReturnStatement::ReturnStatement(DeclarationContext *context, Expression::Ptr expr):
+    _expression(expr)
 {
-    if (_functionDefinition == nullptr) {
+    const FunctionDefinition::Ptr functionDefinition = context->getCurrentFunction();
+    if (functionDefinition == nullptr) {
         Throw(InvalidStatementException, "Cannot return outside of a function");
     }
 
-    const auto returnType = _functionDefinition->getDeclaration()->returnType;
+    const auto returnType = functionDefinition->getDeclaration()->returnType;
 
     if (expr == nullptr) {
         if (returnType.getType() != TypeDecl::VOID) {

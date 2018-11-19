@@ -9,22 +9,12 @@ namespace ast
 {
 
 
-ForLoopStatement::ForLoopStatement(Statement *init, Expression *cond, Statement *iter):
+ForLoopStatement::ForLoopStatement(Statement::Ptr init, Expression::Ptr cond, Statement::Ptr iter):
     _initialization(init),
     _condition(cond),
     _iterator(iter)
 {
 
-}
-
-ForLoopStatement::~ForLoopStatement()
-{
-    if (_initialization)
-        delete _initialization;
-    if (_condition)
-        delete _condition;
-    if (_iterator)
-        delete _iterator;
 }
 
 void ForLoopStatement::execute(vm::ExecutionContext *context) const

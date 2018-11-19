@@ -7,14 +7,9 @@ namespace ast
 {
 
 
-NegationExpression::NegationExpression(Expression *expression):
+NegationExpression::NegationExpression(Expression::Ptr expression):
     _expression(expression)
 { }
-
-NegationExpression::~NegationExpression()
-{
-    delete _expression;
-}
 
 ExpressionValue NegationExpression::evaluate(vm::ExecutionContext *context) const
 {

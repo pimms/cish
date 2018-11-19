@@ -14,15 +14,10 @@ namespace ast
 WhileStatement
 ==============
 */
-WhileStatement::WhileStatement(Expression *condition):
+WhileStatement::WhileStatement(Expression::Ptr condition):
 	_condition(condition)
 {
 
-}
-
-WhileStatement::~WhileStatement()
-{
-	delete _condition;
 }
 
 void WhileStatement::execute(vm::ExecutionContext *context) const
@@ -54,7 +49,7 @@ bool WhileStatement::evaluateCondition(vm::ExecutionContext *context) const
 DoWhileStatement
 ==============
 */
-DoWhileStatement::DoWhileStatement(Expression *condition)
+DoWhileStatement::DoWhileStatement(Expression::Ptr condition)
 	: WhileStatement(condition) {}
 
 void DoWhileStatement::execute(vm::ExecutionContext *context) const

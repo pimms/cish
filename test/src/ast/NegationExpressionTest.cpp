@@ -46,7 +46,7 @@ TEST(NegationExpressionTest, negationOfAllTypes)
         const bool unNegated = val.get<bool>();
         const bool negated = !unNegated;
 
-        auto literal = new LiteralExpression(val);
+        auto literal = std::make_shared<LiteralExpression>(val);
         NegationExpression negateExpr(literal);
 
         ASSERT_EQ(TypeDecl::BOOL, negateExpr.getType().getType());

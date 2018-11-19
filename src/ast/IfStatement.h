@@ -14,14 +14,15 @@ namespace ast
 class IfStatement: public SuperStatement
 {
 public:
-    IfStatement(Expression *expression, ElseStatement *elseStatement);
-    virtual ~IfStatement();
+    typedef std::shared_ptr<IfStatement> Ptr;
+
+    IfStatement(Expression::Ptr expression, ElseStatement::Ptr elseStatement);
 
     void execute(vm::ExecutionContext *context) const override;
 
 private:
-    Expression *_expression;
-    ElseStatement *_elseStatement;
+    Expression::Ptr _expression;
+    ElseStatement::Ptr _elseStatement;
 };
 
 

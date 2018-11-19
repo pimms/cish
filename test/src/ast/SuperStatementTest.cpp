@@ -19,12 +19,12 @@ TEST(SuperStatementTest, superStatementsCallAllTheirChildren)
     ExecutionContext ec(&memory);
     DeclarationContext dc;
 
-    auto *decl1 = new VariableDeclarationStatement(&dc, TypeDecl::INT, "var1", nullptr);
-    auto *decl2 = new VariableDeclarationStatement(&dc, TypeDecl::SHORT, "var2", nullptr);
+    auto decl1 = std::make_shared<VariableDeclarationStatement>(&dc, TypeDecl::INT, "var1", nullptr);
+    auto decl2 = std::make_shared<VariableDeclarationStatement>(&dc, TypeDecl::SHORT, "var2", nullptr);
 
     SuperStatement super;
-    super.addStatement(decl1);
-    super.addStatement(decl2);
+    super.addStatement(std::dynamic_pointer_cast<Statement>(decl1));
+    super.addStatement(std::dynamic_pointer_cast<Statement>(decl2));
     super.execute(&ec);
 
     ASSERT_NE(nullptr, ec.getScope()->getVariable("var1"));

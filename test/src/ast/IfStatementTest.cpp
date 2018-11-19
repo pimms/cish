@@ -12,6 +12,6 @@ using namespace cish::ast;
 TEST(IfStatementTest, expressionMustBeConvertibleToBool)
 {
     ExpressionValue value(TypeDecl(TypeDecl::VOID), 0);
-    LiteralExpression expr(value);
-    ASSERT_THROW(IfStatement stmt(&expr, nullptr), InvalidCastException);
+    auto expr = std::make_shared<LiteralExpression>(value);
+    ASSERT_THROW(IfStatement stmt(expr, nullptr), InvalidCastException);
 }

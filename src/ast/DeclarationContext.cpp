@@ -59,7 +59,7 @@ void DeclarationContext::popVariableScope()
     _varScope.pop_back();
 }
 
-void DeclarationContext::enterFunction(FunctionDefinition *funcDef)
+void DeclarationContext::enterFunction(FunctionDefinition::Ptr funcDef)
 {
     if (_currentFunction) {
         Throw(InvalidDeclarationScope, "Cannot enter a function while inside a function");
@@ -83,7 +83,7 @@ void DeclarationContext::exitFunction()
     _currentFunction = nullptr;
 }
 
-FunctionDefinition* DeclarationContext::getCurrentFunction() const
+FunctionDefinition::Ptr DeclarationContext::getCurrentFunction() const
 {
     return _currentFunction;
 }

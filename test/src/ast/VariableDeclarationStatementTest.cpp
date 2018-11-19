@@ -45,7 +45,7 @@ TEST(VariableDeclarationStatementTest, variablesAreInitializedWhenExpressionIsDe
     DeclarationContext dc;
     ExecutionContext ec(&memory);
 
-    auto expr = new LiteralExpression(100);
+    auto expr = std::make_shared<LiteralExpression>(100);
 
     VariableDeclarationStatement stmt(&dc, TypeDecl::INT, "var", expr);
     stmt.execute(&ec);
@@ -61,7 +61,7 @@ TEST(VariableDeclarationStatementTest, declarationAndAssignmentOfConstVariableIs
     TypeDecl type = TypeDecl::INT;
     type.setConst(true);
 
-    auto expr = new LiteralExpression(100);
+    auto expr = std::make_shared<LiteralExpression>(100);
     ASSERT_NO_THROW(VariableDeclarationStatement stmt(&dc, type, "i", expr));
 
 }
@@ -79,6 +79,6 @@ TEST(VariableDeclarationStatementTest, constVariablesDontNeedAnAssignedValue)
     TypeDecl type = TypeDecl::INT;
     type.setConst(true);
 
-    auto expr = new LiteralExpression(100);
+    auto expr = std::make_shared<LiteralExpression>(100);
     ASSERT_NO_THROW(VariableDeclarationStatement stmt(&dc, type, "i", nullptr));
 }

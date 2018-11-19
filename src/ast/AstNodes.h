@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include <functional>
+#include <memory>
 
 #include "Type.h"
 #include "ExpressionValue.h"
@@ -24,6 +25,8 @@ DECLARE_EXCEPTION(InvalidOperationException);
 
 class AstNode {
 public:
+    typedef std::shared_ptr<AstNode> Ptr;
+
     virtual ~AstNode() {};
 };
 
@@ -32,6 +35,8 @@ public:
 class Statement: public AstNode
 {
 public:
+    typedef std::shared_ptr<Statement> Ptr;
+
     virtual ~Statement() {};
 
     // 1. Always override this method
@@ -42,6 +47,8 @@ public:
 class Expression: public AstNode
 {
 public:
+    typedef std::shared_ptr<Expression> Ptr;
+
     virtual ~Expression() {};
     virtual TypeDecl getType() const = 0;
     virtual ExpressionValue evaluate(vm::ExecutionContext*) const = 0;

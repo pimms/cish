@@ -12,7 +12,7 @@ namespace vm
 
 Executor::Executor(Memory *memory, ast::Ast::Ptr ast):
     ExecutionContext(memory),
-    _ast(std::move(ast)),
+    _ast(ast),
     _exitStatus(-1),
     _hasTerminated(false)
 {
@@ -53,7 +53,7 @@ void Executor::execute()
         Throw(NoEntryPointException, "Entrypoint 'main' not found");
     }
 
-    for (const ast::Statement *statement: _ast->getRootStatements()) {
+    for (const ast::Statement::Ptr statement: _ast->getRootStatements()) {
         statement->execute(this);
     }
 

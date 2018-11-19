@@ -9,18 +9,13 @@ namespace ast
 {
 
 
-IfStatement::IfStatement(Expression *expression, ElseStatement *elseStatement):
+IfStatement::IfStatement(Expression::Ptr expression, ElseStatement::Ptr elseStatement):
     _expression(expression),
     _elseStatement(elseStatement)
 {
     if (!expression->getType().castableTo(TypeDecl::BOOL)) {
         Throw(InvalidCastException, "Expression in if-statement not convertible to bool");
     }
-}
-
-IfStatement::~IfStatement()
-{
-    delete _expression;
 }
 
 void IfStatement::execute(vm::ExecutionContext *context) const

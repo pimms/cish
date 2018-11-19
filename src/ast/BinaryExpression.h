@@ -32,8 +32,7 @@ public:
         LOGICAL_OR
     };
 
-    BinaryExpression(Operator op, Expression *left, Expression *right);
-    ~BinaryExpression();
+    BinaryExpression(Operator op, Expression::Ptr left, Expression::Ptr right);
 
     virtual TypeDecl getType() const override;
     virtual ExpressionValue evaluate(vm::ExecutionContext *ctx) const override;
@@ -42,8 +41,8 @@ private:
     Operator _operator;
     TypeDecl _returnType;
     TypeDecl _workingType;
-    Expression *_left;
-    Expression *_right;
+    Expression::Ptr _left;
+    Expression::Ptr _right;
 
     void pointerSpecificChecks();
 

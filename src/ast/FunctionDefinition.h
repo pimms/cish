@@ -1,7 +1,6 @@
 #pragma once
 
 #include "AstNodes.h"
-#include "DeclarationContext.h"
 #include "SuperStatement.h"
 #include "../vm/Callable.h"
 
@@ -13,11 +12,15 @@ namespace ast
 {
 
 
+class DeclarationContext;
+
 class FunctionDefinition: public SuperStatement, public vm::Callable
 {
 public:
+    typedef std::shared_ptr<FunctionDefinition> Ptr;
+
     FunctionDefinition(DeclarationContext *context, FuncDeclaration decl);
-    virtual ~FunctionDefinition();
+    virtual ~FunctionDefinition() = default;
 
     const FuncDeclaration* getDeclaration() const override;
 

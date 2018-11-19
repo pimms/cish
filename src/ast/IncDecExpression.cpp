@@ -56,10 +56,6 @@ IncDecExpression::IncDecExpression(DeclarationContext *context,
     }
 }
 
-IncDecExpression::~IncDecExpression()
-{
-}
-
 TypeDecl IncDecExpression::getType() const
 {
     return _type;

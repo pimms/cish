@@ -14,7 +14,7 @@ namespace ast
 {
 
 
-DerefExpression::DerefExpression(DeclarationContext *context, Expression *expression):
+DerefExpression::DerefExpression(DeclarationContext *context, Expression::Ptr expression):
     _expression(expression)
 {
     const bool isPointer = _expression->getType() == TypeDecl::POINTER;
@@ -22,11 +22,6 @@ DerefExpression::DerefExpression(DeclarationContext *context, Expression *expres
     if (!isPointer) {
         Throw(InvalidOperationException, "Can only dereference pointers");
     }
-}
-
-DerefExpression::~DerefExpression()
-{
-    delete _expression;
 }
 
 ExpressionValue DerefExpression::evaluate(vm::ExecutionContext *context) const

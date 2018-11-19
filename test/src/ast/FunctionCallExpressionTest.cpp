@@ -2,20 +2,21 @@
 
 #include "ast/FunctionCallExpression.h"
 #include "ast/LiteralExpression.h"
+#include "ast/FuncDeclaration.h"
 
 using namespace cish::ast;
 
 
-std::vector<Expression*> noparams()
+std::vector<Expression::Ptr> noparams()
 {
-    return std::vector<Expression*> {};
+    return std::vector<Expression::Ptr> {};
 }
 
 
 TEST(FunctionCallExpressionTest, expressionTypeInheritsFromFunction)
 {
-    FuncDeclaration voidDecl = { TypeDecl::VOID, "voidFunc", {} };
-    FuncDeclaration intDecl = { TypeDecl::INT, "intFunc", {} };
+    FuncDeclaration voidDecl(TypeDecl::VOID, "voidFunc");
+    FuncDeclaration intDecl(TypeDecl::INT, "intFunc");
 
     DeclarationContext context;
     context.declareFunction(voidDecl);
@@ -46,22 +47,20 @@ TEST(FunctionCallExpressionTest, tooFewParamsInCallThrows)
 
 TEST(FunctionCallExpressionTest, tooManyParamsInCallThrows)
 {
-    FuncDeclaration decl = { TypeDecl::VOID, "foo", {} };
+    FuncDeclaration decl(TypeDecl::VOID, "foo");
 
     DeclarationContext context;
     context.declareFunction(decl);
 
-    std::vector<Expression*> params = { new LiteralExpression("100") };
+    std::vector<Expression::Ptr> params = { std::make_shared<LiteralExpression>("100") };
     ASSERT_THROW(FunctionCallExpression call(&context, "foo", params), InvalidParameterException);
-
-    delete params[0];
 }
 
 TEST(FunctionCallExpressionTest, voidExpressionsAsParamThrows)
 {
     // This test should really check for incompatible types, but at the time of writing, VOID
     // is the only type that cannot be implicitly converted.
-    FuncDeclaration decl = { TypeDecl::VOID, "foo", { VarDeclaration { TypeDecl::INT, "n" } } };
+    FuncDeclaration decl(TypeDecl::VOID, "foo", {VarDeclaration { TypeDecl::INT, "n" }});
 
     DeclarationContext context;
     context.declareFunction(decl);
@@ -70,11 +69,9 @@ TEST(FunctionCallExpressionTest, voidExpressionsAsParamThrows)
     // "future-proof" (tm) way of creating a void-typed expression is to call a void function.
     //
     // Hopefully :-)
-    std::vector<Expression*> params = { new LiteralExpression("100") };
-    FunctionCallExpression validCall(&context, "foo", params);
+    std::vector<Expression::Ptr> params = { std::make_shared<LiteralExpression>("100") };
+    auto validCall = std::make_shared<FunctionCallExpression>(&context, "foo", params);
 
-    ASSERT_THROW(FunctionCallExpression invalidCall(&context, "foo", { &validCall }), InvalidParameterException);
-
-    delete params[0];
+    ASSERT_THROW(FunctionCallExpression invalidCall(&context, "foo", { validCall }), InvalidParameterException);
 }
 

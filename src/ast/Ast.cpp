@@ -14,13 +14,6 @@ Ast::Ast()
 
 }
 
-Ast::~Ast()
-{
-    for (Statement *s: _rootStatements) {
-        delete s;
-    }
-}
-
 void Ast::addFunctionDefinition(vm::Callable::Ptr callable)
 {
     const std::string funcName = callable->getDeclaration()->name;
@@ -59,16 +52,16 @@ std::vector<const vm::Callable::Ptr> Ast::getFunctionDefinitions() const
     return funcs;
 }
 
-void Ast::addRootStatement(Statement *statement)
+void Ast::addRootStatement(Statement::Ptr statement)
 {
     assert(statement != nullptr);
     _rootStatements.push_back(statement);
 }
 
-std::vector<const Statement*> Ast::getRootStatements() const
+std::vector<const Statement::Ptr> Ast::getRootStatements() const
 {
-    std::vector<const Statement*> copy;
-    for (Statement *s: _rootStatements)
+    std::vector<const Statement::Ptr> copy;
+    for (Statement::Ptr s: _rootStatements)
         copy.push_back(s);
     return copy;
 }
