@@ -13,7 +13,7 @@ namespace vm
 Executor::Executor(Memory *memory, ast::Ast::Ptr ast):
     ExecutionContext(memory),
     _ast(std::move(ast)),
-    _exitStatus(-1337),
+    _exitStatus(-1),
     _hasTerminated(false)
 {
 

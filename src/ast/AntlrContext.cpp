@@ -84,7 +84,7 @@ void AntlrContext::reportAmbiguity(antlr4::Parser *recognizer,
                                    const antlrcpp::BitSet &ambigAlts,
                                    antlr4::atn::ATNConfigSet *configs)
 {
-    // printf("ANTLR4 Ambiguity!\n");
+    // fprintf(stderr, "ANTLR4 Ambiguity!\n");
 }
 
 void AntlrContext::reportAttemptingFullContext(antlr4::Parser *recognizer,
@@ -94,7 +94,7 @@ void AntlrContext::reportAttemptingFullContext(antlr4::Parser *recognizer,
                                                const antlrcpp::BitSet &conflictingAlts,
                                                antlr4::atn::ATNConfigSet *configs)
 {
-    // printf("ANTLR4 Attempting full context (?)\n");
+    // fprintf(stderr, "ANTLR4 Attempting full context (?)\n");
 }
 
 void AntlrContext::reportContextSensitivity(antlr4::Parser *recognizer,
@@ -104,7 +104,7 @@ void AntlrContext::reportContextSensitivity(antlr4::Parser *recognizer,
                                             size_t prediction,
                                             antlr4::atn::ATNConfigSet *configs)
 {
-    // printf("ANTLR4 Context sensitivity (?)\n");
+    // fprintf(stderr, "ANTLR4 Context sensitivity (?)\n");
 }
 
 

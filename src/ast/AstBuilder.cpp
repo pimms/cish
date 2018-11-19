@@ -749,12 +749,19 @@ Ast::Ptr AstBuilder::buildAst()
     // TODO: Propagate these errors out of here in a more reasonable way
     if (_antlrContext->hasErrors()) {
         std::vector<ast::CompilationError> errors = _antlrContext->getErrors();
+
+        std::stringstream ss;
+        ss << "There are syntax errors:";
+
         for (auto err: errors) {
-            printf("Syntax error on line %d (%d): %s\n",
-                err.lineNumber, err.charNumber, err.message.c_str());
+            ss  << std::endl
+                << "Syntax error on line "
+                << err.lineNumber << ", near char "
+                << err.charNumber << ":" << err.message;
         }
 
-        Throw(SyntaxErrorException, "There are syntax errors");
+        std::string errorStr = ss.str();
+        Throw(SyntaxErrorException, errorStr.c_str());
     }
 
     internal::TreeConverter converter(_moduleContext);

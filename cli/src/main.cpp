@@ -9,7 +9,21 @@
 #include "module/stdlib/stdlibModule.h"
 
 #include <iostream>
-#include <fstream>
+#include <functional>
+
+bool doTry(std::function<void(void)> f) {
+    try {
+        f();
+        return true;
+    } catch (cish::Exception e) {
+        std::cerr << e.userMessage() << std::endl;
+    } catch (std::exception e) {
+        std::cerr << e.what() << std::endl;
+    } catch (...) {
+        std::cerr << "unknown failure" << std::endl;
+    }
+    return false;
+}
 
 int main(int argc, char **argv)
 {
@@ -27,7 +41,12 @@ int main(int argc, char **argv)
 
     cish::ast::AntlrContext antlrContext(source);
     cish::ast::AstBuilder builder(&antlrContext, moduleContext);
-    cish::ast::Ast::Ptr ast = builder.buildAst();
+
+    cish::ast::Ast::Ptr ast;
+
+    if (!doTry([&]() {ast = builder.buildAst();})) {
+        return 1;
+    }
 
     cish::vm::VmOptions opts;
     opts.heapSize = 1 << 10;
@@ -35,5 +54,12 @@ int main(int argc, char **argv)
 
     cish::vm::VirtualMachine vm(opts, std::move(ast));
     vm.executeBlocking();
+
+    auto err = vm.getRuntimeError();
+    if (err != nullptr) {
+        std::cerr << err->userMessage() << std::endl;
+        return 1;
+    }
+
     return vm.getExitCode();
 }

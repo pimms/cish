@@ -15,7 +15,7 @@
 
 #ifdef DEBUG
     #define __DBGPRINT_EXCEPTION(_name) \
-        printf("throwing %s at %s:%d (%s): %s\n", \
+        fprintf(stderr, "throwing %s at %s:%d (%s): %s\n", \
                 _name, file.c_str(), line, func.c_str(), buffer);
 #else
     #define __DBGPRINT_EXCEPTION(_name)
@@ -23,7 +23,7 @@
 
 
 #define DECLARE_EXCEPTION(name)                     \
-    class name : public ::cish::Exception                   \
+    class name : public ::cish::Exception           \
     {                                               \
     public:                                         \
         name(std::string file, std::string func,    \
@@ -43,6 +43,8 @@
                 << "Line: " << line << "\n"         \
                 << "What: " << buffer << "\n";      \
             _what = ss.str().c_str();               \
+            _userMessage = buffer;                  \
+            _type = #name;                          \
             __DBGPRINT_EXCEPTION(#name)             \
         }                                           \
                                                     \
@@ -69,10 +71,14 @@ public:
 
     virtual ~Exception() = default;
     virtual const char* what() const noexcept;
+    virtual const char* userMessage() const noexcept;
+    virtual const char* type() const noexcept;
     virtual void raise() { throw *this; }
 
 protected:
+    std::string _type;
     std::string _what;
+    std::string _userMessage;
 };
 
 }

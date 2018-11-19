@@ -14,7 +14,7 @@ namespace internal
 {
 
 
-// #define DBGLOG(...) printf(__VA_ARGS__)
+// #define DBGLOG(...) fprintf(stderr, __VA_ARGS__)
 #define DBGLOG(...) do{}while(0);
 
 
@@ -185,6 +185,7 @@ void ExecutionThread::start(bool waitForCompletion)
         backgroundMain();
 
         if (waitForCompletion) {
+            DBGLOG("[W] signalling waiting org-thread\n");
             std::lock_guard<std::mutex> lock(mutex);
             done = true;
             var.notify_one();
@@ -198,8 +199,10 @@ void ExecutionThread::start(bool waitForCompletion)
     }
 
     if (waitForCompletion) {
+        DBGLOG("[O] waiting for worker to complete\n");
         std::unique_lock<std::mutex> lock(mutex);
         var.wait(lock, [&]() { return done.load(); });
+        DBGLOG("[O] worker completed (isrunning=%d)\n", _isRunning.load());
     }
 }
 

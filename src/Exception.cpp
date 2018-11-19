@@ -28,16 +28,19 @@ Exception::Exception(std::string file, std::string func, int line, const char *f
         << "Func: " << func << "\n"
         << "Line: " << line << "\n"
         << "What: " << buffer << "\n";
+    _type = "Exception";
     _what = ss.str().c_str();
+    _userMessage = buffer;
 
-#ifdef DEBUG
-    printf("throwing cish::Exception at %s:%d (%s): %s\n",
-            file.c_str(), line, func.c_str(), buffer);
-#endif
+    __DBGPRINT_EXCEPTION("Exception");
 }
 
 Exception::Exception(): _what("") { }
-Exception::Exception(const Exception &o): _what(o._what) { }
+Exception::Exception(const Exception &o):
+    _what(o._what),
+    _type(o._type),
+    _userMessage(o._userMessage)
+{ }
 
 Exception& Exception::operator=(const Exception &o)
 {
@@ -48,6 +51,16 @@ Exception& Exception::operator=(const Exception &o)
 const char* Exception::what() const noexcept
 {
     return _what.c_str();
+}
+
+const char* Exception::userMessage() const noexcept
+{
+    return _userMessage.c_str();
+}
+
+const char* Exception::type() const noexcept
+{
+    return _type.c_str();
 }
 
 
