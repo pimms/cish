@@ -125,7 +125,7 @@ int rand()
 */
 ast::FuncDeclaration Rand::getSignature()
 {
-    return FuncDeclaration{ TypeDecl::INT, "rand" };
+    return FuncDeclaration(TypeDecl::INT, "rand");
 }
 
 Rand::Rand(): Function(getSignature()) {}
@@ -144,12 +144,11 @@ void srand(int seed)
 */
 ast::FuncDeclaration Srand::getSignature()
 {
-    return FuncDeclaration {
+    return FuncDeclaration(
         TypeDecl::VOID,
-        "srand", {
-            VarDeclaration { TypeDecl::INT, "seed" }
-        }
-    };
+        "srand",
+        {VarDeclaration { TypeDecl::INT, "seed" }}
+    );
 }
 
 Srand::Srand(): Function(getSignature()) {}
@@ -169,12 +168,11 @@ void* malloc(int)
 */
 ast::FuncDeclaration Malloc::getSignature()
 {
-    return FuncDeclaration {
+    return FuncDeclaration(
         TypeDecl::getPointer(TypeDecl::VOID),
-        "malloc", {
-            VarDeclaration { TypeDecl::INT, "size" }
-        }
-    };
+        "malloc",
+        {VarDeclaration { TypeDecl::INT, "size" }}
+    );
 }
 
 Malloc::Malloc(MallocContext::Ptr mallocContext):
@@ -202,12 +200,11 @@ void free(void *p)
 */
 ast::FuncDeclaration Free::getSignature()
 {
-    return FuncDeclaration {
+    return FuncDeclaration(
         TypeDecl::VOID,
-        "free", {
-            VarDeclaration { TypeDecl::getPointer(TypeDecl::VOID), "ptr" }
-        }
-    };
+        "free",
+        {VarDeclaration { TypeDecl::getPointer(TypeDecl::VOID), "ptr" }}
+    );
 }
 
 Free::Free(MallocContext::Ptr mallocContext):

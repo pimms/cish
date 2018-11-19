@@ -41,15 +41,16 @@ int puts(const char *s)
 */
 ast::FuncDeclaration Puts::getSignature()
 {
-    return FuncDeclaration {
+    return FuncDeclaration(
         TypeDecl::INT,
-        "puts", {
+        "puts",
+        {
             VarDeclaration {
                 TypeDecl::getPointer(TypeDecl::getConst(TypeDecl::CHAR)),
                 "ptr"
             }
         }
-    };
+    );
 }
 
 Puts::Puts(): Function(getSignature()) {}

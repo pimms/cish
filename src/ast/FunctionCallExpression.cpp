@@ -22,21 +22,7 @@ FunctionCallExpression::FunctionCallExpression(DeclarationContext *context,
     _funcDecl = (*decl);
     _params = params;
 
-    // Verify that we're passing the correct parameters to the function
-    if (_funcDecl.params.size() != params.size()) {
-        Throw(InvalidParameterException, "Function '%s' expects %d parameters, but %d was given",
-                _funcDecl.name.c_str(), (int)_funcDecl.params.size(), (int)params.size());
-    }
-
-    for (int i=0; i<(int)params.size(); i++) {
-        if (!params[i]->getType().castableTo(_funcDecl.params[i].type)) {
-            Throw(InvalidParameterException, "Parameter %d ('%s') to function '%s' is not convertible to type '%s'",
-                    i+1,
-                    _funcDecl.params[i].type.getName(),
-                    _funcDecl.name.c_str(),
-                    _funcDecl.params[i].type.getName());
-        }
-    }
+    verifyParameterTypes();
 }
 
 TypeDecl FunctionCallExpression::getType() const
@@ -55,6 +41,34 @@ ExpressionValue FunctionCallExpression::evaluate(vm::ExecutionContext *context) 
 
     return funcDef->execute(context, params);
 }
+
+void FunctionCallExpression::verifyParameterTypes()
+{
+    if (!_funcDecl.varargs) {
+        if (_funcDecl.params.size() != _params.size()) {
+            Throw(InvalidParameterException, "Function '%s' expects %d parameters, but %d was given",
+                    _funcDecl.name.c_str(), (int)_funcDecl.params.size(), (int)_params.size());
+        }
+    } else {
+        if (_funcDecl.params.size() > _params.size()) {
+            Throw(InvalidParameterException, "Function '%s' expects at least %d parameters, but only %d was given",
+                    _funcDecl.name.c_str(), (int)_funcDecl.params.size(), (int)_params.size());
+        }
+    }
+
+    // Important notice: iterate through the explicit parameters of the function declaration,
+    // that way we can use the same loop to check vararg and non-vararg functions.
+    for (int i=0; i<(int)_funcDecl.params.size(); i++) {
+        if (!_params[i]->getType().castableTo(_funcDecl.params[i].type)) {
+            Throw(InvalidParameterException, "Parameter %d ('%s') to function '%s' is not convertible to type '%s'",
+                    i+1,
+                    _funcDecl.params[i].type.getName(),
+                    _funcDecl.name.c_str(),
+                    _funcDecl.params[i].type.getName());
+        }
+    }
+}
+
 
 }
 }

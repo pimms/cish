@@ -24,6 +24,8 @@ public:
     virtual ExpressionValue evaluate(vm::ExecutionContext*) const override;
 
 private:
+    void verifyParameterTypes();
+
     FuncDeclaration _funcDecl;
     std::vector<Expression*> _params;
 };
