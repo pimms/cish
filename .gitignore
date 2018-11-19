@@ -2,3 +2,4 @@ build/
 src/ast/antlr
 grammar/tmp/
 .ycm_extra_conf.py
+.DS_Store
