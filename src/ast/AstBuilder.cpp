@@ -4,8 +4,8 @@
 #include "AntlrContext.h"
 
 #include "AstNodes.h"
-
 #include "Lvalue.h"
+#include "../ast/StringEscape.h"
 
 #include "BinaryExpression.h"
 #include "VariableReferenceExpression.h"
@@ -700,6 +700,7 @@ public:
     {
         std::string str = ctx->getText();
         str = str.substr(1, str.length() - 2);
+        str = ast::string::unescapeString(str);
         const StringId stringId = _stringTable->insert(str);
         return new StringLiteralExpression(stringId);
     }
