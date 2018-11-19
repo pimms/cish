@@ -14,8 +14,7 @@ using namespace cish::vm;
 using namespace cish::ast;
 
 
-
-/* VALID PROGRAMS */
+ /* VALID PROGRAMS */
 
 
 TEST(SimpleProgramsTest, returningFooFromMain)
@@ -541,6 +540,18 @@ TEST(SimpleProgramsTest, passingStringAsArgument)
         "char firstChar(const char *str) { return *str; }"
         "int main() { return firstChar(\"1234\"); }";
     assertExitCode(source, (int)'1');
+}
+
+TEST(SimpleProgramsTest, paranthesisExpressions)
+{
+    // abuse the heck out of parantheses, this SHOULD only work
+    // if we've done everything right thus far... :)
+    const std::string source =
+        "int echo(int n) { return (n); }"
+        "int main() {"
+        "   return ((5) * ((10) + (5))) - (10) + (echo((1)));"
+        "}";
+    assertExitCode(source, 66);
 }
 
 

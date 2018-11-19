@@ -22,7 +22,8 @@ expression
     ;
 
 expr
-    : incdecexpr                                # INCDECEXPR___
+    : incdecexpr                                # INCDECEXPR___ // Not to be used explicitly
+    | '(' expr ')'                              # PAREN_EXPR___ // Not to be used explicitly
     | '&' Identifier                            # ADDROF_EXPR
     | '*' expr                                  # DEREF_EXPR
     | '!' expr                                  # NEGATION_EXPR
@@ -31,7 +32,10 @@ expr
     | expr op=( '>=' | '<=' | '>' | '<' ) expr  # COMPARE_EXPR
     | expr op=( '==' | '!=' ) expr              # EQUALITY_EXPR
     | expr op=( '&&' | '||' ) expr              # AND_EXPR
-    | (Char|Integer|Floating|Boolean|Null)      # LITERAL_EXPR
+    | exprAtom                                  # EXPR_ATOM___ // Not to be used explicitly
+    ;
+exprAtom
+    : (Char|Integer|Floating|Boolean|Null)      # LITERAL_EXPR
     | Identifier                                # VAR_REF_EXPR
     | functionCall                              # FUNC_CALL_EXPR
     | stringLiteral                             # STR_LITERAL_EXPR
