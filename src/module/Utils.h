@@ -21,6 +21,8 @@ namespace utils
  */
 void readString(const vm::MemoryView &src, std::vector<char>& out);
 
+std::string hexstr(uint32_t num, bool fill);
+
 
 }
 }

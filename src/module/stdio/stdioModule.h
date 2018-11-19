@@ -32,6 +32,16 @@ public:
                                  FuncParams params) const override;
 };
 
+class Printf: public Function
+{
+public:
+    static ast::FuncDeclaration getSignature();
+
+    Printf();
+    ast::ExpressionValue execute(vm::ExecutionContext *context,
+                                 FuncParams params) const override;
+};
+
 
 
 }
