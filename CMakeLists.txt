@@ -1,13 +1,13 @@
 cmake_minimum_required(VERSION 2.8)
 project(cish CXX)
 
-option(test "Build all tests" ON)
+option(build_cish_test "Build all tests" ON)
+option(build_cish_cli "Build the cish CLI tool" ON)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 set(CMAKE_CXX_FLAGS_DEBUG "-DDEBUG ${CMAKE_CXX_FLAGS_DEBUG}")
-
 
 # -- Run ANTLR4 Generation -- #
 execute_process(
@@ -70,10 +70,16 @@ target_link_libraries(cish ${ANTLR_LIBRARY})
 include_directories(${ANTLR_INCLUDE_DIR})
 
 
-add_subdirectory(cli)
+# -- Handle Installation -- #
+install(TARGETS cish DESTINATION lib)
+install(DIRECTORY ${CISH_HEADER_PATH}
+        DESTINATION include/cish
+        FILES_MATCHING PATTERN "*.h")
 
 
-# -- Add tests -- #
-if (test)
+if (build_cish_cli)
+    add_subdirectory(cli)
+endif()
+if (build_cish_test)
     add_subdirectory(test)
 endif()
