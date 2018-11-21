@@ -25,7 +25,7 @@ bool doTry(std::function<void(void)> f) {
     return false;
 }
 
-int main(int argc, char **argv)
+int execute(int argc, char **argv)
 {
     if (argc != 2) {
         fprintf(stderr, "usage: %s <file.c>\n", argv[0]);
@@ -62,4 +62,19 @@ int main(int argc, char **argv)
     }
 
     return vm.getExitCode();
+}
+
+int main(int argc, char **argv)
+{
+    int retval = execute(argc, argv);
+
+    #ifdef DEBUG
+    // Sleep so MacOS Instruments is able to scrape through our
+    // memory space.
+    //
+    // TODO: Convert this into a command-line option
+    getchar();
+    #endif
+
+    return retval;
 }
