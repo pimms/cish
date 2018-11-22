@@ -50,6 +50,7 @@ public:
     void startSync();
     void executeNextStatement();
 
+    bool hasStarted() const;
     bool isRunning() const;
     int getExitCode() const;
     std::shared_ptr<Exception> getRuntimeError() const;

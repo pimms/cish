@@ -66,6 +66,11 @@ void VirtualMachine::executeNextStatement()
     }
 }
 
+bool VirtualMachine::hasStarted() const
+{
+    return _started;
+}
+
 bool VirtualMachine::isRunning() const
 {
     return _executor->isRunning();
