@@ -15,7 +15,7 @@ namespace module
 class ModuleContext
 {
 public:
-    typedef std::shared_ptr<ModuleContext> Ptr;
+    typedef std::unique_ptr<ModuleContext> Ptr;
     static Ptr create();
 
     void addModule(Module::Ptr module);

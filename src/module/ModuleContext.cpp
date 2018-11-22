@@ -9,7 +9,7 @@ namespace module
 
 ModuleContext::Ptr ModuleContext::create()
 {
-    return Ptr(new ModuleContext());
+    return std::make_unique<ModuleContext>();
 }
 
 void ModuleContext::addModule(Module::Ptr module)

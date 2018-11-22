@@ -40,7 +40,7 @@ int execute(int argc, char **argv)
     moduleContext->addModule(cish::module::stdio::buildModule());
 
     cish::ast::AntlrContext antlrContext(source);
-    cish::ast::AstBuilder builder(&antlrContext, moduleContext);
+    cish::ast::AstBuilder builder(&antlrContext, std::move(moduleContext));
 
     cish::ast::Ast::Ptr ast;
 

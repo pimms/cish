@@ -72,6 +72,6 @@ TEST(ModuleTest, simpleEchoModule)
         "   return echo(5);"
         "}";
 
-    assertExitCode(modContext, source, 5);
+    assertExitCode(std::move(modContext), source, 5);
     ASSERT_EQ(1, rawFunc->getCallCount());
 }

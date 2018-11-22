@@ -31,6 +31,10 @@ const ExecutionContext* VirtualMachine::getExecutionContext() const
 
 void VirtualMachine::executeBlocking()
 {
+    if (_started) {
+        Throw(VmException, "Cannot restart a started VM");
+    }
+
     _started = true;
     _executor->setWaitForResume(false);
     _executor->runBlocking();
@@ -38,6 +42,10 @@ void VirtualMachine::executeBlocking()
 
 void VirtualMachine::startSync()
 {
+    if (_started) {
+        Throw(VmException, "Cannot restart a started VM");
+    }
+
     _started = true;
     _executor->setWaitForResume(true);
     _executor->startAsync();

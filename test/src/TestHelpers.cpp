@@ -16,7 +16,7 @@ Ast::Ptr createAst(ModuleContext::Ptr moduleContext, const std::string &source)
 
     AntlrContext antlrContext(source);
 
-    AstBuilder builder(&antlrContext, moduleContext);
+    AstBuilder builder(&antlrContext, std::move(moduleContext));
     Ast::Ptr ast = builder.buildAst();
     return ast;
 }
@@ -28,7 +28,7 @@ VmPtr createVm(const std::string &source)
 
 VmPtr createVm(ModuleContext::Ptr moduleContext, const std::string &source)
 {
-    Ast::Ptr ast = createAst(moduleContext, source);
+    Ast::Ptr ast = createAst(std::move(moduleContext), source);
 
     VmOptions opts;
     opts.heapSize = 512;
@@ -50,7 +50,7 @@ void assertExitCode(const std::string &source, int expectedExitCode)
 
 void assertExitCode(ModuleContext::Ptr moduleContext, const std::string &source, int expectedExitCode)
 {
-    VmPtr vm = createVm(moduleContext, source);
+    VmPtr vm = createVm(std::move(moduleContext), source);
     vm->startSync();
 
     while (vm->isRunning()) {

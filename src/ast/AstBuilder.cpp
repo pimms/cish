@@ -51,7 +51,7 @@ class TreeConverter: public CMBaseVisitor
     DeclarationContext _declContext;
     StringTable::Ptr _stringTable;
     std::vector<FuncDeclaration> _funcDecls;
-    const ModuleContext::Ptr _moduleContext;
+    ModuleContext::Ptr _moduleContext;
 
     Result createResult(AstNode *node)
     {
@@ -144,8 +144,8 @@ class TreeConverter: public CMBaseVisitor
     }
 
 public:
-    TreeConverter(const ModuleContext::Ptr moduleContext):
-        _moduleContext(moduleContext)
+    TreeConverter(ModuleContext::Ptr moduleContext):
+        _moduleContext(std::move(moduleContext))
     {
         _stringTable = StringTable::create();
     }
@@ -743,9 +743,9 @@ public:
 
 
 
-AstBuilder::AstBuilder(const AntlrContext *antlrContext, const ModuleContext::Ptr moduleContext):
+AstBuilder::AstBuilder(const AntlrContext *antlrContext, ModuleContext::Ptr moduleContext):
     _antlrContext(antlrContext),
-    _moduleContext(moduleContext)
+    _moduleContext(std::move(moduleContext))
 {
 
 }
@@ -770,7 +770,7 @@ Ast::Ptr AstBuilder::buildAst()
         Throw(SyntaxErrorException, errorStr.c_str());
     }
 
-    internal::TreeConverter converter(_moduleContext);
+    internal::TreeConverter converter(std::move(_moduleContext));
     Ast::Ptr ast = converter.convertTree(_antlrContext);
     return std::move(ast);
 }

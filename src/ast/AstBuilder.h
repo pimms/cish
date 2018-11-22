@@ -26,7 +26,7 @@ public:
 
 private:
     const AntlrContext *_antlrContext;
-    const module::ModuleContext::Ptr _moduleContext;
+    module::ModuleContext::Ptr _moduleContext;
 };
 
 

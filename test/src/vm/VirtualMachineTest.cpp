@@ -113,3 +113,43 @@ TEST(VirtualMachineTest, gettingExitCodeThrowsIfVmIsRunning)
     ASSERT_ANY_THROW(vm->getExitCode());
 }
 
+TEST(VirtualMachineTest, startPostSynchronousThrows)
+{
+    VmPtr vm = createVm(
+        "int main() { int var = 10; return var; }");
+
+    vm->startSync();
+    while (vm->isRunning())
+        vm->executeNextStatement();
+    ASSERT_EQ(10, vm->getExitCode());
+
+    ASSERT_THROW(vm->startSync(), VmException);
+    ASSERT_THROW(vm->executeBlocking(), VmException);
+}
+
+TEST(VirtualMachineTest, startPostTerminationThrows)
+{
+    VmPtr vm = createVm(
+        "int main() { int var = 10; return var; }");
+
+    vm->startSync();
+    vm->executeNextStatement();
+    vm->executeNextStatement();
+    vm->terminate();
+
+    ASSERT_THROW(vm->startSync(), VmException);
+    ASSERT_THROW(vm->executeBlocking(), VmException);
+}
+
+TEST(VirtualMachineTest, startPostBlockingThrows)
+{
+    VmPtr vm = createVm(
+        "int main() { int var = 10; return var; }");
+
+    vm->executeBlocking();
+    ASSERT_EQ(10, vm->getExitCode());
+
+    ASSERT_THROW(vm->startSync(), VmException);
+    ASSERT_THROW(vm->executeBlocking(), VmException);
+}
+

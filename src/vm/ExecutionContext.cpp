@@ -146,7 +146,6 @@ Memory* ExecutionContext::getMemory() const
 void ExecutionContext::yieldOnStatement(const ast::Statement *statement)
 {
     // No body! This method must be overriden to serve any purpose.
-    fprintf(stderr, "WARNING! yieldOnStatement called on ExecutionContext");
 }
 
 const Callable::Ptr ExecutionContext::getFunctionDefinition(const std::string &funcName) const
