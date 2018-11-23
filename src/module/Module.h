@@ -17,6 +17,8 @@ class Module
 public:
     typedef std::shared_ptr<Module> Ptr;
 
+    static Ptr create(const std::string &name);
+
     Module(const std::string &name);
     ~Module();
 

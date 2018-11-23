@@ -7,6 +7,11 @@ namespace module
 {
 
 
+Module::Ptr Module::create(const std::string &name)
+{
+    return std::make_shared<Module>(name);
+}
+
 Module::Module(const std::string &name):
     _name(name)
 {

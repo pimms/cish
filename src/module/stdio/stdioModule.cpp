@@ -17,7 +17,7 @@ namespace stdio
 
 Module::Ptr buildModule()
 {
-    Module::Ptr module = Module::Ptr(new Module("stdio.h"));
+    Module::Ptr module = Module::create("stdio.h");
     module->addFunction(Function::Ptr(new impl::Puts()));
     module->addFunction(Function::Ptr(new impl::Printf()));
     return module;

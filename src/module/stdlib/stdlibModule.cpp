@@ -18,7 +18,7 @@ Module::Ptr buildModule()
 {
     MallocContext::Ptr mallocContext = MallocContext::Ptr(new MallocContext());
 
-    Module::Ptr module = Module::Ptr(new Module("stdlib.h"));
+    Module::Ptr module = Module::create("stdlib.h");
     module->addFunction(Function::Ptr(new impl::Atof()));
     module->addFunction(Function::Ptr(new impl::Atoi()));
     module->addFunction(Function::Ptr(new impl::Rand()));
