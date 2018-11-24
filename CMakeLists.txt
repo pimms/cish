@@ -46,10 +46,8 @@ foreach(source IN LISTS CISH_HDRS)
 endforeach()
 
 
-
-
 # -- Find ANTLR4 runtime -- #
-find_library(ANTLR_LIBRARY NAMES "antlr4-runtime")
+find_library(ANTLR_LIBRARY NAMES "libantlr4-runtime.a" "antlr4-runtime")
 if ("${ANTLR_LIBRARY}" STREQUAL "ANTLR_LIBRARY-NOTFOUND")
     message(SEND_ERROR "Failed to find antlr4-runtime library")
 endif()
