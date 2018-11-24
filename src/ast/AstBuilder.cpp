@@ -2,6 +2,7 @@
 
 #include "antlr/CMBaseVisitor.h"
 #include "AntlrContext.h"
+#include "ParseContext.h"
 
 #include "AstNodes.h"
 #include "Lvalue.h"
@@ -150,9 +151,9 @@ public:
         _stringTable = StringTable::create();
     }
 
-    Ast::Ptr convertTree(const AntlrContext *antlrContext)
+    Ast::Ptr convertTree(const ParseContext *parseContext)
     {
-        antlr4::tree::ParseTree *tree = antlrContext->getParseTree();
+        antlr4::tree::ParseTree *tree = parseContext->getParseTree();
         Ast::Ptr ast = visit(tree).as<Ast::Ptr>();
 
         verifyAllFunctionsDefined(ast.get());
@@ -743,18 +744,17 @@ public:
 
 
 
-AstBuilder::AstBuilder(const AntlrContext *antlrContext, ModuleContext::Ptr moduleContext):
-    _antlrContext(antlrContext),
+AstBuilder::AstBuilder(const ParseContext::Ptr parseContext, ModuleContext::Ptr moduleContext):
+    _parseContext(parseContext),
     _moduleContext(std::move(moduleContext))
 {
-
 }
 
 Ast::Ptr AstBuilder::buildAst()
 {
     // TODO: Propagate these errors out of here in a more reasonable way
-    if (_antlrContext->hasErrors()) {
-        std::vector<ast::CompilationError> errors = _antlrContext->getErrors();
+    if (_parseContext->hasErrors()) {
+        std::vector<ast::CompilationError> errors = _parseContext->getErrors();
 
         std::stringstream ss;
         ss << "There are syntax errors:";
@@ -771,7 +771,7 @@ Ast::Ptr AstBuilder::buildAst()
     }
 
     internal::TreeConverter converter(std::move(_moduleContext));
-    Ast::Ptr ast = converter.convertTree(_antlrContext);
+    Ast::Ptr ast = converter.convertTree(_parseContext.get());
     return std::move(ast);
 }
 

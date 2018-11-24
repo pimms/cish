@@ -14,9 +14,9 @@ Ast::Ptr createAst(const std::string &source)
 Ast::Ptr createAst(ModuleContext::Ptr moduleContext, const std::string &source)
 {
 
-    AntlrContext antlrContext(source);
+    ParseContext::Ptr parseContext = ParseContext::parseSource(source);
 
-    AstBuilder builder(&antlrContext, std::move(moduleContext));
+    AstBuilder builder(parseContext, std::move(moduleContext));
     Ast::Ptr ast = builder.buildAst();
     return ast;
 }

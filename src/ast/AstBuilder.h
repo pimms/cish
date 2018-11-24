@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Ast.h"
+#include "ParseContext.h"
+
 #include "../module/ModuleContext.h"
 
 
@@ -19,13 +21,13 @@ class AntlrContext;
 class AstBuilder
 {
 public:
-    AstBuilder(const AntlrContext *antlrContext,
+    AstBuilder(const ParseContext::Ptr antlrContext,
                const module::ModuleContext::Ptr moduleContext);
 
     Ast::Ptr buildAst();
 
 private:
-    const AntlrContext *_antlrContext;
+    const ParseContext::Ptr _parseContext;
     module::ModuleContext::Ptr _moduleContext;
 };
 
