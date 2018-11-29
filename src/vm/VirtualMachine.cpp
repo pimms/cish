@@ -20,6 +20,7 @@ VirtualMachine::VirtualMachine(const VmOptions &opts, Ast::Ptr ast):
 
 VirtualMachine::~VirtualMachine()
 {
+    _executor->terminate();
     delete _executor;
     delete _memory;
 }

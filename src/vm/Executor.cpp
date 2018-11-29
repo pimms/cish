@@ -21,7 +21,9 @@ Executor::Executor(Memory *memory, ast::Ast::Ptr ast):
 
 Executor::~Executor()
 {
-
+    if (isRunning()) {
+        Throw(Exception, "terminate() must be manually called before deleting Executor");
+    }
 }
 
 void Executor::yieldOnStatement(const ast::Statement *statement)

@@ -174,19 +174,22 @@ void ExecutionThread::start(bool waitForCompletion)
     std::atomic_bool ready = false;
     std::atomic_bool done = false;
 
-    _thread = std::thread([&]() {
+    _thread = std::thread([waitForCompletion,this,&var,&mutex,&ready,&done]() {
         {
             std::lock_guard<std::mutex> lock(mutex);
-            ready = true;
-            var.notify_one();
         }
+
+        ready = true;
+        var.notify_one();
 
         DBGLOG("[W] thread started\n");
         backgroundMain();
 
         if (waitForCompletion) {
-            DBGLOG("[W] signalling waiting org-thread\n");
-            std::lock_guard<std::mutex> lock(mutex);
+            {
+                DBGLOG("[W] signalling waiting org-thread\n");
+                std::lock_guard<std::mutex> lock(mutex);
+            }
             done = true;
             var.notify_one();
         }
