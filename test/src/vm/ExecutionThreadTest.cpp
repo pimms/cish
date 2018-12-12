@@ -17,6 +17,11 @@ public:
         _counter = 0;
     }
 
+    ~CounterThread()
+    {
+        terminate();
+    }
+
     int getCount() const
     {
         return _counter;
@@ -77,11 +82,9 @@ TEST(ExecutionThreadTest, executionThreadWaitsForResume)
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
         ASSERT_EQ(i, thread.getCount());
     }
-
-    thread.terminate();
 }
 
-TEST(ExecutionThread, terminationWorksWithRunningFree)
+TEST(ExecutionThreadTest, terminationWorksWithRunningFree)
 {
     CounterThread thread;
     thread.setWaitForResume(false);
@@ -91,11 +94,9 @@ TEST(ExecutionThread, terminationWorksWithRunningFree)
     // By sleeping for 10ms we should have looped at least five times
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
     ASSERT_LT(5, thread.getCount());
-
-    thread.terminate();
 }
 
-TEST(ExecutionThread, resumeDoesNotBlock)
+TEST(ExecutionThreadTest, resumeDoesNotBlock)
 {
     CounterThread thread([](){ std::this_thread::sleep_for(std::chrono::milliseconds(100)); });
     thread.setWaitForResume(true);
@@ -106,7 +107,7 @@ TEST(ExecutionThread, resumeDoesNotBlock)
 }
 
 
-TEST(ExecutionThread, cycleDoesBlock)
+TEST(ExecutionThreadTest, cycleDoesBlock)
 {
     CounterThread thread([](){ std::this_thread::sleep_for(std::chrono::milliseconds(100)); });
     thread.setWaitForResume(true);

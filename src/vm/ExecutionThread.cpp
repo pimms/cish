@@ -13,8 +13,7 @@ namespace vm
 namespace internal
 {
 
-#define ENABLE_DBGLOG
-
+// #define ENABLE_DBGLOG
 #ifdef ENABLE_DBGLOG
     #define DBGLOG(...) fprintf(stderr, __VA_ARGS__)
 #else
@@ -61,6 +60,19 @@ ExecutionThread::ExecutionThread():
 
 ExecutionThread::~ExecutionThread()
 {
+    // If the background thread is running at this point, there's
+    // a VERY potent race-condition in the virtual 'execute()' method
+    // being called after the subclass of ExecutionThread has been
+    // destroyed, meaning that we'd crash at runtime due to a pure
+    // virtual function call. FAIL FAST.
+    //
+    // Note that when I've tried to provoke this race condition, it
+    // has typically taken around 10k attempts to crash. This is still
+    // too frequent. Call terminate() from the subclass' dtor!
+    assert(!_isRunning);
+
+    // This call *should* be redundant, but just in case Jimmy compiles
+    // without asserts we should almost always be safe.
     terminate();
 
     // If the background thread crashed, we'd never call join.
@@ -182,9 +194,10 @@ void ExecutionThread::start(bool waitForCompletion)
 
     std::mutex mutex;
     std::condition_variable var;
-    std::atomic_bool started;
+    std::atomic_bool started = false;
+    std::atomic_bool done = false;
 
-    _thread = std::thread([waitForCompletion,this,&var,&started,&mutex]() {
+    _thread = std::thread([waitForCompletion,this,&var,&started,&done,&mutex]() {
         {
             std::lock_guard<std::mutex> lock(mutex);
         }
@@ -200,6 +213,7 @@ void ExecutionThread::start(bool waitForCompletion)
             {
                 DBGLOG("[W] signalling waiting org-thread\n");
                 std::lock_guard<std::mutex> lock(mutex);
+                done = true;
             }
             var.notify_one();
         }
@@ -210,13 +224,16 @@ void ExecutionThread::start(bool waitForCompletion)
     {
         std::unique_lock<std::mutex> lock(mutex);
         var.wait(lock, [&]() { return started.load(); });
+        DBGLOG("[O] background thread started\n");
     }
 
     if (waitForCompletion) {
         DBGLOG("[O] waiting for worker to complete\n");
         std::unique_lock<std::mutex> lock(mutex);
-        var.wait(lock, [&]() { return !_isRunning.load(); });
+        var.wait(lock, [&]() { return done.load(); });
         DBGLOG("[O] worker completed (isrunning=%d)\n", _isRunning.load());
+        _thread.join();
+        DBGLOG("[O] joined\n");
     }
 }
 
