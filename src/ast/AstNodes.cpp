@@ -11,7 +11,7 @@ namespace ast
 
 void Statement::execute(vm::ExecutionContext *context) const
 {
-    context->yieldOnStatement(this);
+    context->onStatementEnter(this);
 }
 
 

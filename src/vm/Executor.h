@@ -19,7 +19,7 @@ public:
     ~Executor();
 
     // From ExecutionContext
-    virtual void yieldOnStatement(const ast::Statement *statement) override;
+    virtual void onStatementEnter(const ast::Statement *statement) override;
     virtual const Callable::Ptr getFunctionDefinition(const std::string &funcName) const override;
 
     ast::ExpressionValue getExitStatus() const;

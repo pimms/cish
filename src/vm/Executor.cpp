@@ -26,8 +26,9 @@ Executor::~Executor()
     }
 }
 
-void Executor::yieldOnStatement(const ast::Statement *statement)
+void Executor::onStatementEnter(const ast::Statement *statement)
 {
+    ExecutionContext::onStatementEnter(statement);
     await();
 }
 

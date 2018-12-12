@@ -59,11 +59,12 @@ public:
     void returnCurrentFunction(ast::ExpressionValue retval);
     bool currentFunctionHasReturned() const;
     ast::ExpressionValue getCurrentFunctionReturnValue() const;
+    const ast::Statement* getCurrentStatement() const;
 
     Scope* getScope() const;
     Memory* getMemory() const;
 
-    virtual void yieldOnStatement(const ast::Statement *statement);
+    virtual void onStatementEnter(const ast::Statement *statement);
     virtual const Callable::Ptr getFunctionDefinition(const std::string &funcName) const;
 
     std::ostream* getStdout();
@@ -78,6 +79,8 @@ private:
 
     Scope *_globalScope;
     std::vector<FunctionFrame> _frameStack;
+
+    const ast::Statement *_currentStatement;
 
     Memory *_memory;
     std::map<ast::StringId, Allocation::Ptr> _stringMap;

@@ -13,6 +13,7 @@ const int MAX_STACK_FRAMES = 100;
 
 
 ExecutionContext::ExecutionContext(Memory *memory):
+    _currentStatement(nullptr),
     _memory(memory),
     _stdout(&std::cout)
 {
@@ -130,6 +131,11 @@ ast::ExpressionValue ExecutionContext::getCurrentFunctionReturnValue() const
     return _frameStack.back().returnValue;
 }
 
+const ast::Statement* ExecutionContext::getCurrentStatement() const
+{
+    return _currentStatement;
+}
+
 Scope* ExecutionContext::getScope() const
 {
     if (_frameStack.empty())
@@ -143,9 +149,9 @@ Memory* ExecutionContext::getMemory() const
     return _memory;
 }
 
-void ExecutionContext::yieldOnStatement(const ast::Statement *statement)
+void ExecutionContext::onStatementEnter(const ast::Statement *statement)
 {
-    // No body! This method must be overriden to serve any purpose.
+    _currentStatement = statement;
 }
 
 const Callable::Ptr ExecutionContext::getFunctionDefinition(const std::string &funcName) const
