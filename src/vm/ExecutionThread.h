@@ -36,7 +36,7 @@ class ExecutionThread
 {
 public:
     ExecutionThread();
-    ~ExecutionThread();
+    virtual ~ExecutionThread();
 
     void setWaitForResume(bool waitForResume);
 

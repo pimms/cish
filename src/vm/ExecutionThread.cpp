@@ -13,9 +13,13 @@ namespace vm
 namespace internal
 {
 
+#define ENABLE_DBGLOG
 
-// #define DBGLOG(...) fprintf(stderr, __VA_ARGS__)
-#define DBGLOG(...) do{}while(0);
+#ifdef ENABLE_DBGLOG
+    #define DBGLOG(...) fprintf(stderr, __VA_ARGS__)
+#else
+    #define DBGLOG(...) do{}while(0);
+#endif
 
 
 Signal::Signal()
@@ -102,9 +106,16 @@ void ExecutionThread::cycle()
         });
 
         _workerToOrg.wait([this]() {
-            return _lastRequestHandled == _nextRequest;
+            return _lastRequestHandled == _nextRequest || !_isRunning;
         });
-        DBGLOG("[O] cycle/received process ack (%d)\n", (int)_nextRequest.load());
+
+#ifdef ENABLE_DBGLOG
+        if (_lastRequestHandled == _nextRequest) {
+            DBGLOG("[O] cycle/received process ack (%d)\n", (int)_nextRequest.load());
+        } else {
+            DBGLOG("[O] thread died instead of handling request\n");
+        }
+#endif
     }
 }
 
@@ -171,15 +182,15 @@ void ExecutionThread::start(bool waitForCompletion)
 
     std::mutex mutex;
     std::condition_variable var;
-    std::atomic_bool ready = false;
-    std::atomic_bool done = false;
+    std::atomic_bool started;
 
-    _thread = std::thread([waitForCompletion,this,&var,&mutex,&ready,&done]() {
+    _thread = std::thread([waitForCompletion,this,&var,&started,&mutex]() {
         {
             std::lock_guard<std::mutex> lock(mutex);
         }
 
-        ready = true;
+        _isRunning = true;
+        started = true;
         var.notify_one();
 
         DBGLOG("[W] thread started\n");
@@ -190,21 +201,21 @@ void ExecutionThread::start(bool waitForCompletion)
                 DBGLOG("[W] signalling waiting org-thread\n");
                 std::lock_guard<std::mutex> lock(mutex);
             }
-            done = true;
             var.notify_one();
         }
+
+        DBGLOG("[W] -- thread terminated --\n");
     });
 
     {
         std::unique_lock<std::mutex> lock(mutex);
-        var.wait(lock, [&]() { return ready.load(); });
-        _isRunning = true;
+        var.wait(lock, [&]() { return started.load(); });
     }
 
     if (waitForCompletion) {
         DBGLOG("[O] waiting for worker to complete\n");
         std::unique_lock<std::mutex> lock(mutex);
-        var.wait(lock, [&]() { return done.load(); });
+        var.wait(lock, [&]() { return !_isRunning.load(); });
         DBGLOG("[O] worker completed (isrunning=%d)\n", _isRunning.load());
     }
 }
@@ -244,11 +255,11 @@ void ExecutionThread::backgroundMain()
 
     // If we are being called in a synchronous manner, the worker thread
     // will never send the final ack, so we need to do it manually.
+    _isRunning = false;
     _workerToOrg.signal([this]() {
+        DBGLOG("[W] signalling last request received\n");
         _lastRequestHandled.store(_lastRequestReceived);
     });
-
-    _isRunning = false;
 }
 
 
