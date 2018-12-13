@@ -23,13 +23,16 @@ public:
     ~Module();
 
     void addFunction(Function::Ptr function);
+    void addDependency(const std::string &dep);
 
     std::string getName() const;
     std::vector<Function::Ptr> getFunctions() const;
+    std::vector<std::string> getDependencies() const;
 
 private:
     std::string _name;
     std::vector<Function::Ptr> _functions;
+    std::vector<std::string> _dependencies;
 };
 
 

@@ -53,6 +53,7 @@ class TreeConverter: public CMBaseVisitor
     StringTable::Ptr _stringTable;
     std::vector<FuncDeclaration> _funcDecls;
     ModuleContext::Ptr _moduleContext;
+    std::set<std::string> _includedModules;
 
     Result createResult(AstNode *node)
     {
@@ -144,6 +145,31 @@ class TreeConverter: public CMBaseVisitor
         }
     }
 
+    void includeModule(Ast *ast, std::string moduleName)
+    {
+        if (_includedModules.count(moduleName) == 1) {
+            return;
+        }
+
+        const module::Module::Ptr module = _moduleContext->getModule(moduleName);
+        if (!module) {
+            Throw(ModuleNotFoundException, "Could not include module '%s'", moduleName.c_str());
+        }
+
+        auto deps = module->getDependencies();
+        for (const auto depName: deps) {
+            includeModule(ast, depName);
+        }
+
+        auto functions = module->getFunctions();
+        for (const auto &func: functions) {
+            _declContext.declareFunction(*func->getDeclaration());
+        }
+
+        ast->addModule(module);
+        _includedModules.insert(moduleName);
+    }
+
 public:
     TreeConverter(ModuleContext::Ptr moduleContext):
         _moduleContext(std::move(moduleContext))
@@ -217,12 +243,8 @@ public:
                 Statement::Ptr funcDeclStmt = castToStatement(res[0]);
                 ast->addRootStatement(funcDeclStmt);
             } else if (systemInclude != nullptr) {
-                Module::Ptr module = visitSystemInclude(systemInclude).as<Module::Ptr>();
-                auto functions = module->getFunctions();
-                for (const auto &func: functions) {
-                    _declContext.declareFunction(*func->getDeclaration());
-                }
-                ast->addModule(module);
+                std::string moduleName = visitSystemInclude(systemInclude).as<std::string>();
+                includeModule(ast.get(), moduleName);
             }
         }
 
@@ -239,13 +261,7 @@ public:
     {
         std::string moduleName = ctx->sysModuleName()->getText();
         moduleName = moduleName.substr(1, moduleName.length() - 2);
-
-        const module::Module::Ptr module = _moduleContext->getModule(moduleName);
-        if (!module) {
-            Throw(ModuleNotFoundException, "Could not include module '%s'", moduleName.c_str());
-        }
-
-        return module;
+        return moduleName;
     }
 
     virtual antlrcpp::Any visitExpression(CMParser::ExpressionContext *ctx) override
