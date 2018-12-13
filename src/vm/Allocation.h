@@ -43,6 +43,8 @@ public:
     template<typename T>
     T read(uint32_t offset = 0) const;
 
+    const uint8_t* readBuf(uint32_t length, uint32_t offset = 0) const;
+
     template<typename T>
     void write(T value, uint32_t offset = 0);
 
@@ -67,7 +69,6 @@ T MemoryView::read(uint32_t offset) const
 template<typename T>
 void MemoryView::write(T value, uint32_t offset)
 {
-    const size_t size = sizeof(T);
     const uint8_t *rawPtr = (const uint8_t*)&value;
     _memoryAccess->write(rawPtr, _addr + offset, sizeof(T));
 }
