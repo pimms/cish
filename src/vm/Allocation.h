@@ -42,10 +42,11 @@ public:
 
     template<typename T>
     T read(uint32_t offset = 0) const;
+
     template<typename T>
     void write(T value, uint32_t offset = 0);
 
-    void copy(const void *buffer, uint32_t len, uint32_t offset = 0);
+    void writeBuf(const void *buffer, uint32_t len, uint32_t offset = 0);
 
 protected:
     MemoryAccess *_memoryAccess;

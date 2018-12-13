@@ -25,7 +25,7 @@ VirtualMachine::~VirtualMachine()
     delete _memory;
 }
 
-const ExecutionContext* VirtualMachine::getExecutionContext() const
+ExecutionContext* VirtualMachine::getExecutionContext() const
 {
     return _executor;
 }

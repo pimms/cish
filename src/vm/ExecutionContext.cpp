@@ -37,7 +37,7 @@ void ExecutionContext::copyStringTable(const ast::StringTable *stringTable)
     for (const auto& pair: map) {
         const uint32_t allocLen = pair.second.length() + 1;
         Allocation::Ptr alloc = _memory->allocate(allocLen);
-        alloc->copy(pair.second.data(), allocLen);
+        alloc->writeBuf(pair.second.data(), allocLen);
         _stringMap[pair.first] = std::move(alloc);
     }
 }

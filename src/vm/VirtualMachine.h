@@ -36,7 +36,7 @@ public:
     VirtualMachine(const VmOptions &opts, ast::Ast::Ptr ast);
     ~VirtualMachine();
 
-    const ExecutionContext* getExecutionContext() const;
+    ExecutionContext* getExecutionContext() const;
 
     /**
      * Blocks until the underlying program has terminated.
