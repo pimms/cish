@@ -14,6 +14,7 @@ namespace ast
 ExpressionValue::ExpressionValue(const std::string& rawValue)
 {
     const std::regex exprInt("[0-9]+");
+    const std::regex exprHex("0x[0-9a-fA-F]+");
     const std::regex exprFloat("(\\.[0-9]+|[0-9]+(\\.[0-9]+)?)[fF]?");
     const std::regex exprChar("'(\\\\.|[^'\\\\])'");
 
@@ -31,6 +32,9 @@ ExpressionValue::ExpressionValue(const std::string& rawValue)
     } else if (std::regex_match(rawValue, exprInt)) {
         _type = TypeDecl(TypeDecl::INT);
         _value.ival = std::atoi(rawValue.c_str());
+    } else if (std::regex_match(rawValue, exprHex)) {
+        _type = TypeDecl(TypeDecl::INT);
+        _value.ival = std::strtol(rawValue.c_str()+2, nullptr, 16);
     } else if (std::regex_match(rawValue, exprFloat)) {
         _type = TypeDecl(TypeDecl::FLOAT);
         _value.fval = std::atof(rawValue.c_str());

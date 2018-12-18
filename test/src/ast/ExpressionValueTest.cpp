@@ -30,6 +30,13 @@ TEST(ExpressionValueTest, IntegerIsCorrectlyIdentifiedFromString)
     ASSERT_EQ(TypeDecl::INT, ExpressionValue("101").getIntrinsicType().getType());
 }
 
+TEST(ExpressionValueTest, HexadecimalIntegerIsCorrectlyIdentifiedFromString)
+{
+    ASSERT_EQ(TypeDecl::INT, ExpressionValue("0x10c").getIntrinsicType().getType());
+    ASSERT_EQ(TypeDecl::INT, ExpressionValue("0x0").getIntrinsicType().getType());
+    ASSERT_EQ(TypeDecl::INT, ExpressionValue("0xffFFffFF").getIntrinsicType().getType());
+}
+
 TEST(ExpressionValueTest, BoolIsCorrectlyIdentifiedFromString)
 {
     ASSERT_EQ(TypeDecl::BOOL, ExpressionValue("true").getIntrinsicType().getType());
@@ -88,6 +95,17 @@ TEST(ExpressionValueTest, IntrinsicInt_GetAsIntTypes)
     ASSERT_EQ(false, ExpressionValue("0").get<bool>());
 }
 
+TEST(ExpressionValueTest, IntrinsicHex_GetAsIntTypes)
+{
+    ASSERT_EQ(-57, ExpressionValue("0xC7").get<int8_t>());
+    ASSERT_EQ(199, ExpressionValue("0xc7").get<uint8_t>());
+    ASSERT_EQ(199, ExpressionValue("0xc7").get<int16_t>());
+    ASSERT_EQ(199, ExpressionValue("0xc7").get<int32_t>());
+
+    ASSERT_EQ(true, ExpressionValue("0xC7").get<bool>());
+    ASSERT_EQ(false, ExpressionValue("0x0000").get<bool>());
+}
+
 
 
 TEST(ExpressionValueTest, IntrinsicInt_GetAsFloatTypes)
@@ -122,7 +140,8 @@ TEST(ExpressionValueTest, InvalidInputThrows)
     ASSERT_THROW(ExpressionValue("199L"), ExpressionTypeException);
     ASSERT_THROW(ExpressionValue("199l"), ExpressionTypeException);
     ASSERT_THROW(ExpressionValue("199U"), ExpressionTypeException);
-    ASSERT_THROW(ExpressionValue("0x10c"), ExpressionTypeException);
+    ASSERT_THROW(ExpressionValue("0x"), ExpressionTypeException);
+    ASSERT_THROW(ExpressionValue("0X0"), ExpressionTypeException);
 
     // Not sure how to handle
     ASSERT_THROW(ExpressionValue("\"heisann\""), ExpressionTypeException);

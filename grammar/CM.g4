@@ -179,6 +179,7 @@ Const    : 'const';
 
 Integer
     : [0-9]+
+    | '0x'[a-fA-F0-9]+
     ;
 
 Floating
