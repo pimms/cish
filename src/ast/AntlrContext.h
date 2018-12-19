@@ -32,7 +32,7 @@ public:
     std::vector<CompilationError> getErrors() const override;
     antlr4::tree::ParseTree* getParseTree() const override;
 
-    uint32_t getLineNumber(uint32_t charIndex) override;
+    uint32_t getLineNumber(uint32_t charIndex) const override;
 
 private:
     antlr4::ANTLRInputStream *_inputStream;

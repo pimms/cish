@@ -36,10 +36,8 @@ namespace internal
 class TreeConverter: public CMBaseVisitor
 {
     typedef std::vector<AstNode::Ptr> Result;
-
 public:
     TreeConverter(ModuleContext::Ptr moduleContext);
-
     Ast::Ptr convertTree(const ParseContext *parseContext);
 
     virtual antlrcpp::Any visitChildren(antlr4::tree::ParseTree *node) override;
@@ -91,10 +89,11 @@ private:
     std::vector<FuncDeclaration> _funcDecls;
     ModuleContext::Ptr _moduleContext;
     std::set<std::string> _includedModules;
+    const ParseContext *_parseContext;
+
 
     Result createResult(AstNode *node);
     Result createResult(AstNode::Ptr node);
-
     Result buildBinaryExpression(BinaryExpression::Operator op, antlr4::tree::ParseTree *tree);
 
     Expression::Ptr castToExpression(AstNode::Ptr node);
@@ -110,6 +109,9 @@ private:
 
     void verifyAllFunctionsDefined(Ast *ast);
     void includeModule(Ast *ast, std::string moduleName);
+
+    void setSourcePosition(AstNode *astNode, antlr4::ParserRuleContext *ctx);
+    SourcePosition resolveSourcePosition(uint32_t startChar, uint32_t endChar);
 };
 
 

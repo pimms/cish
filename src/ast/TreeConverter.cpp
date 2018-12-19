@@ -37,7 +37,8 @@ TreeConverter::TreeConverter(ModuleContext::Ptr moduleContext):
 
 Ast::Ptr TreeConverter::convertTree(const ParseContext *parseContext)
 {
-    antlr4::tree::ParseTree *tree = parseContext->getParseTree();
+    _parseContext = parseContext;
+    antlr4::tree::ParseTree *tree = _parseContext->getParseTree();
     Ast::Ptr ast = visit(tree).as<Ast::Ptr>();
 
     verifyAllFunctionsDefined(ast.get());
@@ -726,6 +727,24 @@ void TreeConverter::includeModule(Ast *ast, std::string moduleName)
 
     ast->addModule(module);
     _includedModules.insert(moduleName);
+}
+
+void TreeConverter::setSourcePosition(AstNode *astNode, antlr4::ParserRuleContext *ctx)
+{
+    const uint32_t start = ctx->getSourceInterval().a;
+    const uint32_t end = ctx->getSourceInterval().b;
+
+    SourcePosition pos = resolveSourcePosition(start, end);
+    astNode->setSourcePosition(pos);
+}
+
+SourcePosition TreeConverter::resolveSourcePosition(uint32_t startChar, uint32_t endChar)
+{
+    SourcePosition pos;
+    pos.startLine = _parseContext->getLineNumber(startChar);
+    pos.globStartChar = startChar;
+    pos.globEndChar = endChar;
+    return pos;
 }
 
 

@@ -62,7 +62,7 @@ antlr4::tree::ParseTree* AntlrContext::getParseTree() const
     return _tree;
 }
 
-uint32_t AntlrContext::getLineNumber(uint32_t charIndex)
+uint32_t AntlrContext::getLineNumber(uint32_t charIndex) const
 {
     return _lineNumberResolver.resolveCharIndex(charIndex);
 }

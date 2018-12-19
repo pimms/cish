@@ -23,11 +23,26 @@ DECLARE_EXCEPTION(InvalidStatementException);
 DECLARE_EXCEPTION(InvalidOperationException);
 
 
+struct SourcePosition
+{
+    SourcePosition() { startLine = globStartChar = globEndChar = 0; }
+
+    int startLine;
+    int globStartChar;
+    int globEndChar;
+};
+
 class AstNode {
 public:
     typedef std::shared_ptr<AstNode> Ptr;
 
     virtual ~AstNode() {};
+
+    void setSourcePosition(const SourcePosition &pos);
+    SourcePosition getSourcePosition() const;
+
+private:
+    SourcePosition _sourcePos;
 };
 
 

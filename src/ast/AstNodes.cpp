@@ -9,6 +9,18 @@ namespace ast
 {
 
 
+void AstNode::setSourcePosition(const SourcePosition &pos)
+{
+    _sourcePos = pos;
+}
+
+SourcePosition AstNode::getSourcePosition() const
+{
+    return _sourcePos;
+}
+
+
+
 void Statement::execute(vm::ExecutionContext *context) const
 {
     context->onStatementEnter(this);
