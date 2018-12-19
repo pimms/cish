@@ -29,6 +29,7 @@ expr
     | '!' expr                                  # NEGATION_EXPR
     | expr op=( '*' | '/' | '%' ) expr          # MULT_EXPR
     | expr op=( '+' | '-' ) expr                # ADD_EXPR
+    | expr op=( '<<' | '>>' ) expr              # BITSHIFT_EXPR
     | expr op=( '>=' | '<=' | '>' | '<' ) expr  # COMPARE_EXPR
     | expr op=( '==' | '!=' ) expr              # EQUALITY_EXPR
     | expr op=( '&' | '^' | '|' ) expr          # BITWISE_EXPR

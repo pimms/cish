@@ -149,6 +149,8 @@ void BinaryExpression::pointerSpecificChecks()
             case BITWISE_AND:
             case BITWISE_XOR:
             case BITWISE_OR:
+            case BITWISE_LSHIFT:
+            case BITWISE_RSHIFT:
                 Throw(InvalidOperationException,
                     "Cannot perform arithmetics with two pointers");
             default:

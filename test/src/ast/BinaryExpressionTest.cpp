@@ -291,16 +291,20 @@ static void testBitwiseOperators()
         {BinaryExpression::BITWISE_AND, std::bit_and<int32_t>() },
         {BinaryExpression::BITWISE_XOR, std::bit_xor<int32_t>() },
         {BinaryExpression::BITWISE_OR, std::bit_or<int32_t>() },
+        {BinaryExpression::BITWISE_LSHIFT, [](int32_t a, int32_t b) -> int32_t { return a << b; } },
+        {BinaryExpression::BITWISE_RSHIFT, [](int32_t a, int32_t b) -> int32_t { return a >> b; } },
     };
 
     const std::vector<std::pair<LHST,RHST>> testData = {
-        {0x0001, 0x0001},
-        {0xf003, 0x0001},
+        {0x0101, 0x0001},
+        {0x0101, 0x0001},
+        {0xf003, 0x0000},
         {0x0, 0xFFFFFFFF},
         {0x7, 0xFFFFFFFF},
     };
 
     for (auto op: operators) {
+        printf("operator: %d\n", (int)op.first);
         for (auto pair: testData) {
             int32_t expected = op.second((LHST)pair.first, (RHST)pair.second);
             testBinaryExpr<LHST,RHST,int32_t>(op.first, (LHST)pair.first, (RHST)pair.second, expected);
@@ -475,6 +479,8 @@ TEST(BinaryExpressionTest, cannotBitwiseOperateOnPointyBoys)
     ASSERT_THROW(BinaryExpression expr(BinaryExpression::BITWISE_OR, left, right), InvalidOperationException);
     ASSERT_THROW(BinaryExpression expr(BinaryExpression::BITWISE_XOR, left, right), InvalidOperationException);
     ASSERT_THROW(BinaryExpression expr(BinaryExpression::BITWISE_AND, left, right), InvalidOperationException);
+    ASSERT_THROW(BinaryExpression expr(BinaryExpression::BITWISE_LSHIFT, left, right), InvalidOperationException);
+    ASSERT_THROW(BinaryExpression expr(BinaryExpression::BITWISE_RSHIFT, left, right), InvalidOperationException);
 }
 
 TEST(BinaryExpressionTest, cannotBitwiseOperateOnFloatyBoys)
@@ -484,4 +490,6 @@ TEST(BinaryExpressionTest, cannotBitwiseOperateOnFloatyBoys)
     ASSERT_THROW(BinaryExpression expr(BinaryExpression::BITWISE_OR, left, right), InvalidOperationException);
     ASSERT_THROW(BinaryExpression expr(BinaryExpression::BITWISE_XOR, left, right), InvalidOperationException);
     ASSERT_THROW(BinaryExpression expr(BinaryExpression::BITWISE_AND, left, right), InvalidOperationException);
+    ASSERT_THROW(BinaryExpression expr(BinaryExpression::BITWISE_LSHIFT, left, right), InvalidOperationException);
+    ASSERT_THROW(BinaryExpression expr(BinaryExpression::BITWISE_RSHIFT, left, right), InvalidOperationException);
 }

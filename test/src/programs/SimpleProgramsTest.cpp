@@ -581,6 +581,38 @@ TEST(SimpleProgramsTest, bitwiseOr)
     assertExitCode(source, 0xFFFFFFFF);
 }
 
+TEST(SimpleProgramsTest, leftshift)
+{
+    assertExitCode(
+        "int main() {"
+        "   return 0x8F << 1;"
+        "}", 0x11E);
+    assertExitCode(
+        "int main() {"
+        "   return 0x44 << 2;"
+        "}", 0x110);
+    assertExitCode(
+        "int main() {"
+        "   return 0x33 << 7;"
+        "}", 0x1980);
+}
+
+TEST(SimpleProgramsTest, rightShift)
+{
+    assertExitCode(
+        "int main() {"
+        "   return 0x8F >> 1;"
+        "}", 0x47);
+    assertExitCode(
+        "int main() {"
+        "   return 0x8 >> 1;"
+        "}", 0x4);
+    assertExitCode(
+        "int main() {"
+        "   return 0x1 >> 1;"
+        "}", 0x0);
+}
+
 
 /* COMPILATION FAILURES */
 

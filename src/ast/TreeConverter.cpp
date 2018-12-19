@@ -222,6 +222,20 @@ antlrcpp::Any TreeConverter::visitEQUALITY_EXPR(CMParser::EQUALITY_EXPRContext *
     return buildBinaryExpression(oper, ctx);
 }
 
+antlrcpp::Any TreeConverter::visitBITSHIFT_EXPR(CMParser::BITSHIFT_EXPRContext *ctx)
+{
+    BinaryExpression::Operator oper;
+    if (ctx->op->getText() == "<<") {
+        oper = BinaryExpression::BITWISE_LSHIFT;
+    } else if (ctx->op->getText() == ">>") {
+        oper = BinaryExpression::BITWISE_RSHIFT;
+    } else {
+        Throw(AstConversionException, "Unable to handle operator '%s' as BITSHIFT_EXPR", ctx->op->getText().c_str());
+    }
+
+    return buildBinaryExpression(oper, ctx);
+}
+
 antlrcpp::Any TreeConverter::visitBITWISE_EXPR(CMParser::BITWISE_EXPRContext *ctx)
 {
     BinaryExpression::Operator oper;

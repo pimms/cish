@@ -7,6 +7,22 @@ namespace cish
 {
 namespace ast
 {
+namespace internal
+{
+
+template<typename T>
+T lshift(T a, T n)
+{
+    return a << n;
+}
+
+template<typename T>
+T rshift(T a, T n)
+{
+    return a >> n;
+}
+
+}
 
 
 class BinaryExpression: public Expression
@@ -24,7 +40,9 @@ public:
         BITWISE_AND         = 90,
         BITWISE_XOR         = 91,
         BITWISE_OR          = 92,
-        __BITWISE_END       = 92,
+        BITWISE_LSHIFT      = 93,
+        BITWISE_RSHIFT      = 94,
+        __BITWISE_END       = 94,
 
         /* ALL OPERATORS BELOW THIS LINE MUST EVALUATE TO BOOL */
         __BOOLEAN_BOUNDARY  = 100,
@@ -91,6 +109,8 @@ std::function<T(T,T)> BinaryExpression::getFunction() const
         case BITWISE_AND:   return std::bit_and<int32_t>();
         case BITWISE_XOR:   return std::bit_xor<int32_t>();
         case BITWISE_OR:    return std::bit_or<int32_t>();
+        case BITWISE_LSHIFT:return internal::lshift<int32_t>;
+        case BITWISE_RSHIFT:return internal::rshift<int32_t>;
         case GT:            return std::greater<T>();
         case LT:            return std::less<T>();
         case GTE:           return std::greater_equal<T>();
