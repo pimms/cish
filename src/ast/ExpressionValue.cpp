@@ -13,9 +13,9 @@ namespace ast
 
 ExpressionValue::ExpressionValue(const std::string& rawValue)
 {
-    const std::regex exprInt("[0-9]+");
-    const std::regex exprHex("0x[0-9a-fA-F]+");
-    const std::regex exprFloat("(\\.[0-9]+|[0-9]+(\\.[0-9]+)?)[fF]?");
+    const std::regex exprInt("[-]?[0-9]+");
+    const std::regex exprHex("0[xX][0-9a-fA-F]+");
+    const std::regex exprFloat("[-]?(\\.[0-9]+|[0-9]+(\\.[0-9]*)?)[fF]?");
     const std::regex exprChar("'(\\\\.|[^'\\\\])'");
 
     memset(&_value, 0, sizeof(_value));

@@ -21,6 +21,10 @@ TEST(ExpressionValueTest, FloatIsCorrectlyIdentifiedFromString)
     ASSERT_EQ(TypeDecl::FLOAT, ExpressionValue(".5500").getIntrinsicType().getType());
     ASSERT_EQ(TypeDecl::FLOAT, ExpressionValue(".5500f").getIntrinsicType().getType());
     ASSERT_EQ(TypeDecl::FLOAT, ExpressionValue(".5500F").getIntrinsicType().getType());
+
+    ASSERT_EQ(TypeDecl::FLOAT, ExpressionValue("1.").getIntrinsicType().getType());
+    ASSERT_EQ(TypeDecl::FLOAT, ExpressionValue("1.f").getIntrinsicType().getType());
+    ASSERT_EQ(TypeDecl::FLOAT, ExpressionValue("1.F").getIntrinsicType().getType());
 }
 
 TEST(ExpressionValueTest, IntegerIsCorrectlyIdentifiedFromString)
@@ -99,8 +103,8 @@ TEST(ExpressionValueTest, IntrinsicHex_GetAsIntTypes)
 {
     ASSERT_EQ(-57, ExpressionValue("0xC7").get<int8_t>());
     ASSERT_EQ(199, ExpressionValue("0xc7").get<uint8_t>());
-    ASSERT_EQ(199, ExpressionValue("0xc7").get<int16_t>());
-    ASSERT_EQ(199, ExpressionValue("0xc7").get<int32_t>());
+    ASSERT_EQ(199, ExpressionValue("0Xc7").get<int16_t>());
+    ASSERT_EQ(199, ExpressionValue("0Xc7").get<int32_t>());
 
     ASSERT_EQ(true, ExpressionValue("0xC7").get<bool>());
     ASSERT_EQ(false, ExpressionValue("0x0000").get<bool>());
@@ -141,7 +145,6 @@ TEST(ExpressionValueTest, InvalidInputThrows)
     ASSERT_THROW(ExpressionValue("199l"), ExpressionTypeException);
     ASSERT_THROW(ExpressionValue("199U"), ExpressionTypeException);
     ASSERT_THROW(ExpressionValue("0x"), ExpressionTypeException);
-    ASSERT_THROW(ExpressionValue("0X0"), ExpressionTypeException);
 
     // Not sure how to handle
     ASSERT_THROW(ExpressionValue("\"heisann\""), ExpressionTypeException);

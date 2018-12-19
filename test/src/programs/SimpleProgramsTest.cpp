@@ -38,9 +38,24 @@ TEST(SimpleProgramsTest, exitCodeDefaultsToZeroForVoidMain)
     const std::string source = "void main() {}";
     assertExitCode(source,0 );
 }
-TEST(SimpleProgramsTest, exitCodeReturnedFromMain) {
+
+TEST(SimpleProgramsTest, exitCodeReturnedFromMain)
+{
     const std::string source = "int main() { return 15; }";
     assertExitCode(source, 15);
+}
+
+TEST(SimpleProgramsTest, negativeIntReturnedFromMain)
+{
+    const std::string source = "int main() { return -15; }";
+    assertExitCode(source, -15);
+}
+
+TEST(SimpleProgramsTest, negativeFloatReturnedFromMain)
+{
+    assertExitCode("int main() { return -15.5f; }", -15);
+    assertExitCode("int main() { return -.5f; }", 0);
+    assertExitCode("int main() { return -1.f; }", -1);
 }
 
 TEST(SimpleProgramsTest, returningAGlobalVariable)
