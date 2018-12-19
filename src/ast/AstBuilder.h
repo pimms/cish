@@ -12,10 +12,6 @@ namespace ast
 {
 
 
-DECLARE_EXCEPTION(FunctionNotDefinedException);
-DECLARE_EXCEPTION(ModuleNotFoundException);
-
-
 class AntlrContext;
 
 class AstBuilder
