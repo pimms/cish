@@ -2,6 +2,7 @@
 #include "TreeConverter.h"
 
 #include "antlr/CMBaseVisitor.h"
+#include "antlr/CMParser.h"
 #include "AntlrContext.h"
 #include "ParseContext.h"
 

@@ -12,7 +12,8 @@ AntlrContext::AntlrContext(const std::string &source):
     _lexer(nullptr),
     _tokenStream(nullptr),
     _parser(nullptr),
-    _tree(nullptr)
+    _tree(nullptr),
+    _lineNumberResolver(source)
 {
     _inputStream = new antlr4::ANTLRInputStream(source);
 
@@ -59,6 +60,11 @@ antlr4::tree::ParseTree* AntlrContext::getParseTree() const
     }
 
     return _tree;
+}
+
+uint32_t AntlrContext::getLineNumber(uint32_t charIndex)
+{
+    return _lineNumberResolver.resolveCharIndex(charIndex);
 }
 
 

@@ -38,6 +38,8 @@ public:
     virtual bool hasErrors() const = 0;
     virtual std::vector<CompilationError> getErrors() const = 0;
     virtual antlr4::tree::ParseTree* getParseTree() const = 0;
+
+    virtual uint32_t getLineNumber(uint32_t charIndex) = 0;
 };
 
 

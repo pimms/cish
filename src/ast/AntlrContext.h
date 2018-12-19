@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ParseContext.h"
+#include "LineNumberResolver.h"
 #include "../Exception.h"
 
 #include "antlr4-runtime.h"
@@ -31,14 +32,18 @@ public:
     std::vector<CompilationError> getErrors() const override;
     antlr4::tree::ParseTree* getParseTree() const override;
 
+    uint32_t getLineNumber(uint32_t charIndex) override;
+
 private:
     antlr4::ANTLRInputStream *_inputStream;
     CMLexer *_lexer;
     antlr4::CommonTokenStream *_tokenStream;
     CMParser *_parser;
     antlr4::tree::ParseTree *_tree;
+    LineNumberResolver _lineNumberResolver;
 
     std::vector<CompilationError> _errors;
+    std::vector<uint32_t> _lineCharMap;
 
 
     virtual void syntaxError(antlr4::Recognizer *recognizer,
