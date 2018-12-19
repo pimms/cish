@@ -36,7 +36,7 @@ class AstNode {
 public:
     typedef std::shared_ptr<AstNode> Ptr;
 
-    virtual ~AstNode() {};
+    virtual ~AstNode() {}
 
     void setSourcePosition(const SourcePosition &pos);
     SourcePosition getSourcePosition() const;
@@ -52,7 +52,13 @@ class Statement: public AstNode
 public:
     typedef std::shared_ptr<Statement> Ptr;
 
-    virtual ~Statement() {};
+    virtual ~Statement() {
+        printf("~[line %d (%d - %d)] - %s\n", 
+                getSourcePosition().startLine,
+                getSourcePosition().globStartChar,
+                getSourcePosition().globEndChar, 
+                typeid(*this).name());
+    };
 
     // 1. Always override this method
     // 2. Always call this method from subclasses

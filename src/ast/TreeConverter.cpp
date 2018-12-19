@@ -130,6 +130,7 @@ antlrcpp::Any TreeConverter::visitExpression(CMParser::ExpressionContext *ctx)
 
 antlrcpp::Any TreeConverter::manuallyVisitIncdecexpr(CMParser::IncdecexprContext *ctx)
 {
+
     if (dynamic_cast<CMParser::POSTFIX_INC_EXPRContext*>(ctx)) {
         return visitPOSTFIX_INC_EXPR((CMParser::POSTFIX_INC_EXPRContext*)ctx);
     } else if (dynamic_cast<CMParser::PREFIX_INC_EXPRContext*>(ctx)) {
@@ -147,34 +148,44 @@ antlrcpp::Any TreeConverter::visitPOSTFIX_INC_EXPR(CMParser::POSTFIX_INC_EXPRCon
 {
     IncDecExpression::Operation op = IncDecExpression::POSTFIX_INCREMENT;
     const std::string varName = ctx->Identifier()->getText();
-    return createResult(std::make_shared<IncDecExpression>(&_declContext, op, varName));
+
+    auto incDecExpression = std::make_shared<IncDecExpression>(&_declContext, op, varName);
+    return createResult(incDecExpression);
 }
 
 antlrcpp::Any TreeConverter::visitPREFIX_INC_EXPR(CMParser::PREFIX_INC_EXPRContext *ctx)
 {
     IncDecExpression::Operation op = IncDecExpression::PREFIX_INCREMENT;
     const std::string varName = ctx->Identifier()->getText();
-    return createResult(std::make_shared<IncDecExpression>(&_declContext, op, varName));
+
+    auto incDecExpression = std::make_shared<IncDecExpression>(&_declContext, op, varName);
+    return createResult(incDecExpression);
 }
 
 antlrcpp::Any TreeConverter::visitPOSTFIX_DEC_EXPR(CMParser::POSTFIX_DEC_EXPRContext *ctx)
 {
     IncDecExpression::Operation op = IncDecExpression::POSTFIX_DECREMENT;
     const std::string varName = ctx->Identifier()->getText();
-    return createResult(std::make_shared<IncDecExpression>(&_declContext, op, varName));
+
+    auto incDecExpression = std::make_shared<IncDecExpression>(&_declContext, op, varName);
+    return createResult(incDecExpression);
 }
 
 antlrcpp::Any TreeConverter::visitPREFIX_DEC_EXPR(CMParser::PREFIX_DEC_EXPRContext *ctx)
 {
     IncDecExpression::Operation op = IncDecExpression::PREFIX_DECREMENT;
     const std::string varName = ctx->Identifier()->getText();
-    return createResult(std::make_shared<IncDecExpression>(&_declContext, op, varName));
+
+    auto incDecExpression = std::make_shared<IncDecExpression>(&_declContext, op, varName);
+    return createResult(incDecExpression);
 }
 
 antlrcpp::Any TreeConverter::visitADDROF_EXPR(CMParser::ADDROF_EXPRContext *ctx)
 {
     const std::string varName = ctx->Identifier()->getText();
-    return createResult(std::make_shared<AddrofExpression>(&_declContext, varName));
+
+    auto addrofExpression = std::make_shared<AddrofExpression>(&_declContext, varName);
+    return createResult(addrofExpression);
 }
 
 antlrcpp::Any TreeConverter::visitDEREF_EXPR(CMParser::DEREF_EXPRContext *ctx)
@@ -182,7 +193,9 @@ antlrcpp::Any TreeConverter::visitDEREF_EXPR(CMParser::DEREF_EXPRContext *ctx)
     Result result = visitChildren(ctx).as<Result>();
     assert(result.size() == 1);
     Expression::Ptr expr = castToExpression(result[0]);
-    return createResult(std::make_shared<DerefExpression>(&_declContext, expr));
+
+    auto derefExpression = std::make_shared<DerefExpression>(&_declContext, expr);
+    return createResult(derefExpression);
 }
 
 antlrcpp::Any TreeConverter::visitNEGATION_EXPR(CMParser::NEGATION_EXPRContext *ctx)
@@ -190,7 +203,9 @@ antlrcpp::Any TreeConverter::visitNEGATION_EXPR(CMParser::NEGATION_EXPRContext *
     Result result = visitChildren(ctx).as<Result>();
     assert(result.size() == 1);
     Expression::Ptr expr = castToExpression(result[0]);
-    return createResult(std::make_shared<NegationExpression>(expr));
+
+    auto negationExpression = std::make_shared<NegationExpression>(expr);
+    return createResult(negationExpression);
 }
 
 antlrcpp::Any TreeConverter::visitMULT_EXPR(CMParser::MULT_EXPRContext *ctx)
@@ -226,7 +241,9 @@ antlrcpp::Any TreeConverter::visitEQUALITY_EXPR(CMParser::EQUALITY_EXPRContext *
 antlrcpp::Any TreeConverter::visitLITERAL_EXPR(CMParser::LITERAL_EXPRContext *ctx)
 {
     const std::string literal = ctx->getText();
-    return createResult(std::make_shared<LiteralExpression>(literal));
+
+    auto literalExpression = std::make_shared<LiteralExpression>(literal);
+    return createResult(literalExpression);
 }
 
 antlrcpp::Any TreeConverter::visitFUNC_CALL_EXPR(CMParser::FUNC_CALL_EXPRContext *ctx)
@@ -265,7 +282,9 @@ antlrcpp::Any TreeConverter::visitAND_EXPR(CMParser::AND_EXPRContext *ctx)
 antlrcpp::Any TreeConverter::visitVAR_REF_EXPR(CMParser::VAR_REF_EXPRContext *ctx)
 {
     const std::string varName = ctx->Identifier()->getText();
-    return createResult(std::make_shared<VariableReferenceExpression>(&_declContext, varName));
+
+    auto variableReferenceExpression = std::make_shared<VariableReferenceExpression>(&_declContext, varName);
+    return createResult(variableReferenceExpression);
 }
 
 antlrcpp::Any TreeConverter::visitCOMPARE_EXPR(CMParser::COMPARE_EXPRContext *ctx)
@@ -299,6 +318,8 @@ antlrcpp::Any TreeConverter::visitReturnStatement(CMParser::ReturnStatementConte
     }
 
     ReturnStatement::Ptr statement = std::make_shared<ReturnStatement>(&_declContext, expression);
+    setSourcePosition(statement.get(), ctx);
+
     return createResult(statement);
 }
 
@@ -314,7 +335,9 @@ antlrcpp::Any TreeConverter::visitIfStatement(CMParser::IfStatementContext *ctx)
     }
 
     Expression::Ptr expr = manuallyVisitExpression(ctx->expression());
+
     IfStatement::Ptr ifStatement = std::make_shared<IfStatement>(expr, elseStatement);
+    setSourcePosition(ifStatement.get(), ctx);
 
     _declContext.pushVariableScope();
 
@@ -330,6 +353,8 @@ antlrcpp::Any TreeConverter::visitIfStatement(CMParser::IfStatementContext *ctx)
 antlrcpp::Any TreeConverter::visitElseStatement(CMParser::ElseStatementContext *ctx)
 {
     ElseStatement::Ptr elseStatement = std::make_shared<ElseStatement>();
+    setSourcePosition(elseStatement.get(), ctx);
+
     _declContext.pushVariableScope();
 
     std::vector<Statement*> statements;
@@ -358,6 +383,7 @@ antlrcpp::Any TreeConverter::visitForStatement(CMParser::ForStatementContext *ct
         iterator = manuallyVisitForIterator(ctx->forIterator());
 
     ForLoopStatement::Ptr forLoop = std::make_shared<ForLoopStatement>(initializer, condition, iterator);
+    setSourcePosition(forLoop.get(), ctx);
 
     std::vector<Statement*> statements;
     for (CMParser::StatementContext *stmtContext: ctx->statement()) {
@@ -375,6 +401,7 @@ antlrcpp::Any TreeConverter::visitWhileStatement(CMParser::WhileStatementContext
     _declContext.pushVariableScope();
 
     WhileStatement::Ptr whileStatement = std::make_shared<WhileStatement>(condition);
+    setSourcePosition(whileStatement.get(), ctx);
 
     for (CMParser::StatementContext *stmtContext: ctx->statement()) {
         Statement::Ptr statement = manuallyVisitStatement(stmtContext);
@@ -391,6 +418,7 @@ antlrcpp::Any TreeConverter::visitDoWhileStatement(CMParser::DoWhileStatementCon
     _declContext.pushVariableScope();
 
     DoWhileStatement::Ptr doWhileStatement = std::make_shared<DoWhileStatement>(condition);
+    setSourcePosition(doWhileStatement.get(), ctx);
 
     for (CMParser::StatementContext *stmtContext: ctx->statement()) {
         Statement::Ptr statement = manuallyVisitStatement(stmtContext);
@@ -404,7 +432,9 @@ antlrcpp::Any TreeConverter::visitDoWhileStatement(CMParser::DoWhileStatementCon
 antlrcpp::Any TreeConverter::visitExpressionStatement(CMParser::ExpressionStatementContext *ctx)
 {
     Expression::Ptr expression = manuallyVisitExpression(ctx->expression());
-    return createResult(std::make_shared<ExpressionStatement>(expression));
+    auto expressionStatement = std::make_shared<ExpressionStatement>(expression);
+    setSourcePosition(expressionStatement.get(), ctx);
+    return createResult(expressionStatement);
 }
 
 antlrcpp::Any TreeConverter::visitAssignment(CMParser::AssignmentContext *ctx)
@@ -419,6 +449,7 @@ antlrcpp::Any TreeConverter::visitAssignment(CMParser::AssignmentContext *ctx)
     }
 
     auto varAssign = std::make_shared<VariableAssignmentStatement>(&_declContext, lvalue, expression);
+    setSourcePosition(varAssign.get(), ctx);
 
     return createResult(varAssign);
 }
@@ -436,6 +467,7 @@ antlrcpp::Any TreeConverter::visitVariableDeclaration(CMParser::VariableDeclarat
     }
 
     auto varDecl = std::make_shared<VariableDeclarationStatement>(&_declContext, type, varName, expression);
+    setSourcePosition(varDecl.get(), ctx);
 
     return createResult(varDecl);
 }
@@ -453,6 +485,8 @@ antlrcpp::Any TreeConverter::visitFunctionDeclaration(CMParser::FunctionDeclarat
     _funcDecls.push_back(funcDecl);
 
     auto funcDeclStatement = std::make_shared<FunctionDeclarationStatement>(&_declContext, funcDecl);
+    setSourcePosition(funcDeclStatement.get(), ctx);
+
     return createResult(funcDeclStatement);
 }
 
@@ -470,6 +504,8 @@ antlrcpp::Any TreeConverter::visitFunctionDefinition(CMParser::FunctionDefinitio
     // and variable declaration in a very specific order, and this is the best - if somewhat
     // awkward - place to do that.
     FunctionDefinition::Ptr funcDef = std::make_shared<FunctionDefinition>(&_declContext, funcDecl);
+    setSourcePosition(funcDef.get(), ctx);
+
     _declContext.enterFunction(funcDef);
     for (const VarDeclaration &varDecl: params) {
         _declContext.declareVariable(varDecl.type, varDecl.name);
@@ -597,8 +633,11 @@ Expression::Ptr TreeConverter::manuallyVisitExpression(CMParser::ExpressionConte
 
 Statement::Ptr TreeConverter::manuallyVisitStatement(CMParser::StatementContext *ctx)
 {
-    if (ctx->getText() == ";")
-        return std::make_shared<NoOpStatement>();
+    if (ctx->getText() == ";") {
+        auto noOp = std::make_shared<NoOpStatement>();
+        setSourcePosition(noOp.get(), ctx);
+        return noOp;
+    }
 
     antlrcpp::Any any = visitStatement(ctx);
     assert(any.isNotNull());
@@ -654,7 +693,9 @@ StringLiteralExpression::Ptr TreeConverter::manuallyVisitStringLiteral(CMParser:
     str = str.substr(1, str.length() - 2);
     str = ast::string::unescapeString(str);
     const StringId stringId = _stringTable->insert(str);
-    return std::make_shared<StringLiteralExpression>(stringId);
+
+    auto expr = std::make_shared<StringLiteralExpression>(stringId);
+    return expr;
 }
 
 Statement::Ptr TreeConverter::manuallyVisitForInitializer(CMParser::ForInitializerContext *ctx)
@@ -682,13 +723,18 @@ Statement::Ptr TreeConverter::manuallyVisitForIterator(CMParser::ForIteratorCont
     } else if (ctx->functionCall()) {
         res = visitFunctionCall(ctx->functionCall()).as<Result>();
         assert(res.size() == 1);
-        auto functionCallExpression = castToExpression(res[0]);
-        return std::make_shared<ExpressionStatement>(functionCallExpression);
+        auto callExpr = castToExpression(res[0]);
+
+        auto callStmt = std::make_shared<ExpressionStatement>(callExpr);
+        setSourcePosition(callStmt.get(), ctx);
+        return callStmt;
     } else if (ctx->incdecexpr()) {
         res = manuallyVisitIncdecexpr(ctx->incdecexpr()).as<Result>();
         assert(res.size() == 1);
         auto incDecExpr = castToExpression(res[0]);
-        return std::make_shared<ExpressionStatement>(incDecExpr);
+        auto statement = std::make_shared<ExpressionStatement>(incDecExpr);
+        setSourcePosition(statement.get(), ctx);
+        return statement;
     } else {
         Throw(Exception, "Unsupported initialization in for-loop");
     }
@@ -729,13 +775,17 @@ void TreeConverter::includeModule(Ast *ast, std::string moduleName)
     _includedModules.insert(moduleName);
 }
 
-void TreeConverter::setSourcePosition(AstNode *astNode, antlr4::ParserRuleContext *ctx)
+void TreeConverter::setSourcePosition(Statement *statement, antlr4::ParserRuleContext *ctx)
 {
+    assert(!(ctx->getSourceInterval() == antlr4::misc::Interval::INVALID));
+
     const uint32_t start = ctx->getSourceInterval().a;
     const uint32_t end = ctx->getSourceInterval().b;
 
     SourcePosition pos = resolveSourcePosition(start, end);
-    astNode->setSourcePosition(pos);
+    statement->setSourcePosition(pos);
+
+    printf("{called for %d - %d}\n", start, end);
 }
 
 SourcePosition TreeConverter::resolveSourcePosition(uint32_t startChar, uint32_t endChar)

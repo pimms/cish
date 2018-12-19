@@ -110,7 +110,7 @@ private:
     void verifyAllFunctionsDefined(Ast *ast);
     void includeModule(Ast *ast, std::string moduleName);
 
-    void setSourcePosition(AstNode *astNode, antlr4::ParserRuleContext *ctx);
+    void setSourcePosition(Statement *statement, antlr4::ParserRuleContext *ctx);
     SourcePosition resolveSourcePosition(uint32_t startChar, uint32_t endChar);
 };
 

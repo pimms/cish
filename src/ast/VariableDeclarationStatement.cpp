@@ -26,6 +26,7 @@ VariableDeclarationStatement::VariableDeclarationStatement(
         Lvalue::Ptr varRef = Lvalue::Ptr(new VariableReference(context, varName));
         auto constAwareness = VariableAssignmentStatement::ConstAwareness::IGNORE;
         _assignment = Statement::Ptr(new VariableAssignmentStatement(context, varRef, value, constAwareness));
+        _assignment->setSourcePosition(getSourcePosition());
     }
 }
 
