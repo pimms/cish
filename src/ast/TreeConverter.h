@@ -57,6 +57,7 @@ public:
     virtual antlrcpp::Any visitNEGATION_EXPR(CMParser::NEGATION_EXPRContext *ctx) override;
     virtual antlrcpp::Any visitMULT_EXPR(CMParser::MULT_EXPRContext *ctx) override;
     virtual antlrcpp::Any visitEQUALITY_EXPR(CMParser::EQUALITY_EXPRContext *ctx) override;
+    virtual antlrcpp::Any visitBITWISE_EXPR(CMParser::BITWISE_EXPRContext *ctx) override;
     virtual antlrcpp::Any visitLITERAL_EXPR(CMParser::LITERAL_EXPRContext *ctx) override;
     virtual antlrcpp::Any visitFUNC_CALL_EXPR(CMParser::FUNC_CALL_EXPRContext *ctx) override;
     virtual antlrcpp::Any visitADD_EXPR(CMParser::ADD_EXPRContext *ctx) override;

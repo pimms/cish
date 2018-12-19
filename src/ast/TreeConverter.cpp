@@ -222,6 +222,22 @@ antlrcpp::Any TreeConverter::visitEQUALITY_EXPR(CMParser::EQUALITY_EXPRContext *
     return buildBinaryExpression(oper, ctx);
 }
 
+antlrcpp::Any TreeConverter::visitBITWISE_EXPR(CMParser::BITWISE_EXPRContext *ctx)
+{
+    BinaryExpression::Operator oper;
+    if (ctx->op->getText() == "|") {
+        oper = BinaryExpression::BITWISE_OR;
+    } else if (ctx->op->getText() == "&") {
+        oper = BinaryExpression::BITWISE_AND;
+    } else if (ctx->op->getText() == "^") {
+        oper = BinaryExpression::BITWISE_XOR;
+    } else {
+        Throw(AstConversionException, "Unable to handle operator '%s' as BITWISE_EXPR", ctx->op->getText().c_str());
+    }
+
+    return buildBinaryExpression(oper, ctx);
+}
+
 antlrcpp::Any TreeConverter::visitLITERAL_EXPR(CMParser::LITERAL_EXPRContext *ctx)
 {
     const std::string literal = ctx->getText();

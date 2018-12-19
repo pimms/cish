@@ -20,6 +20,12 @@ public:
         PLUS,
         MINUS,
 
+        __BITWISE_START     = 90,
+        BITWISE_AND         = 90,
+        BITWISE_XOR         = 91,
+        BITWISE_OR          = 92,
+        __BITWISE_END       = 92,
+
         /* ALL OPERATORS BELOW THIS LINE MUST EVALUATE TO BOOL */
         __BOOLEAN_BOUNDARY  = 100,
         GT                  = 100,
@@ -82,6 +88,9 @@ std::function<T(T,T)> BinaryExpression::getFunction() const
         case DIVIDE:        return std::divides<T>();
         case PLUS:          return std::plus<T>();
         case MINUS:         return std::minus<T>();
+        case BITWISE_AND:   return std::bit_and<int32_t>();
+        case BITWISE_XOR:   return std::bit_xor<int32_t>();
+        case BITWISE_OR:    return std::bit_or<int32_t>();
         case GT:            return std::greater<T>();
         case LT:            return std::less<T>();
         case GTE:           return std::greater_equal<T>();

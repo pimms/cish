@@ -18,7 +18,7 @@ BinaryExpression::BinaryExpression(Operator op, Expression::Ptr left, Expression
 {
     // The max works because of the order in the TypeDecl::Type-enum. If two
     // expressions of different types are evaluated in conjunction, both
-    // expressions should be casted to // the type of the highest
+    // expressions should be casted to the type of the highest
     // TypeDecl::Type value.
     if (_left->getType().getType() >= _right->getType().getType()) {
         _workingType = _left->getType();
@@ -28,6 +28,15 @@ BinaryExpression::BinaryExpression(Operator op, Expression::Ptr left, Expression
 
 	if (op >= __BOOLEAN_BOUNDARY) {
 		_returnType = TypeDecl(TypeDecl::BOOL);
+    } else if (op >= __BITWISE_START && op <= __BITWISE_END) {
+        // We will always promote the intrinsic type of the ecpression to int,
+        // but we first need to make sure that the terms are not floaty.
+        if (_workingType == TypeDecl::FLOAT || _workingType == TypeDecl::DOUBLE) {
+            Throw(InvalidOperationException, "Type '%s' cannot be used in bitwise operation", _workingType.getName());
+        }
+
+        _returnType = TypeDecl(TypeDecl::INT);
+        _workingType = TypeDecl(TypeDecl::INT);
 	} else {
         _returnType = _workingType;
 	}
@@ -137,6 +146,9 @@ void BinaryExpression::pointerSpecificChecks()
             case MODULO:
             case PLUS:
             case MINUS:
+            case BITWISE_AND:
+            case BITWISE_XOR:
+            case BITWISE_OR:
                 Throw(InvalidOperationException,
                     "Cannot perform arithmetics with two pointers");
             default:

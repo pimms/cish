@@ -554,6 +554,33 @@ TEST(SimpleProgramsTest, paranthesisExpressions)
     assertExitCode(source, 66);
 }
 
+TEST(SimpleProgramsTest, bitwiseAnd)
+{
+    const std::string source =
+        "int main() {"
+        "   return 0x1f1f1f0f & 0x101010F0;"
+        "}";
+    assertExitCode(source, 0x10101000);
+}
+
+TEST(SimpleProgramsTest, bitwiseXor)
+{
+    const std::string source =
+        "int main() {"
+        "   return 0x0F11F ^ 0x0001FF1;"
+        "}";
+    assertExitCode(source, 0xEEEE);
+}
+
+TEST(SimpleProgramsTest, bitwiseOr)
+{
+    const std::string source =
+        "int main() {"
+        "   return 0x0f0f0f0f | 0xF0f0F0F0;"
+        "}";
+    assertExitCode(source, 0xFFFFFFFF);
+}
+
 
 /* COMPILATION FAILURES */
 
@@ -709,7 +736,6 @@ TEST(SimpleProgramsTest, includingUndefinedModulesThrows)
         "int main() {return 0;}"
     );
 }
-
 
 
 /* RUNTIME FAILURES */

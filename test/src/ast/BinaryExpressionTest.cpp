@@ -282,6 +282,56 @@ TEST(BinaryExpressionTest, testLogicalOperators)
 }
 
 
+template<typename LHST, typename RHST>
+static void testBitwiseOperators()
+{
+    typedef std::function<int32_t(LHST,RHST)> Func;
+
+    std::map<BinaryExpression::Operator,Func> operators = {
+        {BinaryExpression::BITWISE_AND, std::bit_and<int32_t>() },
+        {BinaryExpression::BITWISE_XOR, std::bit_xor<int32_t>() },
+        {BinaryExpression::BITWISE_OR, std::bit_or<int32_t>() },
+    };
+
+    const std::vector<std::pair<LHST,RHST>> testData = {
+        {0x0001, 0x0001},
+        {0xf003, 0x0001},
+        {0x0, 0xFFFFFFFF},
+        {0x7, 0xFFFFFFFF},
+    };
+
+    for (auto op: operators) {
+        for (auto pair: testData) {
+            int32_t expected = op.second((LHST)pair.first, (RHST)pair.second);
+            testBinaryExpr<LHST,RHST,int32_t>(op.first, (LHST)pair.first, (RHST)pair.second, expected);
+        }
+    }
+}
+
+TEST(BinaryExpressionTest, testBitwiseOperators)
+{
+    testBitwiseOperators<bool, bool>();
+    testBitwiseOperators<bool, char>();
+    testBitwiseOperators<bool, short>();
+    testBitwiseOperators<bool, int>();
+
+    testBitwiseOperators<char, bool>();
+    testBitwiseOperators<char, char>();
+    testBitwiseOperators<char, short>();
+    testBitwiseOperators<char, int>();
+
+    testBitwiseOperators<short, bool>();
+    testBitwiseOperators<short, char>();
+    testBitwiseOperators<short, short>();
+    testBitwiseOperators<short, int>();
+
+    testBitwiseOperators<int, bool>();
+    testBitwiseOperators<int, char>();
+    testBitwiseOperators<int, short>();
+    testBitwiseOperators<int, int>();
+}
+
+
 TEST(BinaryExpressionTest, simpleTestOfNestedBinaryExpressions)
 {
     // int(100) * float(2) = float(200)
@@ -416,4 +466,22 @@ TEST(BinaryExpressionTest, pointerAdditionArithmetics)
             ASSERT_TRUE(result.getIntrinsicType() == ptrTermType);
         }
     }
+}
+
+TEST(BinaryExpressionTest, cannotBitwiseOperateOnPointyBoys)
+{
+    auto left = std::make_shared<LiteralExpression>(ExpressionValue(TypeDecl::getPointer(TypeDecl::INT), 100));
+    auto right = std::make_shared<LiteralExpression>(ExpressionValue(TypeDecl::getPointer(TypeDecl::INT), 100));
+    ASSERT_THROW(BinaryExpression expr(BinaryExpression::BITWISE_OR, left, right), InvalidOperationException);
+    ASSERT_THROW(BinaryExpression expr(BinaryExpression::BITWISE_XOR, left, right), InvalidOperationException);
+    ASSERT_THROW(BinaryExpression expr(BinaryExpression::BITWISE_AND, left, right), InvalidOperationException);
+}
+
+TEST(BinaryExpressionTest, cannotBitwiseOperateOnFloatyBoys)
+{
+    auto left = std::make_shared<LiteralExpression>(ExpressionValue(TypeDecl::FLOAT, 10.f));
+    auto right = std::make_shared<LiteralExpression>(ExpressionValue(TypeDecl::FLOAT, 10.f));
+    ASSERT_THROW(BinaryExpression expr(BinaryExpression::BITWISE_OR, left, right), InvalidOperationException);
+    ASSERT_THROW(BinaryExpression expr(BinaryExpression::BITWISE_XOR, left, right), InvalidOperationException);
+    ASSERT_THROW(BinaryExpression expr(BinaryExpression::BITWISE_AND, left, right), InvalidOperationException);
 }

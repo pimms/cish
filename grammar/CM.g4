@@ -31,6 +31,7 @@ expr
     | expr op=( '+' | '-' ) expr                # ADD_EXPR
     | expr op=( '>=' | '<=' | '>' | '<' ) expr  # COMPARE_EXPR
     | expr op=( '==' | '!=' ) expr              # EQUALITY_EXPR
+    | expr op=( '&' | '^' | '|' ) expr          # BITWISE_EXPR
     | expr op=( '&&' | '||' ) expr              # AND_EXPR
     | exprAtom                                  # EXPR_ATOM___ // Not to be used explicitly
     ;
