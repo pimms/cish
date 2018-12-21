@@ -24,9 +24,11 @@ expression
 expr
     : incdecexpr                                # INCDECEXPR___ // Not to be used explicitly
     | '(' expr ')'                              # PAREN_EXPR___ // Not to be used explicitly
+    | '!' expr                                  # NEGATION_EXPR
+    | '~' expr                                  # ONES_COMPLEMENT_EXPR
     | '&' Identifier                            # ADDROF_EXPR
     | '*' expr                                  # DEREF_EXPR
-    | '!' expr                                  # NEGATION_EXPR
+    | 'sizeof' expr                             # SIZEOF_EXPR
     | expr op=( '*' | '/' | '%' ) expr          # MULT_EXPR
     | expr op=( '+' | '-' ) expr                # ADD_EXPR
     | expr op=( '<<' | '>>' ) expr              # BITSHIFT_EXPR
@@ -53,6 +55,7 @@ statement
     : ifStatement
     | assignment ';'
     | variableDeclaration ';'
+    | arithmeticAssignment ';'
     | returnStatement
     | forStatement
     | whileStatement
@@ -104,6 +107,20 @@ assignment
     : lvalue '=' expression
     ;
 
+arithmeticAssignment
+    : lvalue '+=' expression
+    | lvalue '-=' expression
+    | lvalue '*=' expression
+    | lvalue '/=' expression 
+    | lvalue '%=' expression
+    | lvalue '<<=' expression 
+    | lvalue '>>=' expression
+    | lvalue '&=' expression 
+    | lvalue '^=' expression 
+    | lvalue '|=' expression
+    ;
+
+
 variableDeclaration
     : typeIdentifier identifier ('=' expression)?
     ;
@@ -154,7 +171,6 @@ systemInclude
 sysModuleName
     : SysModuleName
     ;
-
 
 
 Asterisk : '*';
