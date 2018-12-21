@@ -628,6 +628,43 @@ TEST(SimpleProgramsTest, rightShift)
         "}", 0x0);
 }
 
+TEST(SimpleProgramsTest, simpleNegation)
+{
+    assertExitCode(
+        "int main() {"
+        "   return !true;"
+        "}", 0);
+    assertExitCode(
+        "int main() {"
+        "   return !false;"
+        "}", 1);
+    assertExitCode(
+        "int main() {"
+        "   return !-1;"
+        "}", 0);
+    assertExitCode(
+        "int main() {"
+        "   int n = 0xFF000000; "
+        "   return !n;"
+        "}", 0);
+}
+
+TEST(SimpleProgramsTest, doubleNegation)
+{
+    assertExitCode(
+        "int main() {"
+        "   return !!true;"
+        "}", 1);
+    assertExitCode(
+        "int main() {"
+        "   return !!false;"
+        "}", 0);
+    assertExitCode(
+        "int main() {"
+        "   return !!100;"
+        "}", 1);
+}
+
 
 /* COMPILATION FAILURES */
 
