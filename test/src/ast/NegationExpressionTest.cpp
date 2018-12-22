@@ -36,7 +36,8 @@ TEST(NegationExpressionTest, negationOfAllTypes)
         ExpressionValue(TypeDecl::DOUBLE, -100.0),
 
         ExpressionValue(TypeDecl::getPointer(TypeDecl::INT), 0),
-        ExpressionValue(TypeDecl::getPointer(TypeDecl::INT), 0x00400082),
+        ExpressionValue(TypeDecl::getPointer(TypeDecl::INT), 0x00400000),
+        ExpressionValue(TypeDecl::getPointer(TypeDecl::INT), 0x00000001),
     };
 
     Memory memory(100, 1);

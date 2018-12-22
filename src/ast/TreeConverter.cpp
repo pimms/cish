@@ -8,6 +8,7 @@
 #include "AddrofExpression.h"
 #include "DerefExpression.h"
 #include "NegationExpression.h"
+#include "OnesComplementExpression.h"
 #include "StringLiteralExpression.h"
 
 #include "VariableAssignmentStatement.h"
@@ -190,6 +191,14 @@ antlrcpp::Any TreeConverter::visitNEGATION_EXPR(CMParser::NEGATION_EXPRContext *
     assert(result.size() == 1);
     Expression::Ptr expr = castToExpression(result[0]);
     return createResult(std::make_shared<NegationExpression>(expr));
+}
+
+antlrcpp::Any TreeConverter::visitONES_COMPLEMENT_EXPR(CMParser::ONES_COMPLEMENT_EXPRContext *ctx)
+{
+    Result result = visitChildren(ctx).as<Result>();
+    assert(result.size() == 1);
+    Expression::Ptr expr = castToExpression(result[0]);
+    return createResult(std::make_shared<OnesComplementExpression>(expr));
 }
 
 antlrcpp::Any TreeConverter::visitMULT_EXPR(CMParser::MULT_EXPRContext *ctx)

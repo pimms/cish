@@ -55,6 +55,7 @@ public:
     virtual antlrcpp::Any visitADDROF_EXPR(CMParser::ADDROF_EXPRContext *ctx) override;
     virtual antlrcpp::Any visitDEREF_EXPR(CMParser::DEREF_EXPRContext *ctx) override;
     virtual antlrcpp::Any visitNEGATION_EXPR(CMParser::NEGATION_EXPRContext *ctx) override;
+    virtual antlrcpp::Any visitONES_COMPLEMENT_EXPR(CMParser::ONES_COMPLEMENT_EXPRContext *ctx) override;
     virtual antlrcpp::Any visitMULT_EXPR(CMParser::MULT_EXPRContext *ctx) override;
     virtual antlrcpp::Any visitEQUALITY_EXPR(CMParser::EQUALITY_EXPRContext *ctx) override;
     virtual antlrcpp::Any visitBITSHIFT_EXPR(CMParser::BITSHIFT_EXPRContext *ctx) override;

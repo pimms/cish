@@ -9,10 +9,10 @@ namespace ast
 {
 
 
-class NegationExpression: public Expression
+class OnesComplementExpression: public Expression
 {
 public:
-    NegationExpression(Expression::Ptr expression);
+    OnesComplementExpression(Expression::Ptr expression);
 
     ExpressionValue evaluate(vm::ExecutionContext *context) const override;
 	TypeDecl getType() const override;

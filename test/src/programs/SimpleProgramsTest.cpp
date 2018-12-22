@@ -665,6 +665,18 @@ TEST(SimpleProgramsTest, doubleNegation)
         "}", 1);
 }
 
+TEST(SimpleProgramsTest, onesCompliment)
+{
+    assertExitCode(
+        "int main() {"
+        "   return ~true;"
+        "}", 0xfffffffe);
+    assertExitCode(
+        "int main() {"
+        "   return ~0x10101010;"
+        "}", 0xefefefef);
+}
+
 
 /* COMPILATION FAILURES */
 
