@@ -52,6 +52,7 @@ public:
     virtual antlrcpp::Any visitPREFIX_INC_EXPR(CMParser::PREFIX_INC_EXPRContext *ctx) override;
     virtual antlrcpp::Any visitPOSTFIX_DEC_EXPR(CMParser::POSTFIX_DEC_EXPRContext *ctx) override;
     virtual antlrcpp::Any visitPREFIX_DEC_EXPR(CMParser::PREFIX_DEC_EXPRContext *ctx) override;
+    virtual antlrcpp::Any visitTYPE_CAST_EXPR(CMParser::TYPE_CAST_EXPRContext *ctx) override;
     virtual antlrcpp::Any visitADDROF_EXPR(CMParser::ADDROF_EXPRContext *ctx) override;
     virtual antlrcpp::Any visitDEREF_EXPR(CMParser::DEREF_EXPRContext *ctx) override;
     virtual antlrcpp::Any visitSIZEOF_EXPR(CMParser::SIZEOF_EXPRContext *ctx) override;

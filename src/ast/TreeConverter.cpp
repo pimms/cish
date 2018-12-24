@@ -11,6 +11,7 @@
 #include "OnesComplementExpression.h"
 #include "StringLiteralExpression.h"
 #include "SizeofExpression.h"
+#include "TypeCastExpression.h"
 
 #include "VariableAssignmentStatement.h"
 #include "VariableDeclarationStatement.h"
@@ -170,6 +171,18 @@ antlrcpp::Any TreeConverter::visitPREFIX_DEC_EXPR(CMParser::PREFIX_DEC_EXPRConte
     IncDecExpression::Operation op = IncDecExpression::PREFIX_DECREMENT;
     const std::string varName = ctx->Identifier()->getText();
     return createResult(std::make_shared<IncDecExpression>(&_declContext, op, varName));
+}
+
+antlrcpp::Any TreeConverter::visitTYPE_CAST_EXPR(CMParser::TYPE_CAST_EXPRContext *ctx)
+{
+    TypeDecl type = visitTypeIdentifier(ctx->typeIdentifier()).as<TypeDecl>();
+
+    Result exprResult = visitChildren(ctx->expr());
+    assert(exprResult.size() == 1);
+    Expression::Ptr expression = castToExpression(exprResult[0]);
+
+    auto castExpr = std::make_shared<TypeCastExpression>(type, expression);
+    return createResult(castExpr);
 }
 
 antlrcpp::Any TreeConverter::visitADDROF_EXPR(CMParser::ADDROF_EXPRContext *ctx)

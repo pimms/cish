@@ -26,6 +26,7 @@ expr
     | '(' expr ')'                              # PAREN_EXPR___ // Not to be used explicitly
     | '!' expr                                  # NEGATION_EXPR
     | '~' expr                                  # ONES_COMPLEMENT_EXPR
+    | '(' typeIdentifier ')' expr               # TYPE_CAST_EXPR
     | '*' expr                                  # DEREF_EXPR
     | '&' Identifier                            # ADDROF_EXPR
     | 'sizeof' sizeofTerm                       # SIZEOF_EXPR

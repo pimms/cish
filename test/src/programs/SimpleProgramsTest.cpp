@@ -731,6 +731,39 @@ TEST(SimpleProgramsTest, sizeofPresedence)
     assertExitCode("int main(){ int n; return sizeof (n == 5); }", 1);
 }
 
+TEST(SimpleProgramsTest, literalToBoolCast)
+{
+    assertExitCode("int main() { return (bool)10; }", 1);
+    assertExitCode("int main() { return (bool)-10; }", 1);
+    assertExitCode("int main() { return (bool)0; }", 0);
+
+    assertExitCode("int main() { return (bool)10.f; }", 1);
+    assertExitCode("int main() { return (bool).1f; }", 1);
+    assertExitCode("int main() { return (bool)0.0f; }", 0);
+
+    assertExitCode("int main() { return ((float)((bool)100) - .5f) * 11; }", 5);
+}
+
+TEST(SimpleProgramsTest, pointerToIntToPointerCast)
+{
+    assertExitCode(
+        "int main() {"
+        "   const int a = 15;"
+        "   int b = 0xFF000000;"
+        "   const int *aptr = &a;"
+        ""
+        "   int bptrVal = (int)aptr + sizeof int; "
+        ""
+        "   int *bptr = (int*)bptrVal;"
+        "   *bptr = *bptr | 0x00EEDD00;"
+        ""
+        "   char *cptr = (char*)(bptr);"
+        "   *cptr = 0xCC;"
+        "   return b;"
+        "}"
+    , 0xFFEEDDCC);
+}
+
 
 /* COMPILATION FAILURES */
 
