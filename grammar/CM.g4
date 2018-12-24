@@ -26,8 +26,8 @@ expr
     | '(' expr ')'                              # PAREN_EXPR___ // Not to be used explicitly
     | '!' expr                                  # NEGATION_EXPR
     | '~' expr                                  # ONES_COMPLEMENT_EXPR
-    | '&' Identifier                            # ADDROF_EXPR
     | '*' expr                                  # DEREF_EXPR
+    | '&' Identifier                            # ADDROF_EXPR
     | 'sizeof' sizeofTerm                       # SIZEOF_EXPR
     | expr op=( '*' | '/' | '%' ) expr          # MULT_EXPR
     | expr op=( '+' | '-' ) expr                # ADD_EXPR
