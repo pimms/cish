@@ -10,6 +10,7 @@
 #include "NegationExpression.h"
 #include "OnesComplementExpression.h"
 #include "StringLiteralExpression.h"
+#include "SizeofExpression.h"
 
 #include "VariableAssignmentStatement.h"
 #include "VariableDeclarationStatement.h"
@@ -183,6 +184,40 @@ antlrcpp::Any TreeConverter::visitDEREF_EXPR(CMParser::DEREF_EXPRContext *ctx)
     assert(result.size() == 1);
     Expression::Ptr expr = castToExpression(result[0]);
     return createResult(std::make_shared<DerefExpression>(&_declContext, expr));
+}
+
+antlrcpp::Any TreeConverter::visitSIZEOF_EXPR(CMParser::SIZEOF_EXPRContext *ctx)
+{
+    SizeofExpression::Ptr sizeofExpr = nullptr;
+    antlrcpp::Any evaluated = visitSizeofTerm(ctx->sizeofTerm());
+    if (evaluated.is<Result>()) {
+        Result result = evaluated.as<Result>();
+        assert(result.size() == 1);
+        Expression::Ptr expr = castToExpression(result[0]);
+        sizeofExpr = std::make_shared<SizeofExpression>(expr);
+    } else if (evaluated.is<TypeDecl>()) {
+        sizeofExpr = std::make_shared<SizeofExpression>(evaluated.as<TypeDecl>());
+    } else {
+        Throw(AstConversionException, "Unexpected type in sizeofTerm");
+    }
+
+    return createResult(sizeofExpr);
+}
+
+antlrcpp::Any TreeConverter::visitSizeofTerm(CMParser::SizeofTermContext *ctx)
+{
+    if (ctx->sizeofTerm()) {
+        return visitSizeofTerm(ctx->sizeofTerm());
+    } else if (ctx->typeIdentifier()) {
+        TypeDecl type = visitTypeIdentifier(ctx->typeIdentifier()).as<TypeDecl>();
+        return type;
+    } else {
+        antlrcpp::Any evaluated = visitChildren(ctx);
+        Result result = evaluated.as<Result>();
+        assert(result.size() == 1);
+        Expression::Ptr expr = castToExpression(result[0]);
+        return createResult(expr);
+    }
 }
 
 antlrcpp::Any TreeConverter::visitNEGATION_EXPR(CMParser::NEGATION_EXPRContext *ctx)

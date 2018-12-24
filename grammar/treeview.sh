@@ -9,7 +9,7 @@ fi
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
-antlr4 -o "$DIR/tmp/" CM.g4 || (exit 1)
+antlr -o "$DIR/tmp/" CM.g4 || (exit 1)
 cp CM.g4 "$DIR/tmp/"
 cd "$DIR/tmp/" && javac -cp "$ANTLR_PATH" *.java || (exit 1)
 

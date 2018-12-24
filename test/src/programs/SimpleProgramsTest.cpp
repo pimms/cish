@@ -677,6 +677,60 @@ TEST(SimpleProgramsTest, onesCompliment)
         "}", 0xefefefef);
 }
 
+TEST(SimpleProgramsTest, sizeofTypeLiterals)
+{
+    std::map<std::string,int> typeMap = {
+        {"bool", 1},
+        {"char", 1},
+        {"short", 2},
+        {"int", 4},
+        {"float", 4},
+        {"double", 8},
+
+        {"const bool", 1},
+        {"const char*", 4},
+        {"const short**", 4},
+        {"int**", 4},
+        {"const float*", 4},
+        {"const double", 8},
+
+        {"true", 1},
+        {"false", 1},
+        {"0x1020", 4},
+        {"sizeof int", 4},
+    };
+
+    for (auto pair: typeMap) {
+        assertExitCode("int main(){ return sizeof " + pair.first + "; }", pair.second);
+        assertExitCode("int main(){ return sizeof (" + pair.first + "); }", pair.second);
+    }
+}
+
+TEST(SimpleProgramsTest, sizeofVariables)
+{
+    assertExitCode(
+        "int foo() { return 15; }"
+        "int main() {"
+        "   const int n = -39;"
+        "   if (sizeof(n) != 4) return sizeof(n);"
+        "   if (sizeof foo() != 4) return 2; "
+        "   int a = 0;"
+        "   int size = sizeof a;"
+        "   if (size != 4) return 3;"
+        "   return 0;"
+        "}", 0);
+}
+
+TEST(SimpleProgramsTest, sizeofPresedence)
+{
+    assertExitCode("int main(){ return sizeof int + 1; }", 5);
+    assertExitCode("int main(){ int n; return sizeof n + 1; }", 5);
+    assertExitCode("int main(){ int n; return sizeof (n + 1); }", 4);
+    assertExitCode("int main(){ return sizeof int == 4; }", 1);
+    assertExitCode("int main(){ return sizeof int == 5; }", 0);
+    assertExitCode("int main(){ int n; return sizeof (n == 5); }", 1);
+}
+
 
 /* COMPILATION FAILURES */
 

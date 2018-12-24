@@ -28,7 +28,7 @@ expr
     | '~' expr                                  # ONES_COMPLEMENT_EXPR
     | '&' Identifier                            # ADDROF_EXPR
     | '*' expr                                  # DEREF_EXPR
-    | 'sizeof' expr                             # SIZEOF_EXPR
+    | 'sizeof' sizeofTerm                       # SIZEOF_EXPR
     | expr op=( '*' | '/' | '%' ) expr          # MULT_EXPR
     | expr op=( '+' | '-' ) expr                # ADD_EXPR
     | expr op=( '<<' | '>>' ) expr              # BITSHIFT_EXPR
@@ -70,7 +70,7 @@ expressionStatement
 returnStatement
     : 'return' expression? ';'
     ;
- ifStatement
+ifStatement
     : 'if' '(' expression ')' '{' statement* '}' elseStatement?
     | 'if' '(' expression ')' statement elseStatement?
     ;
@@ -158,7 +158,23 @@ lvalue
     ;
 
 typeIdentifier
-    : (Const)? identifier Asterisk*
+    : (Const)? typeName Asterisk*
+    ;
+typeName
+    : 'bool'
+    | 'char'
+    | 'int'
+    | 'short'
+    | 'float'
+    | 'double'
+    | 'void'
+    ;
+
+sizeofTerm
+    : '(' sizeofTerm ')'
+    | typeIdentifier
+    | exprAtom
+    | expr
     ;
 
 stringLiteral
