@@ -3,6 +3,7 @@
 #include "AstNodes.h"
 #include "Lvalue.h"
 #include "BinaryExpression.h"
+#include "MutableLiteralExpression.h"
 
 
 namespace cish
@@ -14,7 +15,9 @@ namespace ast
 class ArithmeticAssignmentStatement : public Statement
 {
 public:
-    ArithmeticAssignmentStatement(Lvalue::Ptr lvalue, BinaryExpression::Operator op, Expression::Ptr expr);
+    ArithmeticAssignmentStatement(Lvalue::Ptr lvalue,
+                                  BinaryExpression::Operator op,
+                                  Expression::Ptr expr);
 
     virtual void execute(vm::ExecutionContext*) const;
 
@@ -23,10 +26,12 @@ private:
     BinaryExpression::Operator _operator;
     Expression::Ptr _expression;
 
+    BinaryExpression::Ptr _binaryExpression;
+    mutable MutableLiteralExpression::Ptr _leftExpr;
+    mutable MutableLiteralExpression::Ptr _rightExpr;
 
-    void getOperands(vm::ExecutionContext *context,
-                     ExpressionValue &outLeft,
-                     ExpressionValue &outRight) const;
+
+    ExpressionValue getLeftValue(vm::ExecutionContext *context) const;
     void writeResult(vm::MemoryView &memView, const ExpressionValue &value) const;
 };
 

@@ -15,59 +15,49 @@ ArithmeticAssignmentStatement::ArithmeticAssignmentStatement(Lvalue::Ptr lvalue,
     _lvalue(lvalue),
     _operator(op),
     _expression(expr)
-{ }
+{
+    // Construct the BinaryExpression with dummy values to catch any type incompatibilities.
+    ExpressionValue dummyLeft(lvalue->getType(), 0);
+    ExpressionValue dummyRight(expr->getType(), 0);
+
+    _leftExpr = std::make_shared<MutableLiteralExpression>(dummyLeft);
+    _rightExpr = std::make_shared<MutableLiteralExpression>(dummyRight);
+    _binaryExpression = std::make_shared<BinaryExpression>(_operator, _leftExpr, _rightExpr);
+}
 
 void ArithmeticAssignmentStatement::execute(vm::ExecutionContext *ctx) const
 {
-    // TODO: This is horribly inefficient!!
-    //
-    // 1. Rewrite LiteralExpression slightly so we are able to change the value post-creation,
-    //    so we don't have to allocate new instances every single execution.
-    // 2. Bind the functions at creation so we don't need to switch the TypeDecl each exec.
-    ExpressionValue lhs = 0, rhs = 0;
-    getOperands(ctx, lhs, rhs);
+    ExpressionValue lhs = getLeftValue(ctx);
+    ExpressionValue rhs = _expression->evaluate(ctx);
 
-    LiteralExpression::Ptr lexpr = std::make_shared<LiteralExpression>(lhs);
-    LiteralExpression::Ptr rexpr = std::make_shared<LiteralExpression>(rhs);
-    BinaryExpression::Ptr binExpr = std::make_shared<BinaryExpression>(_operator, lexpr, rexpr);
+    ((MutableLiteralExpression*)_leftExpr.get())->setValue(lhs);
+    ((MutableLiteralExpression*)_rightExpr.get())->setValue(rhs);
+    ExpressionValue nval = _binaryExpression->evaluate(ctx);
 
-    ExpressionValue nval = binExpr->evaluate(ctx);
     vm::MemoryView memView = _lvalue->getMemoryView(ctx);
     writeResult(memView, nval);
 }
 
-void ArithmeticAssignmentStatement::getOperands(vm::ExecutionContext *context,
-                                                ExpressionValue &outLeft, 
-                                                ExpressionValue &outRight) const
+ExpressionValue ArithmeticAssignmentStatement::getLeftValue(vm::ExecutionContext *context) const
 {
     TypeDecl intrinsicType = _lvalue->getType();
     vm::MemoryView memView = _lvalue->getMemoryView(context);
 
-    ExpressionValue reval = _expression->evaluate(context);
-    outRight = reval;
-
     switch (_lvalue->getType().getType()) {
         case TypeDecl::BOOL:
-            outLeft = ExpressionValue(intrinsicType, memView.read<bool>());
-            break;
+            return ExpressionValue(intrinsicType, memView.read<bool>());
         case TypeDecl::CHAR:
-            outLeft = ExpressionValue(intrinsicType, memView.read<int8_t>());
-            break;
+            return ExpressionValue(intrinsicType, memView.read<int8_t>());
         case TypeDecl::SHORT:
-            outLeft = ExpressionValue(intrinsicType, memView.read<int16_t>());
-            break;
+            return ExpressionValue(intrinsicType, memView.read<int16_t>());
         case TypeDecl::INT:
-            outLeft = ExpressionValue(intrinsicType, memView.read<int32_t>());
-            break;
+            return ExpressionValue(intrinsicType, memView.read<int32_t>());
         case TypeDecl::FLOAT:
-            outLeft = ExpressionValue(intrinsicType, memView.read<float>());
-            break;
+            return ExpressionValue(intrinsicType, memView.read<float>());
         case TypeDecl::DOUBLE:
-            outLeft = ExpressionValue(intrinsicType, memView.read<double>());
-            break;
+            return ExpressionValue(intrinsicType, memView.read<double>());
         case TypeDecl::POINTER:
-            outLeft = ExpressionValue(intrinsicType, memView.read<uint32_t>());
-            break;
+            return ExpressionValue(intrinsicType, memView.read<uint32_t>());
         default:
             Throw(InvalidTypeException, "Unable to handle type %s in arithmetic assignment",
                     intrinsicType.getName());
