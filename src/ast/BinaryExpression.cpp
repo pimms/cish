@@ -31,8 +31,12 @@ BinaryExpression::BinaryExpression(Operator op, Expression::Ptr left, Expression
     } else if (op >= __BITWISE_START && op <= __BITWISE_END) {
         // We will always promote the intrinsic type of the ecpression to int,
         // but we first need to make sure that the terms are not floaty.
-        if (_workingType == TypeDecl::FLOAT || _workingType == TypeDecl::DOUBLE) {
-            Throw(InvalidOperationException, "Type '%s' cannot be used in bitwise operation", _workingType.getName());
+        if (_workingType == TypeDecl::FLOAT || 
+            _workingType == TypeDecl::DOUBLE || 
+            _workingType == TypeDecl::POINTER)
+        {
+            Throw(InvalidOperationException, "Type '%s' cannot be used in bitwise operation",
+                  _workingType.getName());
         }
 
         _returnType = TypeDecl(TypeDecl::INT);
@@ -65,6 +69,10 @@ BinaryExpression::BinaryExpression(Operator op, Expression::Ptr left, Expression
     if (_left->getType().getType() == TypeDecl::POINTER ||
         _right->getType().getType() == TypeDecl::POINTER) {
         pointerSpecificChecks();
+    }
+
+    if (_left->getType().isFloating() || _right->getType().isFloating()) {
+        floatSpecificChecks();
     }
 }
 
@@ -160,7 +168,7 @@ void BinaryExpression::pointerSpecificChecks()
         // Division and multiplication operations are never allowed on pointers
         if (_operator == MODULO || _operator == DIVIDE || _operator == MULTIPLY) {
             Throw(InvalidOperationException,
-                "Invalid operation perform on pointer-type");
+                "Invalid operation performed on pointer-type");
         }
 
         // The other type cannot be floating point
@@ -169,6 +177,13 @@ void BinaryExpression::pointerSpecificChecks()
             Throw(InvalidOperationException,
                 "Cannot perform pointer arithmetics with floating point terms");
         }
+    }
+}
+
+void BinaryExpression::floatSpecificChecks()
+{
+    if (_operator == MODULO) {
+        Throw(InvalidOperationException, "Invalid operation performed on floating-point type");
     }
 }
 

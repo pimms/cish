@@ -69,6 +69,7 @@ private:
     Expression::Ptr _right;
 
     void pointerSpecificChecks();
+    void floatSpecificChecks();
 
     template<typename T>
     ExpressionValue evaluateT(vm::ExecutionContext *ctx) const;

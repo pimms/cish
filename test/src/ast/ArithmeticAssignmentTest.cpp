@@ -123,52 +123,52 @@ TEST(ArithmeticAssignmentStatementTest, pointersIncrementBySizeOfReferredType)
 
 TEST(ArithmeticAssignmentStatementTest, invalidOperationsForFloats)
 {
-    EXPECT_ANY_THROW(create(10.f, 1, BinaryExpression::BITWISE_LSHIFT, TypeDecl::FLOAT, TypeDecl::INT));
-    EXPECT_ANY_THROW(create(1, 10.f, BinaryExpression::BITWISE_LSHIFT, TypeDecl::INT, TypeDecl::FLOAT));
-    EXPECT_ANY_THROW(create(10.f, 1, BinaryExpression::BITWISE_LSHIFT, TypeDecl::DOUBLE, TypeDecl::INT));
-    EXPECT_ANY_THROW(create(1, 10.f, BinaryExpression::BITWISE_LSHIFT, TypeDecl::INT, TypeDecl::DOUBLE));
+    EXPECT_THROW(create(10.f, 1, BinaryExpression::BITWISE_LSHIFT, TypeDecl::FLOAT, TypeDecl::INT), InvalidOperationException);
+    EXPECT_THROW(create(1, 10.f, BinaryExpression::BITWISE_LSHIFT, TypeDecl::INT, TypeDecl::FLOAT), InvalidOperationException);
+    EXPECT_THROW(create(10.f, 1, BinaryExpression::BITWISE_LSHIFT, TypeDecl::DOUBLE, TypeDecl::INT), InvalidOperationException);
+    EXPECT_THROW(create(1, 10.f, BinaryExpression::BITWISE_LSHIFT, TypeDecl::INT, TypeDecl::DOUBLE), InvalidOperationException);
 
-    EXPECT_ANY_THROW(create(10.f, 1, BinaryExpression::BITWISE_RSHIFT, TypeDecl::FLOAT, TypeDecl::INT));
-    EXPECT_ANY_THROW(create(1, 10.f, BinaryExpression::BITWISE_RSHIFT, TypeDecl::INT, TypeDecl::FLOAT));
-    EXPECT_ANY_THROW(create(10.f, 1, BinaryExpression::BITWISE_RSHIFT, TypeDecl::DOUBLE, TypeDecl::INT));
-    EXPECT_ANY_THROW(create(1, 10.f, BinaryExpression::BITWISE_RSHIFT, TypeDecl::INT, TypeDecl::DOUBLE));
+    EXPECT_THROW(create(10.f, 1, BinaryExpression::BITWISE_RSHIFT, TypeDecl::FLOAT, TypeDecl::INT), InvalidOperationException);
+    EXPECT_THROW(create(1, 10.f, BinaryExpression::BITWISE_RSHIFT, TypeDecl::INT, TypeDecl::FLOAT), InvalidOperationException);
+    EXPECT_THROW(create(10.f, 1, BinaryExpression::BITWISE_RSHIFT, TypeDecl::DOUBLE, TypeDecl::INT), InvalidOperationException);
+    EXPECT_THROW(create(1, 10.f, BinaryExpression::BITWISE_RSHIFT, TypeDecl::INT, TypeDecl::DOUBLE), InvalidOperationException);
 
-    EXPECT_ANY_THROW(create(10.f, 1, BinaryExpression::BITWISE_AND, TypeDecl::FLOAT, TypeDecl::INT));
-    EXPECT_ANY_THROW(create(1, 10.f, BinaryExpression::BITWISE_AND, TypeDecl::INT, TypeDecl::FLOAT));
-    EXPECT_ANY_THROW(create(10.f, 1, BinaryExpression::BITWISE_AND, TypeDecl::DOUBLE, TypeDecl::INT));
-    EXPECT_ANY_THROW(create(1, 10.f, BinaryExpression::BITWISE_AND, TypeDecl::INT, TypeDecl::DOUBLE));
+    EXPECT_THROW(create(10.f, 1, BinaryExpression::BITWISE_AND, TypeDecl::FLOAT, TypeDecl::INT), InvalidOperationException);
+    EXPECT_THROW(create(1, 10.f, BinaryExpression::BITWISE_AND, TypeDecl::INT, TypeDecl::FLOAT), InvalidOperationException);
+    EXPECT_THROW(create(10.f, 1, BinaryExpression::BITWISE_AND, TypeDecl::DOUBLE, TypeDecl::INT), InvalidOperationException);
+    EXPECT_THROW(create(1, 10.f, BinaryExpression::BITWISE_AND, TypeDecl::INT, TypeDecl::DOUBLE), InvalidOperationException);
 
-    EXPECT_ANY_THROW(create(10.f, 1, BinaryExpression::BITWISE_XOR, TypeDecl::FLOAT, TypeDecl::INT));
-    EXPECT_ANY_THROW(create(1, 10.f, BinaryExpression::BITWISE_XOR, TypeDecl::INT, TypeDecl::FLOAT));
-    EXPECT_ANY_THROW(create(10.f, 1, BinaryExpression::BITWISE_XOR, TypeDecl::DOUBLE, TypeDecl::INT));
-    EXPECT_ANY_THROW(create(1, 10.f, BinaryExpression::BITWISE_XOR, TypeDecl::INT, TypeDecl::DOUBLE));
+    EXPECT_THROW(create(10.f, 1, BinaryExpression::BITWISE_XOR, TypeDecl::FLOAT, TypeDecl::INT), InvalidOperationException);
+    EXPECT_THROW(create(1, 10.f, BinaryExpression::BITWISE_XOR, TypeDecl::INT, TypeDecl::FLOAT), InvalidOperationException);
+    EXPECT_THROW(create(10.f, 1, BinaryExpression::BITWISE_XOR, TypeDecl::DOUBLE, TypeDecl::INT), InvalidOperationException);
+    EXPECT_THROW(create(1, 10.f, BinaryExpression::BITWISE_XOR, TypeDecl::INT, TypeDecl::DOUBLE), InvalidOperationException);
 
-    EXPECT_ANY_THROW(create(10.f, 1, BinaryExpression::BITWISE_OR, TypeDecl::FLOAT, TypeDecl::INT));
-    EXPECT_ANY_THROW(create(1, 10.f, BinaryExpression::BITWISE_OR, TypeDecl::INT, TypeDecl::FLOAT));
-    EXPECT_ANY_THROW(create(10.f, 1, BinaryExpression::BITWISE_OR, TypeDecl::DOUBLE, TypeDecl::INT));
-    EXPECT_ANY_THROW(create(1, 10.f, BinaryExpression::BITWISE_OR, TypeDecl::INT, TypeDecl::DOUBLE));
+    EXPECT_THROW(create(10.f, 1, BinaryExpression::BITWISE_OR, TypeDecl::FLOAT, TypeDecl::INT), InvalidOperationException);
+    EXPECT_THROW(create(1, 10.f, BinaryExpression::BITWISE_OR, TypeDecl::INT, TypeDecl::FLOAT), InvalidOperationException);
+    EXPECT_THROW(create(10.f, 1, BinaryExpression::BITWISE_OR, TypeDecl::DOUBLE, TypeDecl::INT), InvalidOperationException);
+    EXPECT_THROW(create(1, 10.f, BinaryExpression::BITWISE_OR, TypeDecl::INT, TypeDecl::DOUBLE), InvalidOperationException);
 
-    EXPECT_ANY_THROW(create(10.f, 1, BinaryExpression::MODULO, TypeDecl::FLOAT, TypeDecl::INT));
-    EXPECT_ANY_THROW(create(10, 1.5f, BinaryExpression::MODULO, TypeDecl::INT, TypeDecl::FLOAT));
-    EXPECT_ANY_THROW(create(10.f, 1, BinaryExpression::MODULO, TypeDecl::DOUBLE, TypeDecl::INT));
-    EXPECT_ANY_THROW(create(10, 1.5f, BinaryExpression::MODULO, TypeDecl::INT, TypeDecl::DOUBLE));
+    EXPECT_THROW(create(10.f, 1, BinaryExpression::MODULO, TypeDecl::FLOAT, TypeDecl::INT), InvalidOperationException);
+    EXPECT_THROW(create(10, 1.5f, BinaryExpression::MODULO, TypeDecl::INT, TypeDecl::FLOAT), InvalidOperationException);
+    EXPECT_THROW(create(10.f, 1, BinaryExpression::MODULO, TypeDecl::DOUBLE, TypeDecl::INT), InvalidOperationException);
+    EXPECT_THROW(create(10, 1.5f, BinaryExpression::MODULO, TypeDecl::INT, TypeDecl::DOUBLE), InvalidOperationException);
 }
 
 TEST(ArithmeticAssignmentStatementTest, invalidOperationsForPointers)
 {
     TypeDecl ptrType = TypeDecl::getPointer(TypeDecl::INT);
 
-    EXPECT_ANY_THROW(create(0x4000, 1, BinaryExpression::BITWISE_LSHIFT, ptrType, TypeDecl::INT));
-    EXPECT_ANY_THROW(create(0x4000, 1, BinaryExpression::BITWISE_RSHIFT, ptrType, TypeDecl::INT));
-    EXPECT_ANY_THROW(create(0x4000, 1, BinaryExpression::BITWISE_AND, ptrType, TypeDecl::INT));
-    EXPECT_ANY_THROW(create(0x4000, 1, BinaryExpression::BITWISE_XOR, ptrType, TypeDecl::INT));
-    EXPECT_ANY_THROW(create(0x4000, 1, BinaryExpression::BITWISE_OR, ptrType, TypeDecl::INT));
+    EXPECT_THROW(create(0x4000, 1, BinaryExpression::BITWISE_LSHIFT, ptrType, TypeDecl::INT), InvalidOperationException);
+    EXPECT_THROW(create(0x4000, 1, BinaryExpression::BITWISE_RSHIFT, ptrType, TypeDecl::INT), InvalidOperationException);
+    EXPECT_THROW(create(0x4000, 1, BinaryExpression::BITWISE_AND, ptrType, TypeDecl::INT), InvalidOperationException);
+    EXPECT_THROW(create(0x4000, 1, BinaryExpression::BITWISE_XOR, ptrType, TypeDecl::INT), InvalidOperationException);
+    EXPECT_THROW(create(0x4000, 1, BinaryExpression::BITWISE_OR, ptrType, TypeDecl::INT), InvalidOperationException);
 
-    EXPECT_ANY_THROW(create(0x4000, 1, BinaryExpression::MULTIPLY, ptrType, TypeDecl::INT));
-    EXPECT_ANY_THROW(create(0x4000, 1, BinaryExpression::DIVIDE, ptrType, TypeDecl::INT));
-    EXPECT_ANY_THROW(create(0x4000, 1, BinaryExpression::MODULO, ptrType, TypeDecl::INT));
+    EXPECT_THROW(create(0x4000, 1, BinaryExpression::MULTIPLY, ptrType, TypeDecl::INT), InvalidOperationException);
+    EXPECT_THROW(create(0x4000, 1, BinaryExpression::DIVIDE, ptrType, TypeDecl::INT), InvalidOperationException);
+    EXPECT_THROW(create(0x4000, 1, BinaryExpression::MODULO, ptrType, TypeDecl::INT), InvalidOperationException);
 
-    EXPECT_ANY_THROW(create(1, 0x4000, BinaryExpression::PLUS, TypeDecl::INT, ptrType));
-    EXPECT_ANY_THROW(create(1, 0x4000, BinaryExpression::MINUS, TypeDecl::INT, ptrType));
+    EXPECT_THROW(create(1, 0x4000, BinaryExpression::PLUS, TypeDecl::INT, ptrType), InvalidOperationException);
+    EXPECT_THROW(create(1, 0x4000, BinaryExpression::MINUS, TypeDecl::INT, ptrType), InvalidOperationException);
 }
 

@@ -472,24 +472,56 @@ TEST(BinaryExpressionTest, pointerAdditionArithmetics)
     }
 }
 
-TEST(BinaryExpressionTest, cannotBitwiseOperateOnPointyBoys)
+TEST(BinaryExpressionTest, invalidOperationsOnPointers)
 {
-    auto left = std::make_shared<LiteralExpression>(ExpressionValue(TypeDecl::getPointer(TypeDecl::INT), 100));
-    auto right = std::make_shared<LiteralExpression>(ExpressionValue(TypeDecl::getPointer(TypeDecl::INT), 100));
-    ASSERT_THROW(BinaryExpression expr(BinaryExpression::BITWISE_OR, left, right), InvalidOperationException);
-    ASSERT_THROW(BinaryExpression expr(BinaryExpression::BITWISE_XOR, left, right), InvalidOperationException);
-    ASSERT_THROW(BinaryExpression expr(BinaryExpression::BITWISE_AND, left, right), InvalidOperationException);
-    ASSERT_THROW(BinaryExpression expr(BinaryExpression::BITWISE_LSHIFT, left, right), InvalidOperationException);
-    ASSERT_THROW(BinaryExpression expr(BinaryExpression::BITWISE_RSHIFT, left, right), InvalidOperationException);
+    auto pointer = std::make_shared<LiteralExpression>(ExpressionValue(TypeDecl::getPointer(TypeDecl::INT), 100));
+    auto integer = std::make_shared<LiteralExpression>(ExpressionValue(TypeDecl::INT, 100));
+
+    EXPECT_THROW(BinaryExpression expr(BinaryExpression::BITWISE_OR, pointer, integer), InvalidOperationException);
+    EXPECT_THROW(BinaryExpression expr(BinaryExpression::BITWISE_OR, integer, pointer), InvalidOperationException);
+
+    EXPECT_THROW(BinaryExpression expr(BinaryExpression::BITWISE_XOR, pointer, integer), InvalidOperationException);
+    EXPECT_THROW(BinaryExpression expr(BinaryExpression::BITWISE_XOR, integer, pointer), InvalidOperationException);
+
+    EXPECT_THROW(BinaryExpression expr(BinaryExpression::BITWISE_AND, pointer, integer), InvalidOperationException);
+    EXPECT_THROW(BinaryExpression expr(BinaryExpression::BITWISE_AND, integer, pointer), InvalidOperationException);
+
+    EXPECT_THROW(BinaryExpression expr(BinaryExpression::BITWISE_LSHIFT, pointer, integer), InvalidOperationException);
+    EXPECT_THROW(BinaryExpression expr(BinaryExpression::BITWISE_LSHIFT, integer, pointer), InvalidOperationException);
+
+    EXPECT_THROW(BinaryExpression expr(BinaryExpression::BITWISE_RSHIFT, pointer, integer), InvalidOperationException);
+    EXPECT_THROW(BinaryExpression expr(BinaryExpression::BITWISE_RSHIFT, integer, pointer), InvalidOperationException);
+
+    EXPECT_THROW(BinaryExpression expr(BinaryExpression::MULTIPLY, pointer, integer), InvalidOperationException);
+    EXPECT_THROW(BinaryExpression expr(BinaryExpression::MULTIPLY, integer, pointer), InvalidOperationException);
+
+    EXPECT_THROW(BinaryExpression expr(BinaryExpression::DIVIDE, pointer, integer), InvalidOperationException);
+    EXPECT_THROW(BinaryExpression expr(BinaryExpression::DIVIDE, integer, pointer), InvalidOperationException);
+
+    EXPECT_THROW(BinaryExpression expr(BinaryExpression::MODULO, pointer, integer), InvalidOperationException);
+    EXPECT_THROW(BinaryExpression expr(BinaryExpression::MODULO, integer, pointer), InvalidOperationException);
 }
 
-TEST(BinaryExpressionTest, cannotBitwiseOperateOnFloatyBoys)
+TEST(BinaryExpressionTest, invalidFloatOperations)
 {
-    auto left = std::make_shared<LiteralExpression>(ExpressionValue(TypeDecl::FLOAT, 10.f));
-    auto right = std::make_shared<LiteralExpression>(ExpressionValue(TypeDecl::FLOAT, 10.f));
-    ASSERT_THROW(BinaryExpression expr(BinaryExpression::BITWISE_OR, left, right), InvalidOperationException);
-    ASSERT_THROW(BinaryExpression expr(BinaryExpression::BITWISE_XOR, left, right), InvalidOperationException);
-    ASSERT_THROW(BinaryExpression expr(BinaryExpression::BITWISE_AND, left, right), InvalidOperationException);
-    ASSERT_THROW(BinaryExpression expr(BinaryExpression::BITWISE_LSHIFT, left, right), InvalidOperationException);
-    ASSERT_THROW(BinaryExpression expr(BinaryExpression::BITWISE_RSHIFT, left, right), InvalidOperationException);
+    auto floating = std::make_shared<LiteralExpression>(ExpressionValue(TypeDecl::FLOAT, 10.f));
+    auto integer = std::make_shared<LiteralExpression>(ExpressionValue(TypeDecl::FLOAT, 10.f));
+
+    EXPECT_THROW(BinaryExpression expr(BinaryExpression::BITWISE_OR, floating, integer), InvalidOperationException);
+    EXPECT_THROW(BinaryExpression expr(BinaryExpression::BITWISE_OR, integer, floating), InvalidOperationException);
+
+    EXPECT_THROW(BinaryExpression expr(BinaryExpression::BITWISE_XOR, floating, integer), InvalidOperationException);
+    EXPECT_THROW(BinaryExpression expr(BinaryExpression::BITWISE_XOR, integer, floating), InvalidOperationException);
+
+    EXPECT_THROW(BinaryExpression expr(BinaryExpression::BITWISE_AND, floating, integer), InvalidOperationException);
+    EXPECT_THROW(BinaryExpression expr(BinaryExpression::BITWISE_AND, integer, floating), InvalidOperationException);
+
+    EXPECT_THROW(BinaryExpression expr(BinaryExpression::BITWISE_LSHIFT, floating, integer), InvalidOperationException);
+    EXPECT_THROW(BinaryExpression expr(BinaryExpression::BITWISE_LSHIFT, integer, floating), InvalidOperationException);
+
+    EXPECT_THROW(BinaryExpression expr(BinaryExpression::BITWISE_RSHIFT, floating, integer), InvalidOperationException);
+    EXPECT_THROW(BinaryExpression expr(BinaryExpression::BITWISE_RSHIFT, integer, floating), InvalidOperationException);
+
+    EXPECT_THROW(BinaryExpression expr(BinaryExpression::MODULO, floating, integer), InvalidOperationException);
+    EXPECT_THROW(BinaryExpression expr(BinaryExpression::MODULO, integer, floating), InvalidOperationException);
 }

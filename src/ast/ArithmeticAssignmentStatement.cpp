@@ -23,6 +23,19 @@ ArithmeticAssignmentStatement::ArithmeticAssignmentStatement(Lvalue::Ptr lvalue,
     _leftExpr = std::make_shared<MutableLiteralExpression>(dummyLeft);
     _rightExpr = std::make_shared<MutableLiteralExpression>(dummyRight);
     _binaryExpression = std::make_shared<BinaryExpression>(_operator, _leftExpr, _rightExpr);
+
+    /* EDGECASE
+     *
+     * Expressions of the form (<int> + <pointer>) are valid in all other contexts
+     * but arithmetic assignments, so this is a case we must handle ourselves. This
+     * can be simplified to checking if our operand is a pointer type, as no valid
+     * statement will have a RHS-pointer.
+     */
+    if (_expression->getType().getType() == TypeDecl::POINTER) {
+        Throw(InvalidOperationException,
+              "Operand of type '%s' cannot be used in arithmetic assignment",
+              _expression->getType().getName());
+    }
 }
 
 void ArithmeticAssignmentStatement::execute(vm::ExecutionContext *ctx) const
