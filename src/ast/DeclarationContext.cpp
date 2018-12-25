@@ -1,5 +1,7 @@
 #include "DeclarationContext.h"
 
+#include <set>
+
 
 namespace cish
 {
@@ -15,6 +17,8 @@ DeclarationContext::DeclarationContext():
 
 void DeclarationContext::declareVariable(TypeDecl type, const std::string &name)
 {
+    checkForReservedKeyword(name);
+
     for (const auto &var: _varScope.back()) {
         if (var.name == name) {
             Throw(VariableAlreadyDeclaredException,
@@ -90,6 +94,8 @@ FunctionDefinition::Ptr DeclarationContext::getCurrentFunction() const
 
 void DeclarationContext::declareFunction(FuncDeclaration func)
 {
+    checkForReservedKeyword(func.name);
+
     const FuncDeclaration *existing = getFunctionDeclaration(func.name);
     if (existing != nullptr) {
         verifyIdenticalDeclarations(existing, &func);
@@ -133,6 +139,19 @@ void DeclarationContext::verifyIdenticalDeclarations(const FuncDeclaration *exis
         }
     }
 
+}
+
+void DeclarationContext::checkForReservedKeyword(const std::string &identifier) const
+{
+    static const std::set<std::string> reservedKeywords = {
+        "sizeof", "for", "do", "while", "switch", "case", "goto",
+        "bool", "char", "short", "int", "long", "float", 
+        "double", "void", "unsigned"
+    };
+
+    if (reservedKeywords.count(identifier) != 0) {
+        Throw(InvalidIdentifierException, "Identifier '%s' is reserved", identifier.c_str());
+    }
 }
 
 

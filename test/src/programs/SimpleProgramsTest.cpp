@@ -935,6 +935,28 @@ TEST(SimpleProgramsTest, includingUndefinedModulesThrows)
     );
 }
 
+static const std::vector<std::string> reservedKeywords = {
+    "sizeof", "for", "do", "while", "switch", "case", "goto",
+    "bool", "char", "short", "int", "long", "float", 
+    "double", "void", "unsigned"
+};
+
+TEST(SimpleProgramsTest, reservedKeywordCheckInVariableNames)
+{
+    for (const std::string &keyword: reservedKeywords) {
+        const std::string source = "int main() { int "+keyword+" = 10; return 0; }";
+        assertCompilationFailure(source);
+    }
+}
+
+TEST(SimpleProgramsTest, reservedKeywordCheckInFunctionNames)
+{
+    for (const std::string &keyword: reservedKeywords) {
+        const std::string source = "void "+keyword+"() {} int main() { return 0; }";
+        assertCompilationFailure(source);
+    }
+}
+
 
 /* RUNTIME FAILURES */
 

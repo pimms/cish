@@ -19,6 +19,7 @@ namespace ast
 DECLARE_EXCEPTION(VariableAlreadyDeclaredException);
 DECLARE_EXCEPTION(FunctionAlreadyDeclaredException);
 DECLARE_EXCEPTION(FunctionAlreadyDefinedException);
+DECLARE_EXCEPTION(InvalidIdentifierException);
 
 DECLARE_EXCEPTION(InvalidDeclarationScope);
 
@@ -56,6 +57,7 @@ private:
 
     VarDeclaration* findInScope(const std::string &name, VariableScope *scope);
     void verifyIdenticalDeclarations(const FuncDeclaration *existing, const FuncDeclaration *redecl);
+    void checkForReservedKeyword(const std::string &identifier) const;
 };
 
 
