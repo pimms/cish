@@ -7,6 +7,9 @@ namespace cish
 {
 namespace ast
 {
+
+DECLARE_EXCEPTION(DivisionByZeroException);
+
 namespace internal
 {
 
@@ -20,6 +23,24 @@ template<typename T>
 T rshift(T a, T n)
 {
     return a >> n;
+}
+
+template<typename T>
+T safe_div(T a, T b)
+{
+    if (b == 0) {
+        Throw(DivisionByZeroException, "Division by zero");
+    }
+    return a / b;
+}
+
+template<typename T>
+T safe_mod(T a, T b)
+{
+    if (b == 0) {
+        Throw(DivisionByZeroException, "Division by zero");
+    }
+    return a % b;
 }
 
 }
@@ -86,8 +107,6 @@ ExpressionValue BinaryExpression::evaluateT(vm::ExecutionContext *ctx) const
     ExpressionValue lval = _left->evaluate(ctx);
     ExpressionValue rval = _right->evaluate(ctx);
 
-    // TODO: Check the RHS for 0, and throw div/0 VMRE
-
     if (_operator >= __BOOLEAN_BOUNDARY) {
         std::function<bool(T,T)> func = getFunction<T>();
         const bool value = func(lval.get<T>(), rval.get<T>());
@@ -104,7 +123,7 @@ std::function<T(T,T)> BinaryExpression::getFunction() const
 {
     switch (_operator) {
         case MULTIPLY:      return std::multiplies<T>();
-        case DIVIDE:        return std::divides<T>();
+        case DIVIDE:        return internal::safe_div<T>;
         case PLUS:          return std::plus<T>();
         case MINUS:         return std::minus<T>();
         case BITWISE_AND:   return std::bit_and<int32_t>();
@@ -129,7 +148,7 @@ std::function<T(T,T)> BinaryExpression::getFunction() const
             // TODO: Make this a VM runtime error
             throw std::runtime_error("Modulo attempted on floating point number");
         } else {
-            return std::modulus<T>();
+            return internal::safe_mod<T>;
         }
     }
 

@@ -1019,3 +1019,14 @@ TEST(SimpleProgramsTest, derefDeallocatedLocationThrows)
         "}"
     );
 }
+
+TEST(SimpleProgramsTest, divisionByZero)
+{
+    assertRuntimeFailure("int main() { return 10 / 0; }");
+    assertRuntimeFailure("int main() { return 10.f / 0.f; }");
+}
+
+TEST(SimpleProgramsTest, moduloByZero)
+{
+    assertRuntimeFailure("int main() { return 10 % 0; }");
+}
