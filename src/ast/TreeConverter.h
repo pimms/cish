@@ -79,6 +79,7 @@ public:
     virtual antlrcpp::Any visitExpressionStatement(CMParser::ExpressionStatementContext *ctx) override;
     virtual antlrcpp::Any visitAssignment(CMParser::AssignmentContext *ctx) override;
     virtual antlrcpp::Any visitVariableDeclaration(CMParser::VariableDeclarationContext *ctx) override;
+    virtual antlrcpp::Any visitArithmeticAssignment(CMParser::ArithmeticAssignmentContext *ctx) override;
     virtual antlrcpp::Any visitFunctionDeclaration(CMParser::FunctionDeclarationContext *ctx) override;
     virtual antlrcpp::Any visitFunctionDefinition(CMParser::FunctionDefinitionContext *ctx) override;
     virtual antlrcpp::Any visitFunctionCall(CMParser::FunctionCallContext *ctx) override;

@@ -12,6 +12,7 @@
 #include "StringLiteralExpression.h"
 #include "SizeofExpression.h"
 #include "TypeCastExpression.h"
+#include "ArithmeticAssignmentStatement.h"
 
 #include "VariableAssignmentStatement.h"
 #include "VariableDeclarationStatement.h"
@@ -526,6 +527,33 @@ antlrcpp::Any TreeConverter::visitVariableDeclaration(CMParser::VariableDeclarat
     return createResult(varDecl);
 }
 
+antlrcpp::Any TreeConverter::visitArithmeticAssignment(CMParser::ArithmeticAssignmentContext *ctx)
+{
+    static const std::map<std::string, BinaryExpression::Operator> opmap = {
+        { "+=",     BinaryExpression::Operator::PLUS }, 
+        { "-=",     BinaryExpression::Operator::MINUS },
+        { "*=",     BinaryExpression::Operator::MULTIPLY },
+        { "/=",     BinaryExpression::Operator::DIVIDE },
+        { "%=",     BinaryExpression::Operator::MODULO },
+        { "<<=",    BinaryExpression::Operator::BITWISE_LSHIFT },
+        { ">>=",    BinaryExpression::Operator::BITWISE_RSHIFT },
+        { "&=",     BinaryExpression::Operator::BITWISE_AND },
+        { "^=",     BinaryExpression::Operator::BITWISE_XOR },
+        { "|=",     BinaryExpression::Operator::BITWISE_OR },
+    };
+
+    Lvalue::Ptr lvalue = manuallyVisitLvalue(ctx->lvalue());
+    Expression::Ptr expr = manuallyVisitExpression(ctx->expression());
+
+    const std::string op = ctx->op->getText();
+    if (opmap.count(op) == 0)
+        Throw(AstConversionException, "Unable to handle arith.ass. operator '%s'", op.c_str());
+    BinaryExpression::Operator oper = opmap.at(op);
+
+    auto stmt = std::make_shared<ArithmeticAssignmentStatement>(lvalue, oper, expr);
+    return createResult(stmt);
+}
+
 antlrcpp::Any TreeConverter::visitFunctionDeclaration(CMParser::FunctionDeclarationContext *ctx)
 {
     const std::string funcName = ctx->identifier()->getText();
@@ -615,7 +643,7 @@ antlrcpp::Any TreeConverter::visitStringLiteral(CMParser::StringLiteralContext *
 antlrcpp::Any TreeConverter::visitLvalue(CMParser::LvalueContext *ctx)
 {
     // Will never be implemented!
-    Throw(AstConversionException, "Internal conversion exception - should never visit Lvalue automatically!");
+    Throw(AstConversionException, "Internal conversion exception - use 'manuallyVisitLvalue()'!");
 }
 
 antlrcpp::Any TreeConverter::visitIdentifier(CMParser::IdentifierContext *ctx)

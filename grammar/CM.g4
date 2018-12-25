@@ -80,7 +80,6 @@ elseStatement
     | 'else' statement
     ;
 
-
 forStatement
     : 'for' '(' forInitializer? ';' expression? ';' forIterator? ')' '{' statement* '}'
     | 'for' '(' forInitializer? ';' expression? ';' forIterator? ')' statement
@@ -109,16 +108,7 @@ assignment
     ;
 
 arithmeticAssignment
-    : lvalue '+=' expression
-    | lvalue '-=' expression
-    | lvalue '*=' expression
-    | lvalue '/=' expression 
-    | lvalue '%=' expression
-    | lvalue '<<=' expression 
-    | lvalue '>>=' expression
-    | lvalue '&=' expression 
-    | lvalue '^=' expression 
-    | lvalue '|=' expression
+    : lvalue op=( '+=' | '-=' | '*=' | '/=' | '%=' | '<<=' | '>>=' | '&=' | '^=' | '|=' ) expression
     ;
 
 
