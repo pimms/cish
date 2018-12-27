@@ -115,5 +115,45 @@ vm::MemoryView DereferencedVariableReference::getMemoryView(vm::ExecutionContext
 }
 
 
+/*
+==================
+SubscriptExpression
+==================
+*/
+SubscriptExpression::SubscriptExpression(Expression::Ptr ptrExpr, Expression::Ptr indexExpr):
+    _ptrExpr(ptrExpr),
+    _indexExpr(indexExpr)
+{
+    const TypeDecl ptrType = ptrExpr->getType();
+    if (ptrType != TypeDecl::POINTER) {
+        Throw(InvalidOperationException,
+              "Cannot use subscript operator on expression of type '%s'", ptrType.getName());
+    }
+
+    TypeDecl idxType = indexExpr->getType();
+    if (idxType.isFloating() || idxType == TypeDecl::POINTER) {
+        Throw(InvalidOperationException,
+              "Cannot use expression of type '%s' as subscript index", idxType.getName());
+    }
+
+    _intrinsicType = *ptrExpr->getType().getReferencedType();
+}
+
+TypeDecl SubscriptExpression::getType() const
+{
+    return *_ptrExpr->getType().getReferencedType();
+}
+
+vm::MemoryView SubscriptExpression::getMemoryView(vm::ExecutionContext *context) const
+{
+    const int32_t stride = std::max(1, (int32_t)_intrinsicType.getSize());
+    const int32_t offset = stride * _indexExpr->evaluate(context).get<int32_t>();
+    const uint32_t addr = _ptrExpr->evaluate(context).get<uint32_t>() + offset;
+    return context->getMemory()->getView(addr);
+}
+
+
+
+
 }
 }

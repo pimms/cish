@@ -242,6 +242,18 @@ antlrcpp::Any TreeConverter::visitNEGATION_EXPR(CMParser::NEGATION_EXPRContext *
     return createResult(std::make_shared<NegationExpression>(expr));
 }
 
+antlrcpp::Any TreeConverter::visitSUBSCRIPT_EXPR(CMParser::SUBSCRIPT_EXPRContext *ctx)
+{
+    Result res = visitChildren(ctx);
+    assert(res.size() == 2);
+
+    Expression::Ptr ptrExpr = castToExpression(res[0]);
+    Expression::Ptr idxExpr = castToExpression(res[1]);
+
+    auto subscript = std::make_shared<SubscriptExpression>(ptrExpr, idxExpr);
+    return createResult(subscript);
+}
+
 antlrcpp::Any TreeConverter::visitONES_COMPLEMENT_EXPR(CMParser::ONES_COMPLEMENT_EXPRContext *ctx)
 {
     Result result = visitChildren(ctx).as<Result>();
@@ -668,6 +680,17 @@ antlrcpp::Any TreeConverter::visitLvalDereferencedVariable(CMParser::LvalDerefer
     return createResult(derefVar);
 }
 
+antlrcpp::Any TreeConverter::visitLvalSubscript(CMParser::LvalSubscriptContext *ctx)
+{
+    Result res = visitChildren(ctx);
+    assert(res.size() == 2);
+
+    Expression::Ptr ptrExpr = castToExpression(res[0]);
+    Expression::Ptr idxExpr = castToExpression(res[1]);
+
+    auto subscript = std::make_shared<SubscriptExpression>(ptrExpr, idxExpr);
+    return createResult(subscript);
+}
 
 antlrcpp::Any TreeConverter::visitIdentifier(CMParser::IdentifierContext *ctx)
 {

@@ -69,5 +69,26 @@ private:
 };
 
 
+/*
+==================
+SubscriptExpression
+==================
+*/
+class SubscriptExpression: public Lvalue
+{
+public:
+    SubscriptExpression(Expression::Ptr ptrExpr, Expression::Ptr indexExpr);
+
+    virtual TypeDecl getType() const override;
+    virtual vm::MemoryView getMemoryView(vm::ExecutionContext *context) const override;
+
+private:
+    Expression::Ptr _ptrExpr;
+    Expression::Ptr _indexExpr;
+
+    TypeDecl _intrinsicType;
+};
+
+
 }
 }

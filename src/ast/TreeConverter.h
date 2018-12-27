@@ -58,6 +58,7 @@ public:
     virtual antlrcpp::Any visitSIZEOF_EXPR(CMParser::SIZEOF_EXPRContext *ctx) override;
     virtual antlrcpp::Any visitSizeofTerm(CMParser::SizeofTermContext *ctx) override;
     virtual antlrcpp::Any visitNEGATION_EXPR(CMParser::NEGATION_EXPRContext *ctx) override;
+    virtual antlrcpp::Any visitSUBSCRIPT_EXPR(CMParser::SUBSCRIPT_EXPRContext *ctx) override;
     virtual antlrcpp::Any visitONES_COMPLEMENT_EXPR(CMParser::ONES_COMPLEMENT_EXPRContext *ctx) override;
     virtual antlrcpp::Any visitMULT_EXPR(CMParser::MULT_EXPRContext *ctx) override;
     virtual antlrcpp::Any visitEQUALITY_EXPR(CMParser::EQUALITY_EXPRContext *ctx) override;
@@ -89,6 +90,7 @@ public:
     virtual antlrcpp::Any visitStringLiteral(CMParser::StringLiteralContext *ctx) override;
     virtual antlrcpp::Any visitLvalVariableReference(CMParser::LvalVariableReferenceContext *ctx) override;
     virtual antlrcpp::Any visitLvalDereferencedVariable(CMParser::LvalDereferencedVariableContext *ctx) override;
+    virtual antlrcpp::Any visitLvalSubscript(CMParser::LvalSubscriptContext *ctx) override;
     virtual antlrcpp::Any visitIdentifier(CMParser::IdentifierContext *ctx) override;
     virtual antlrcpp::Any visitTypeIdentifier(CMParser::TypeIdentifierContext *ctx) override;
 

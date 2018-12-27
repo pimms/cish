@@ -24,6 +24,7 @@ expression
 expr
     : incdecexpr                                # INCDECEXPR___ // Not to be used explicitly
     | '(' expr ')'                              # PAREN_EXPR___ // Not to be used explicitly
+    | expr '[' expr ']'                         # SUBSCRIPT_EXPR
     | '!' expr                                  # NEGATION_EXPR
     | '~' expr                                  # ONES_COMPLEMENT_EXPR
     | '(' typeIdentifier ')' expr               # TYPE_CAST_EXPR
@@ -147,12 +148,16 @@ identifier
 lvalue
     : lvalVariableReference
     | lvalDereferencedVariable
+    | lvalSubscript
     ;
 lvalVariableReference
     : Identifier
     ;
 lvalDereferencedVariable
-    : ('*')+ Identifier
+    : ('*')+ expr
+    ;
+lvalSubscript
+    : expression '[' expression ']'
     ;
 
 
