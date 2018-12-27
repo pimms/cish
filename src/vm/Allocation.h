@@ -3,6 +3,8 @@
 #include <memory>
 #include <stdexcept>
 
+#include "../ast/ExpressionValue.h"
+
 namespace cish
 {
 namespace vm
@@ -44,6 +46,8 @@ public:
     T read(uint32_t offset = 0) const;
 
     const uint8_t* readBuf(uint32_t length, uint32_t offset = 0) const;
+
+    ast::ExpressionValue evaluateAs(const ast::TypeDecl &type) const;
 
     template<typename T>
     void write(T value, uint32_t offset = 0);

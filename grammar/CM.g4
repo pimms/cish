@@ -145,8 +145,16 @@ identifier
     ;
 
 lvalue
-    : ('*')* Identifier
+    : lvalVariableReference
+    | lvalDereferencedVariable
     ;
+lvalVariableReference
+    : Identifier
+    ;
+lvalDereferencedVariable
+    : ('*')+ Identifier
+    ;
+
 
 typeIdentifier
     : (Const)? typeName Asterisk*

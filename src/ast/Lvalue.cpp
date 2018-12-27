@@ -7,6 +7,18 @@ namespace ast
 {
 
 
+
+/*
+==================
+Lvalue
+==================
+*/
+ExpressionValue Lvalue::evaluate(vm::ExecutionContext *context) const
+{
+    return getMemoryView(context).evaluateAs(getType());
+}
+
+
 /*
 ==================
 VariableReference
@@ -24,12 +36,12 @@ VariableReference::VariableReference(DeclarationContext *context, const std::str
     _varDecl = *decl;
 }
 
-const TypeDecl& VariableReference::getType() const
+TypeDecl VariableReference::getType() const
 {
     return _varDecl.type;
 }
 
-vm::MemoryView VariableReference::getMemoryView(vm::ExecutionContext *context)
+vm::MemoryView VariableReference::getMemoryView(vm::ExecutionContext *context) const
 {
     vm::Variable *var = context->getScope()->getVariable(_varDecl.name);
     if (!var) {
@@ -80,12 +92,12 @@ DereferencedVariableReference::DereferencedVariableReference(DeclarationContext 
     _declaredType = decl->type;
 }
 
-const TypeDecl& DereferencedVariableReference::getType() const
+TypeDecl DereferencedVariableReference::getType() const
 {
     return _finalType;
 }
-
-vm::MemoryView DereferencedVariableReference::getMemoryView(vm::ExecutionContext *context)
+ 
+vm::MemoryView DereferencedVariableReference::getMemoryView(vm::ExecutionContext *context) const
 {
     vm::Variable *var = context->getScope()->getVariable(_varName);
     if (var->getType() != _declaredType) {

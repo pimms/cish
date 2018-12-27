@@ -496,7 +496,10 @@ antlrcpp::Any TreeConverter::visitExpressionStatement(CMParser::ExpressionStatem
 
 antlrcpp::Any TreeConverter::visitAssignment(CMParser::AssignmentContext *ctx)
 {
-    Lvalue::Ptr lvalue = manuallyVisitLvalue(ctx->lvalue());
+    Result res = visitLvalue(ctx->lvalue()).as<Result>();
+    assert(res.size() == 1);
+    Lvalue::Ptr lvalue = std::dynamic_pointer_cast<Lvalue>(res[0]);
+
     Expression::Ptr expression = nullptr;
 
     if (ctx->expression()) {
@@ -542,7 +545,10 @@ antlrcpp::Any TreeConverter::visitArithmeticAssignment(CMParser::ArithmeticAssig
         { "|=",     BinaryExpression::Operator::BITWISE_OR },
     };
 
-    Lvalue::Ptr lvalue = manuallyVisitLvalue(ctx->lvalue());
+    Result res = visitLvalue(ctx->lvalue()).as<Result>();
+    assert(res.size() == 1);
+    Lvalue::Ptr lvalue = std::dynamic_pointer_cast<Lvalue>(res[0]);
+
     Expression::Ptr expr = manuallyVisitExpression(ctx->expression());
 
     const std::string op = ctx->op->getText();
@@ -640,11 +646,28 @@ antlrcpp::Any TreeConverter::visitStringLiteral(CMParser::StringLiteralContext *
     return createResult(manuallyVisitStringLiteral(ctx));
 }
 
-antlrcpp::Any TreeConverter::visitLvalue(CMParser::LvalueContext *ctx)
+
+antlrcpp::Any TreeConverter::visitLvalVariableReference(CMParser::LvalVariableReferenceContext *ctx)
 {
-    // Will never be implemented!
-    Throw(AstConversionException, "Internal conversion exception - use 'manuallyVisitLvalue()'!");
+    std::string declName = ctx->getText();
+    auto varRef = std::make_shared<VariableReference>(&_declContext, declName);
+    return createResult(varRef);
 }
+
+antlrcpp::Any TreeConverter::visitLvalDereferencedVariable(CMParser::LvalDereferencedVariableContext *ctx)
+{
+    std::string declName = ctx->getText();
+
+    int derefs = 0;
+    while (declName[0] == '*') {
+        derefs++;
+        declName = declName.substr(1);
+    }
+
+    auto derefVar = std::make_shared<DereferencedVariableReference>(&_declContext, declName, derefs);
+    return createResult(derefVar);
+}
+
 
 antlrcpp::Any TreeConverter::visitIdentifier(CMParser::IdentifierContext *ctx)
 {
@@ -744,22 +767,6 @@ VarDeclaration TreeConverter::manuallyVisitFunctionParameter(CMParser::FunctionP
     decl.type = type;
     decl.name = varName;
     return decl;
-}
-
-Lvalue::Ptr TreeConverter::manuallyVisitLvalue(CMParser::LvalueContext *ctx)
-{
-    std::string declName = ctx->getText();
-    if (declName[0] != '*') {
-        return std::make_shared<VariableReference>(&_declContext, declName);
-    }
-
-    int derefs = 0;
-    while (declName[0] == '*') {
-        derefs++;
-        declName = declName.substr(1);
-    }
-
-    return std::make_shared<DereferencedVariableReference>(&_declContext, declName, derefs);
 }
 
 StringLiteralExpression::Ptr TreeConverter::manuallyVisitStringLiteral(CMParser::StringLiteralContext *ctx)

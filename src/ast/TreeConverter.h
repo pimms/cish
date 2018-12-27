@@ -87,7 +87,8 @@ public:
     virtual antlrcpp::Any visitIdentifierList(CMParser::IdentifierListContext *ctx) override;
     virtual antlrcpp::Any visitFunctionParameter(CMParser::FunctionParameterContext *ctx) override;
     virtual antlrcpp::Any visitStringLiteral(CMParser::StringLiteralContext *ctx) override;
-    virtual antlrcpp::Any visitLvalue(CMParser::LvalueContext *ctx) override;
+    virtual antlrcpp::Any visitLvalVariableReference(CMParser::LvalVariableReferenceContext *ctx) override;
+    virtual antlrcpp::Any visitLvalDereferencedVariable(CMParser::LvalDereferencedVariableContext *ctx) override;
     virtual antlrcpp::Any visitIdentifier(CMParser::IdentifierContext *ctx) override;
     virtual antlrcpp::Any visitTypeIdentifier(CMParser::TypeIdentifierContext *ctx) override;
 
@@ -108,7 +109,6 @@ private:
     Statement::Ptr manuallyVisitStatement(CMParser::StatementContext *ctx);
     std::vector<VarDeclaration> manuallyVisitIdentifierList(CMParser::IdentifierListContext *ctx);
     VarDeclaration manuallyVisitFunctionParameter(CMParser::FunctionParameterContext *ctx);
-    Lvalue::Ptr manuallyVisitLvalue(CMParser::LvalueContext *ctx);
     StringLiteralExpression::Ptr manuallyVisitStringLiteral(CMParser::StringLiteralContext *ctx);
     Statement::Ptr manuallyVisitForInitializer(CMParser::ForInitializerContext *ctx);
     Statement::Ptr manuallyVisitForIterator(CMParser::ForIteratorContext *ctx);

@@ -17,14 +17,14 @@ namespace ast
 Lvalue
 ==================
 */
-class Lvalue
+class Lvalue: public Expression
 {
 public:
     typedef std::shared_ptr<Lvalue> Ptr;
 
     virtual ~Lvalue() = default;
-    virtual const TypeDecl& getType() const = 0;
-    virtual vm::MemoryView getMemoryView(vm::ExecutionContext *context) = 0;
+    virtual ExpressionValue evaluate(vm::ExecutionContext *context) const override;
+    virtual vm::MemoryView getMemoryView(vm::ExecutionContext *context) const = 0;
 };
 
 
@@ -39,8 +39,8 @@ public:
     VariableReference(DeclarationContext *context, const std::string &varName);
     virtual ~VariableReference() = default;
 
-    virtual const TypeDecl& getType() const override;
-    virtual vm::MemoryView getMemoryView(vm::ExecutionContext *context) override;
+    virtual TypeDecl getType() const override;
+    virtual vm::MemoryView getMemoryView(vm::ExecutionContext *context) const override;
 
 private:
     VarDeclaration _varDecl;
@@ -58,8 +58,8 @@ public:
     DereferencedVariableReference(DeclarationContext *context, const std::string &varName, int numDerefs);
     virtual ~DereferencedVariableReference() = default;
 
-    virtual const TypeDecl& getType() const override;
-    virtual vm::MemoryView getMemoryView(vm::ExecutionContext *context) override;
+    virtual TypeDecl getType() const override;
+    virtual vm::MemoryView getMemoryView(vm::ExecutionContext *context) const override;
 
 private:
     std::string _varName;
