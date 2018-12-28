@@ -29,7 +29,7 @@ expr
     | '~' expr                                  # ONES_COMPLEMENT_EXPR
     | '(' typeIdentifier ')' expr               # TYPE_CAST_EXPR
     | '*' expr                                  # DEREF_EXPR
-    | '&' Identifier                            # ADDROF_EXPR
+    | '&' lvalue                                # ADDROF_EXPR
     | 'sizeof' sizeofTerm                       # SIZEOF_EXPR
     | expr op=( '*' | '/' | '%' ) expr          # MULT_EXPR
     | expr op=( '+' | '-' ) expr                # ADD_EXPR
@@ -147,14 +147,14 @@ identifier
 
 lvalue
     : lvalVariableReference
-    | lvalDereferencedVariable
+    | lvalDereference
     | lvalSubscript
     ;
 lvalVariableReference
     : Identifier
     ;
-lvalDereferencedVariable
-    : ('*')+ expr
+lvalDereference
+    : '*' expr
     ;
 lvalSubscript
     : expression '[' expression ']'

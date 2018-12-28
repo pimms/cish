@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "ast/DerefExpression.h"
+#include "ast/Lvalue.h"
 #include "ast/LiteralExpression.h"
 #include "ast/IncdecExpression.h"
 
@@ -14,7 +14,7 @@ using namespace cish::vm;
 using namespace cish::ast;
 
 
-TEST(DerefExpressionTest, simpleDereference)
+TEST(DereferenceExpressionTest, simpleDereference)
 {
     Memory memory(100, 1);
     DeclarationContext dc;
@@ -30,12 +30,12 @@ TEST(DerefExpressionTest, simpleDereference)
     ExpressionValue exprVal(type, var->getAllocation()->getAddress());
     auto literal = std::make_shared<LiteralExpression>(exprVal);
 
-    DerefExpression deref(&dc, literal);
+    DereferenceExpression deref(literal);
     ASSERT_EQ(TypeDecl::INT, deref.getType().getType());
     ASSERT_EQ(15, deref.evaluate(&ec).get<int>());
 }
 
-TEST(DerefExpressionTest, testWithIncrementalOperand)
+TEST(DereferenceExpressionTest, testWithIncrementalOperand)
 {
     Memory memory(100, 1);
     DeclarationContext dc;
@@ -53,7 +53,7 @@ TEST(DerefExpressionTest, testWithIncrementalOperand)
 
     auto inc = std::make_shared<IncDecExpression>(&dc, IncDecExpression::POSTFIX_INCREMENT, "ptr");
 
-    DerefExpression deref(&dc, inc);
+    DereferenceExpression deref(inc);
     ASSERT_EQ(TypeDecl::INT, deref.getType().getType());
     ASSERT_EQ(15, deref.evaluate(&ec).get<int>());
 

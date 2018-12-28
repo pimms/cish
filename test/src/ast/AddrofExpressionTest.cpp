@@ -4,6 +4,7 @@
 #include "vm/ExecutionContext.h"
 #include "ast/DeclarationContext.h"
 #include "ast/AddrofExpression.h"
+#include "ast/Lvalue.h"
 #include "ast/Type.h"
 
 using namespace cish::vm;
@@ -19,7 +20,9 @@ TEST(AddrofExpressionTest, verifyReturnValue)
     dc.declareVariable(TypeDecl::INT, "i");
     ec.getScope()->addVariable("i", new Variable(TypeDecl::INT, memory.allocate(4)));
 
-    AddrofExpression expr(&dc, "i");
+    VariableReference::Ptr varRef = std::make_shared<VariableReference>(&dc, "i");
+    
+    AddrofExpression expr(varRef);
     ExpressionValue value = expr.evaluate(&ec);
 
     ASSERT_EQ(TypeDecl::POINTER, value.getIntrinsicType().getType());
@@ -37,7 +40,9 @@ TEST(AddrofExpressionTest, addorfOfPointerEqualsPointerToPointer)
     dc.declareVariable(type, "ptr");
     ec.getScope()->addVariable("ptr", new Variable(type, memory.allocate(4)));
 
-    AddrofExpression expr(&dc, "ptr");
+    VariableReference::Ptr varRef = std::make_shared<VariableReference>(&dc, "ptr");
+
+    AddrofExpression expr(varRef);
     ASSERT_EQ(TypeDecl::POINTER, expr.getType().getType());
     ASSERT_EQ(TypeDecl::POINTER, expr.getType().getReferencedType()->getType());
     ASSERT_EQ(TypeDecl::INT, expr.getType().getReferencedType()->getReferencedType()->getType());

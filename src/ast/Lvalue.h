@@ -52,20 +52,18 @@ private:
 DereferencedVariableReference
 ==================
 */
-class DereferencedVariableReference: public Lvalue
+class DereferenceExpression: public Lvalue
 {
 public:
-    DereferencedVariableReference(DeclarationContext *context, const std::string &varName, int numDerefs);
-    virtual ~DereferencedVariableReference() = default;
+    DereferenceExpression(Expression::Ptr expression);
+    virtual ~DereferenceExpression() = default;
 
     virtual TypeDecl getType() const override;
     virtual vm::MemoryView getMemoryView(vm::ExecutionContext *context) const override;
 
 private:
-    std::string _varName;
-    int _numDerefs;
-    TypeDecl _finalType;
-    TypeDecl _declaredType;
+    Expression::Ptr _expr;
+    TypeDecl _type;
 };
 
 

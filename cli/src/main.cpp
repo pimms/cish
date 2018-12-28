@@ -31,6 +31,7 @@ cish::module::ModuleContext::Ptr createModuleContext()
     moduleContext->addModule(cish::module::stdlib::buildModule());
     moduleContext->addModule(cish::module::stdio::buildModule());
 
+    // Bools are natively handled in cish, so add an empty module for compat
     cish::module::Module::Ptr stdbool = cish::module::Module::create("stdbool.h");
     moduleContext->addModule(stdbool);
 
@@ -83,7 +84,7 @@ int main(int argc, char **argv)
     // memory space.
     //
     // TODO: Convert this into a command-line option
-    getchar();
+    // getchar();
     #endif
 
     return retval;

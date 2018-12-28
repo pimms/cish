@@ -1,7 +1,7 @@
 #pragma once
 
 #include "AstNodes.h"
-#include "DeclarationContext.h"
+#include "Lvalue.h"
 
 
 namespace cish
@@ -13,13 +13,14 @@ namespace ast
 class AddrofExpression: public Expression
 {
 public:
-    AddrofExpression(DeclarationContext *context, const std::string &varName);
+    AddrofExpression(Lvalue::Ptr lvalue);
 
     ExpressionValue evaluate(vm::ExecutionContext *context) const override;
     TypeDecl getType() const override;
 
 private:
-    VarDeclaration _varDecl;
+    Lvalue::Ptr _lvalue;
+    TypeDecl _type;
 };
 
 

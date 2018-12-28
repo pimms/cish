@@ -432,6 +432,16 @@ TEST(SimpleProgramsTest, dereferencingPointerPointerEqualsPointer)
         "}", 1);
 }
 
+TEST(SimpleProgramsTest, derefAddrof)
+{
+    assertExitCode(
+        "int main() {"
+        "   int n = 123;"
+        "   return *&*&n;"
+        "}", 123
+    );
+}
+
 TEST(SimpleProgramsTest, returningADereferencedPointer)
 {
     const std::string source =

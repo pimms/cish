@@ -5,31 +5,6 @@
 #include "AntlrContext.h"
 #include "ParseContext.h"
 
-#include "AstNodes.h"
-#include "Lvalue.h"
-#include "StringEscape.h"
-
-#include "BinaryExpression.h"
-#include "VariableReferenceExpression.h"
-#include "FunctionCallExpression.h"
-#include "LiteralExpression.h"
-#include "IncDecExpression.h"
-#include "AddrofExpression.h"
-#include "DerefExpression.h"
-#include "NegationExpression.h"
-#include "StringLiteralExpression.h"
-
-#include "VariableAssignmentStatement.h"
-#include "VariableDeclarationStatement.h"
-#include "FunctionDeclarationStatement.h"
-#include "FunctionDefinition.h"
-#include "ReturnStatement.h"
-#include "IfStatement.h"
-#include "ElseStatement.h"
-#include "ForLoopStatement.h"
-#include "WhileStatement.h"
-#include "ExpressionStatement.h"
-
 #include <cassert>
 
 

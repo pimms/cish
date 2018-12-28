@@ -6,7 +6,6 @@
 #include "LiteralExpression.h"
 #include "IncDecExpression.h"
 #include "AddrofExpression.h"
-#include "DerefExpression.h"
 #include "NegationExpression.h"
 #include "OnesComplementExpression.h"
 #include "StringLiteralExpression.h"
@@ -187,18 +186,20 @@ antlrcpp::Any TreeConverter::visitTYPE_CAST_EXPR(CMParser::TYPE_CAST_EXPRContext
     return createResult(castExpr);
 }
 
-antlrcpp::Any TreeConverter::visitADDROF_EXPR(CMParser::ADDROF_EXPRContext *ctx)
-{
-    const std::string varName = ctx->Identifier()->getText();
-    return createResult(std::make_shared<AddrofExpression>(&_declContext, varName));
-}
-
 antlrcpp::Any TreeConverter::visitDEREF_EXPR(CMParser::DEREF_EXPRContext *ctx)
 {
     Result result = visitChildren(ctx).as<Result>();
     assert(result.size() == 1);
     Expression::Ptr expr = castToExpression(result[0]);
-    return createResult(std::make_shared<DerefExpression>(&_declContext, expr));
+    return createResult(std::make_shared<DereferenceExpression>(expr));
+}
+
+antlrcpp::Any TreeConverter::visitADDROF_EXPR(CMParser::ADDROF_EXPRContext *ctx)
+{
+    Result result = visitChildren(ctx).as<Result>();
+    assert(result.size() == 1);
+    Lvalue::Ptr lvalue = std::dynamic_pointer_cast<Lvalue>(result[0]);
+    return createResult(std::make_shared<AddrofExpression>(lvalue));
 }
 
 antlrcpp::Any TreeConverter::visitSIZEOF_EXPR(CMParser::SIZEOF_EXPRContext *ctx)
@@ -675,18 +676,14 @@ antlrcpp::Any TreeConverter::visitLvalVariableReference(CMParser::LvalVariableRe
     return createResult(varRef);
 }
 
-antlrcpp::Any TreeConverter::visitLvalDereferencedVariable(CMParser::LvalDereferencedVariableContext *ctx)
+antlrcpp::Any TreeConverter::visitLvalDereference(CMParser::LvalDereferenceContext *ctx)
 {
-    std::string declName = ctx->getText();
+    Result result = visitChildren(ctx).as<Result>();
+    assert(result.size() == 1);
+    Expression::Ptr expr = castToExpression(result[0]);
 
-    int derefs = 0;
-    while (declName[0] == '*') {
-        derefs++;
-        declName = declName.substr(1);
-    }
-
-    auto derefVar = std::make_shared<DereferencedVariableReference>(&_declContext, declName, derefs);
-    return createResult(derefVar);
+    auto deref = std::make_shared<DereferenceExpression>(expr);
+    return createResult(deref);
 }
 
 antlrcpp::Any TreeConverter::visitLvalSubscript(CMParser::LvalSubscriptContext *ctx)

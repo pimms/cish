@@ -9,26 +9,20 @@ namespace ast
 {
 
 
-AddrofExpression::AddrofExpression(DeclarationContext *context, const std::string &varName)
+AddrofExpression::AddrofExpression(Lvalue::Ptr lvalue):
+    _lvalue(lvalue),
+    _type(TypeDecl::getPointer(_lvalue->getType()))
 {
-    const VarDeclaration *decl = context->getVariableDeclaration(varName);
-    if (decl == nullptr) {
-        Throw(VariableNotDeclaredException, "Variable '%s' not declared in current scope", varName.c_str());
-    }
-
-    _varDecl = *decl;
 }
 
 ExpressionValue AddrofExpression::evaluate(vm::ExecutionContext *context) const
 {
-    vm::Variable *var = context->getScope()->getVariable(_varDecl.name);
-    TypeDecl type = getType();
-    return ExpressionValue(type, var->getHeapAddress());
+    return ExpressionValue(_type, _lvalue->getMemoryView(context).getAddress());
 }
 
 TypeDecl AddrofExpression::getType() const
 {
-    return TypeDecl::getPointer(_varDecl.type);
+    return _type;
 }
 
 

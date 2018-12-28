@@ -59,59 +59,30 @@ vm::MemoryView VariableReference::getMemoryView(vm::ExecutionContext *context) c
 DereferencedVariableReference
 ==================
 */
-DereferencedVariableReference::DereferencedVariableReference(DeclarationContext *context,
-                                                             const std::string &varName,
-                                                             int numDerefs)
+DereferenceExpression::DereferenceExpression(Expression::Ptr expr):
+    _expr(expr)
 {
-    if (numDerefs <= 0) {
-        Throw(Exception, "'%d' dereferences does not make sense", numDerefs);
+    if (expr->getType() != TypeDecl::POINTER) {
+        Throw(InvalidTypeException, "Can only dereference pointer-types");
     }
 
-    const VarDeclaration *decl = context->getVariableDeclaration(varName);
-    if (decl == nullptr) {
-        Throw(VariableNotDeclaredException,
-              "Variable '%s' not declared in the current scope",
-              varName.c_str());
+    if (expr->getType().getReferencedType() == nullptr) {
+        Throw(Exception, "Expected a referenced type, found NULL");
     }
 
-    const TypeDecl *curType = &decl->type;
-    for (int i=0; i<numDerefs; i++) {
-        if (curType->getType() != TypeDecl::POINTER) {
-            Throw(Exception, "Cannot dereference non-pointer type '%s'", curType->getName());
-        }
-
-        curType = curType->getReferencedType();
-        if (curType == nullptr) {
-            Throw(Exception, "Accidentally ended up with a NULL TypeDecl");
-        }
-    }
-
-    _varName = decl->name;
-    _numDerefs = numDerefs;
-    _finalType = *curType;
-    _declaredType = decl->type;
+    _type = *expr->getType().getReferencedType();
 }
 
-TypeDecl DereferencedVariableReference::getType() const
+TypeDecl DereferenceExpression::getType() const
 {
-    return _finalType;
+    return _type;
 }
  
-vm::MemoryView DereferencedVariableReference::getMemoryView(vm::ExecutionContext *context) const
+vm::MemoryView DereferenceExpression::getMemoryView(vm::ExecutionContext *context) const
 {
-    vm::Variable *var = context->getScope()->getVariable(_varName);
-    if (var->getType() != _declaredType) {
-        Throw(Exception, "invalid type found at runtime");
-    }
-
-    vm::MemoryView view = context->getMemory()->getView(var->getAllocation()->getAddress());
-
-    for (int i=0; i<_numDerefs; i++) {
-        uint32_t addr = view.read<uint32_t>();
-        view = context->getMemory()->getView(addr);
-    }
-
-    return view;
+    ExpressionValue value = _expr->evaluate(context);
+    const uint32_t addr = value.get<uint32_t>();
+    return context->getMemory()->getView(addr);
 }
 
 
