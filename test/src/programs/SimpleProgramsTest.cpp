@@ -9,9 +9,11 @@
 
 #include "../TestHelpers.h"
 #include "vm/VirtualMachine.h"
+#include "module/stdlib/stdlibModule.h"
 
 using namespace cish::vm;
 using namespace cish::ast;
+using namespace cish::module;
 
 
  /* VALID PROGRAMS */
@@ -902,6 +904,15 @@ TEST(SimpleProgramsTest, subscriptEvaluationOrder)
         "}", 0);
 }
 
+TEST(SimpleProgramsTest, leakingMemoryDoesNotCrash)
+{
+    assertExitCodeStdlib(
+        "#include <stdlib.h>"
+        "int main() { malloc(40); return 0; }",
+        0
+    );
+}
+
 
 
 /* COMPILATION FAILURES */
@@ -1097,7 +1108,10 @@ TEST(SimpleProgramsTest, cannotArithmeticallyAssignConstVar)
 
 void assertRuntimeFailure(const std::string &source)
 {
-    VmPtr vm = createVm(source);
+    ModuleContext::Ptr context = ModuleContext::create();
+    context->addModule(stdlib::buildModule());
+
+    VmPtr vm = createVm(std::move(context), source);
     vm->startSync();
     while (vm->isRunning()) {
         vm->executeNextStatement();
@@ -1165,3 +1179,12 @@ TEST(SimpleProgramsTest, moduloByZero)
 {
     assertRuntimeFailure("int main() { return 10 % 0; }");
 }
+
+TEST(SimpleProgramsTest, crashInducedMemoryLeakDoesNotFatallyCrash)
+{
+    assertRuntimeFailure(
+        "#include <stdlib.h>"
+        "int main() { malloc(40); return 10 / 0; }"
+    );
+}
+
