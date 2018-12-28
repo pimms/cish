@@ -13,3 +13,4 @@ target_link_libraries(cish_cli ${CISH_LIBRARY})
 include_directories(${CISH_HEADER_PATH})
 include_directories(SYSTEM ${CISH_HEADER_PATH})
 
+install(TARGETS cish_cli DESTINATION bin)
