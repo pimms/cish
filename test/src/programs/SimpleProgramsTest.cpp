@@ -422,6 +422,19 @@ TEST(SimpleProgramsTest, addrofPointerEqualsPointerPointingToIt)
         "}", 1);
 }
 
+TEST(SimpleProgramsTest, addrofSubscriptEqualsBasePointer)
+{
+    assertExitCode(
+        "int main() {"
+        "   int value = 13;"
+        "   int *ptr = &value;"
+        "   int *ptr1 = ptr + 1;"
+        "   int *ptr2 = &ptr[1];"
+        "   int *ptr3 = &(ptr[1]);"
+        "   return ptr1 == ptr2 && ptr1 == ptr3;"
+        "}", 1);
+}
+
 TEST(SimpleProgramsTest, dereferencingPointerPointerEqualsPointer)
 {
     assertExitCode(
