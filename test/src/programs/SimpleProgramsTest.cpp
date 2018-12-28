@@ -1081,6 +1081,17 @@ TEST(SimpleProgramsTest, reservedKeywordCheckInFunctionNames)
     }
 }
 
+TEST(SimpleProgramsTest, cannotArithmeticallyAssignConstVar)
+{
+    assertCompilationFailure(
+        "int main() {"
+        "   const int var = 10;"
+        "   var += 10;"
+        "   return 0;"
+        "}"
+    );
+}
+
 
 /* RUNTIME FAILURES */
 

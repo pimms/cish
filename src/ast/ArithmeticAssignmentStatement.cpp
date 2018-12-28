@@ -24,6 +24,11 @@ ArithmeticAssignmentStatement::ArithmeticAssignmentStatement(Lvalue::Ptr lvalue,
     _rightExpr = std::make_shared<MutableLiteralExpression>(dummyRight);
     _binaryExpression = std::make_shared<BinaryExpression>(_operator, _leftExpr, _rightExpr);
 
+    // Ensure that the lvalue is non-const
+    if (_lvalue->getType().isConst()) {
+        Throw(InvalidOperationException, "Cannot alter a constant variable");
+    }
+
     /* EDGECASE
      *
      * Expressions of the form (<int> + <pointer>) are valid in all other contexts
