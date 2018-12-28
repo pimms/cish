@@ -4,6 +4,7 @@
 #include "../../ast/Type.h"
 #include "../../vm/Allocation.h"
 #include "../../vm/ExecutionContext.h"
+#include "../../vm/Memory.h"
 
 
 namespace cish
@@ -183,13 +184,17 @@ Malloc::Malloc(MallocContext::Ptr mallocContext):
 ast::ExpressionValue Malloc::execute(vm::ExecutionContext *context,
                                      FuncParams params) const
 {
-    const uint32_t size = params[0].get<uint32_t>();
-    Allocation::Ptr alloc = context->getMemory()->allocate(size);
+    try {
+        const uint32_t size = params[0].get<uint32_t>();
+        Allocation::Ptr alloc = context->getMemory()->allocate(size);
 
-    const uint32_t addr = alloc->getAddress();
-    _mallocContext->onAllocation(std::move(alloc));
+        const uint32_t addr = alloc->getAddress();
+        _mallocContext->onAllocation(std::move(alloc));
 
-    return ExpressionValue(TypeDecl::getPointer(TypeDecl::VOID), addr);
+        return ExpressionValue(TypeDecl::getPointer(TypeDecl::VOID), addr);
+    } catch (const vm::OutOfMemoryException &e) {
+        return ExpressionValue(TypeDecl::getPointer(TypeDecl::VOID), 0);
+    }
 }
 
 

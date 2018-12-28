@@ -913,6 +913,14 @@ TEST(SimpleProgramsTest, leakingMemoryDoesNotCrash)
     );
 }
 
+TEST(SimpleProgramsTest, mallocFailureReturnsNULL)
+{
+    assertExitCodeStdlib(
+        "#include <stdlib.h>"
+        "int main() { return malloc(1 << 30) == NULL; }",
+        1
+    );
+}
 
 
 /* COMPILATION FAILURES */
