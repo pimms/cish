@@ -7,15 +7,7 @@ term() {
     exit 1
 }
 
-which cish_cli > /dev/null || term "cish_cli must be on the path"
-
-FILES=$(ls $DIR/*.c)
-GCCDIR=$DIR/.tmp
-
-mkdir -p $GCCDIR
-
-while read file
-do
+compare_file() {
     gcc "$file" -o $GCCDIR/a.out || term "failed to compile '$file'"
 
     GCC_OUT=$($GCCDIR/a.out)
@@ -43,5 +35,24 @@ do
         echo -e "\r[❌] $file"
         echo
     fi
+}
 
-done < <(ls $DIR/*.c)
+which cish_cli > /dev/null || term "cish_cli must be on the path"
+
+FILES=$(ls $DIR/*.c)
+GCCDIR=$DIR/.tmp
+
+mkdir -p $GCCDIR
+
+
+if [ "$#" -eq 0 ]; then
+    while read file
+    do
+        compare_file $file
+    done < <(ls $DIR/*.c)
+else
+    for file in "$@"
+    do
+        compare_file $file
+    done
+fi
