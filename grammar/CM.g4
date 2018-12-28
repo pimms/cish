@@ -22,7 +22,6 @@ expression
 
 expr
     : '(' expr ')'                              # PAREN_EXPR___ // Not to be used explicitly
-    | exprAtom                                  # EXPR_ATOM___ // Not to be used explicitly
     | incdecexpr                                # INCDECEXPR___ // Not to be used explicitly
     | expr '[' expr ']'                         # SUBSCRIPT_EXPR
     | '!' expr                                  # NEGATION_EXPR
@@ -38,12 +37,17 @@ expr
     | expr op=( '==' | '!=' ) expr              # EQUALITY_EXPR
     | expr op=( '&' | '^' | '|' ) expr          # BITWISE_EXPR
     | expr op=( '&&' | '||' ) expr              # AND_EXPR
+    | exprAtom                                  # EXPR_ATOM___ // Not to be used explicitly
     ;
 exprAtom
-    : (Char|Integer|Floating|Boolean|Null)      # LITERAL_EXPR
+    : (Char|Integer|Floating|Boolean|Null|negativeLiteral)      # LITERAL_EXPR
     | Identifier                                # VAR_REF_EXPR
     | functionCall                              # FUNC_CALL_EXPR
     | stringLiteral                             # STR_LITERAL_EXPR
+    ;
+negativeLiteral
+    : '-' Integer
+    | '-' Floating
     ;
 incdecexpr
     : Identifier '++'                           # POSTFIX_INC_EXPR
@@ -215,13 +219,13 @@ Null     : 'NULL';
 Const    : 'const';
 
 Integer
-    : [-]? [0-9]+
+    : [0-9]+
     | '0x'[a-fA-F0-9]+
     ;
 
 Floating
-    : [-]? [0-9]+ '.' [0-9]* ('f' | 'F')?
-    | [-]? '.' [0-9]+ ('f' | 'F')?
+    : [0-9]+ '.' [0-9]* ('f' | 'F')?
+    | '.' [0-9]+ ('f' | 'F')?
     ;
 
 Boolean
