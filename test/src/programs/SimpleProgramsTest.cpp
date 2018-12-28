@@ -764,6 +764,52 @@ TEST(SimpleProgramsTest, pointerToIntToPointerCast)
     , 0xFFEEDDCC);
 }
 
+TEST(SimpleProgramsTest, castAddrofExpression)
+{
+    assertExitCode(
+        "int main() {"
+        "   int value = 0x01020304;"
+        "   return *(char*)&value;"
+        "}",
+        4
+    );
+}
+
+TEST(SimpleProgramsTest, castDerefExpression)
+{
+    assertExitCode(
+        "int main() {"
+        "   int value = 0x55552323;"
+        "   int *ptr = &value;"
+        "   return (short)*ptr;"
+        "}",
+        0x2323
+    );
+}
+
+TEST(SimpleProgramsTest, castPrecedence)
+{
+    assertExitCode("int main() { return (char)0xFFFF + 1; }", 0);
+    assertExitCode("int main() { return (char)0xFFFF + 1; }", 0);
+    assertExitCode(
+        "int main() {"
+        "    int value = 100;"
+        "    int *ptr = &value;"
+        "    short *nptr = (short*)ptr + 1;"
+        "    int diff = (int)nptr - (int)&value;"
+        "    return diff;"
+        "}", 2);
+}
+
+TEST(SimpleProgramsTest, castingFunctionReturnValue)
+{
+    assertExitCode(
+        "short foo() { return 0x2323; }"
+        "int main() { return (char)foo(); }",
+        0x23
+    );
+}
+
 TEST(SimpleProgramsTest, simpleArithAss)
 {
     assertExitCode(
@@ -778,6 +824,84 @@ TEST(SimpleProgramsTest, simpleArithAss)
         "}", 188
     );
 }
+
+TEST(SimpleProgramsTest, subcriptSimple)
+{
+    assertExitCodeStdlib(
+        "#include <stdlib.h>"
+        "int main()"
+        "{"
+        "    int *ptr = malloc(sizeof int * 2);"
+        "    ptr[0] = 100;"
+        "    ptr[1] = 50;"
+        "    int sum = ptr[0] + ptr[1];"
+        "    free(ptr);"
+        "    return sum;"
+        "}", 150);
+}
+
+TEST(SimpleProgramsTest, subscriptWithCast)
+{
+    assertExitCodeStdlib(
+        "#include <stdlib.h>"
+        "int main()"
+        "{"
+        "    int val = 0;"
+        "    char *ptr = (char*)&val;"
+        "    ptr[0] = 0x78;"
+        "    ptr[1] = 0x56;"
+        "    ptr[2] = 0x34;"
+        "    ptr[3] = 0x12;"
+        "    return val;"
+        "}", 0x12345678);
+}
+
+TEST(SimpleProgramsTest, subscriptNegativeIndex)
+{
+    assertExitCodeStdlib(
+        "#include <stdlib.h>"
+        "int main()"
+        "{"
+        "    int *ptr = malloc(8);"
+        "    int *nptr = ptr + 1;"
+        "    nptr[-1] = 15;"
+        "    int res = ptr[0];"
+        "    free(ptr);"
+        "    return res;"
+        "}", 15);
+}
+
+TEST(SimpleProgramsTest, subscriptEvaluationOrder)
+{
+    // a[foo()] = foo();
+    //    ^        ^
+    //   2nd      1st
+    assertExitCodeStdlib(
+        "#include <stdlib.h>"
+        ""
+        "int global = 0;"
+        "int foo() { return global++; }"
+        ""
+        "int main()"
+        "{"
+        "    int *buf = malloc(8);"
+        "    buf[0] = 120;"
+        "    buf[1] = 120;"
+        ""
+        "    buf[foo()] = foo();"
+        "    int res = buf[1];"
+        ""
+        "    if (buf[0] != 120)"
+        "        return -1;"
+        "    if (buf[1] != 0)"
+        "        return -2;"
+        "    if (global != 2)"
+        "        return -3;"
+        "    free(buf);"
+        "    return 0;"
+        "}", 0);
+}
+
 
 
 /* COMPILATION FAILURES */

@@ -24,6 +24,8 @@ VmPtr createVm(cish::module::ModuleContext::Ptr moduleContext, const std::string
 
 cish::vm::Variable* getVar(VmPtr vm, const std::string &name);
 
-
 void assertExitCode(const std::string &source, int expectedExitCode);
 void assertExitCode(cish::module::ModuleContext::Ptr moduleContext, const std::string &source, int expectedExitCode);
+
+void assertExitCodeStdlib(const std::string &source, int expectedExitCode);
+

@@ -50,8 +50,8 @@ void VariableAssignmentStatement::executeAssignment(vm::ExecutionContext *contex
     if (context->currentFunctionHasReturned())
         return;
 
-    vm::MemoryView view = _lvalue->getMemoryView(context);
     ExpressionValue value = _expression->evaluate(context);
+    vm::MemoryView view = _lvalue->getMemoryView(context);
 
     switch (_lvalue->getType().getType()) {
         case TypeDecl::BOOL:

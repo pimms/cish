@@ -56,7 +56,7 @@ antlrcpp::Any TreeConverter::visitChildren(antlr4::tree::ParseTree *node)
 
     for (auto child: node->children) {
         antlrcpp::Any childResult = child->accept(this);
-        if (childResult.isNotNull()) {
+        if (childResult.isNotNull() && childResult.is<Result>()) {
             Result childResultNodes = childResult.as<Result>();
             result.insert(result.end(), childResultNodes.begin(), childResultNodes.end());
         }
@@ -178,7 +178,7 @@ antlrcpp::Any TreeConverter::visitTYPE_CAST_EXPR(CMParser::TYPE_CAST_EXPRContext
 {
     TypeDecl type = visitTypeIdentifier(ctx->typeIdentifier()).as<TypeDecl>();
 
-    Result exprResult = visitChildren(ctx->expr());
+    Result exprResult = visitChildren(ctx).as<Result>();
     assert(exprResult.size() == 1);
     Expression::Ptr expression = castToExpression(exprResult[0]);
 
