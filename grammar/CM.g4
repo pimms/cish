@@ -24,6 +24,7 @@ expr
     : '(' expr ')'                              # PAREN_EXPR___ // Not to be used explicitly
     | incdecexpr                                # INCDECEXPR___ // Not to be used explicitly
     | expr '[' expr ']'                         # SUBSCRIPT_EXPR
+    | '-' expr                                  # MINUS_EXPR
     | '!' expr                                  # NEGATION_EXPR
     | '~' expr                                  # ONES_COMPLEMENT_EXPR
     | '(' typeIdentifier ')' expr               # TYPE_CAST_EXPR
@@ -40,14 +41,10 @@ expr
     | exprAtom                                  # EXPR_ATOM___ // Not to be used explicitly
     ;
 exprAtom
-    : (Char|Integer|Floating|Boolean|Null|negativeLiteral)      # LITERAL_EXPR
+    : (Char|Integer|Floating|Boolean|Null)      # LITERAL_EXPR
     | Identifier                                # VAR_REF_EXPR
     | functionCall                              # FUNC_CALL_EXPR
     | stringLiteral                             # STR_LITERAL_EXPR
-    ;
-negativeLiteral
-    : '-' Integer
-    | '-' Floating
     ;
 incdecexpr
     : Identifier '++'                           # POSTFIX_INC_EXPR

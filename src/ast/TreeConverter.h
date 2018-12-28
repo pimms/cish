@@ -57,6 +57,7 @@ public:
     virtual antlrcpp::Any visitDEREF_EXPR(CMParser::DEREF_EXPRContext *ctx) override;
     virtual antlrcpp::Any visitSIZEOF_EXPR(CMParser::SIZEOF_EXPRContext *ctx) override;
     virtual antlrcpp::Any visitSizeofTerm(CMParser::SizeofTermContext *ctx) override;
+    virtual antlrcpp::Any visitMINUS_EXPR(CMParser::MINUS_EXPRContext *ctx) override;
     virtual antlrcpp::Any visitNEGATION_EXPR(CMParser::NEGATION_EXPRContext *ctx) override;
     virtual antlrcpp::Any visitSUBSCRIPT_EXPR(CMParser::SUBSCRIPT_EXPRContext *ctx) override;
     virtual antlrcpp::Any visitONES_COMPLEMENT_EXPR(CMParser::ONES_COMPLEMENT_EXPRContext *ctx) override;

@@ -25,6 +25,18 @@ bool doTry(std::function<void(void)> f) {
     return false;
 }
 
+cish::module::ModuleContext::Ptr createModuleContext()
+{
+    cish::module::ModuleContext::Ptr moduleContext = cish::module::ModuleContext::create();
+    moduleContext->addModule(cish::module::stdlib::buildModule());
+    moduleContext->addModule(cish::module::stdio::buildModule());
+
+    cish::module::Module::Ptr stdbool = cish::module::Module::create("stdbool.h");
+    moduleContext->addModule(stdbool);
+
+    return moduleContext;
+}
+
 int execute(int argc, char **argv)
 {
     if (argc != 2) {
@@ -35,9 +47,7 @@ int execute(int argc, char **argv)
     std::ifstream t(argv[1]);
     std::string source((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
 
-    cish::module::ModuleContext::Ptr moduleContext = cish::module::ModuleContext::create();
-    moduleContext->addModule(cish::module::stdlib::buildModule());
-    moduleContext->addModule(cish::module::stdio::buildModule());
+    cish::module::ModuleContext::Ptr moduleContext = createModuleContext();
 
     cish::ast::ParseContext::Ptr parseContext = cish::ast::ParseContext::parseSource(source);
     cish::ast::AstBuilder builder(parseContext, std::move(moduleContext));

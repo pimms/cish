@@ -13,6 +13,7 @@
 #include "SizeofExpression.h"
 #include "TypeCastExpression.h"
 #include "ArithmeticAssignmentStatement.h"
+#include "MinusExpression.h"
 
 #include "VariableAssignmentStatement.h"
 #include "VariableDeclarationStatement.h"
@@ -232,6 +233,14 @@ antlrcpp::Any TreeConverter::visitSizeofTerm(CMParser::SizeofTermContext *ctx)
         Expression::Ptr expr = castToExpression(result[0]);
         return createResult(expr);
     }
+}
+
+antlrcpp::Any TreeConverter::visitMINUS_EXPR(CMParser::MINUS_EXPRContext *ctx)
+{
+    Result result = visitChildren(ctx).as<Result>();
+    assert(result.size() == 1);
+    Expression::Ptr expr = castToExpression(result[0]);
+    return createResult(std::make_shared<MinusExpression>(expr));
 }
 
 antlrcpp::Any TreeConverter::visitNEGATION_EXPR(CMParser::NEGATION_EXPRContext *ctx)

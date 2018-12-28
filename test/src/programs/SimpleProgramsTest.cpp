@@ -53,6 +53,18 @@ TEST(SimpleProgramsTest, negativeIntReturnedFromMain)
     assertExitCode(source, -15);
 }
 
+TEST(SimpleProgramsTest, negativeVariable)
+{
+    const std::string source = "int main() { int n = 15; return -n; }";
+    assertExitCode(source, -15);
+}
+
+TEST(SimpleProgramsTest, negativeFunctionValue)
+{
+    const std::string source = "int foo(){return 15;} int main() { return -foo(); }";
+    assertExitCode(source, -15);
+}
+
 TEST(SimpleProgramsTest, negativeFloatReturnedFromMain)
 {
     assertExitCode("int main() { return -15.5f; }", -15);
@@ -1109,6 +1121,11 @@ TEST(SimpleProgramsTest, cannotArithmeticallyAssignConstVar)
         "   return 0;"
         "}"
     );
+}
+
+TEST(SimpleProgramsTest, doubleNegativeLiteralWithoutSpacing)
+{
+    assertCompilationFailure("int main() { return --10; }");
 }
 
 
