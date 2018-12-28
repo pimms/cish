@@ -5,17 +5,18 @@ void swap(int *x,int *y);
 int choose_pivot(int i,int j );
 void quicksort(int *list,int m,int n);
 void display(int *list,const int n);
- 
+int prng();
+
 int main()
 {
-    const int SIZE = 10;
+    const int SIZE = 50;
     int *list = (int*)malloc(sizeof(int) * SIZE);
  
     int i = 0;
  
     /* generates random numbers and fill the list */
     for(i = 0; i < SIZE; i++ )
-        list[i] = rand() % 500;
+        list[i] = prng();
  
     printf("The list before sorting is:\n");
     display(list,SIZE);
@@ -23,7 +24,7 @@ int main()
     /* sort the list using quicksort algorithm */
     quicksort(list,0,SIZE-1);
  
-    printf("The list after sorting:\n");
+    printf("\n\nThe list after sorting:\n");
     display(list,SIZE);
     return 0;
 }
@@ -43,7 +44,6 @@ int choose_pivot(int i,int j )
  
 void quicksort(int *list,int m,int n)
 {
-    printf("qs!\n");
     int key;
     int i;
     int j;
@@ -80,3 +80,12 @@ void display(int *list,const int n)
         printf("%d\t", list[i]);
     }
 }
+
+int g_next = 938;
+int prng()
+{
+    g_next += 458929;
+    g_next %= 3173;
+    return g_next;
+}
+ 

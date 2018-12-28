@@ -23,6 +23,7 @@ expression
 expr
     : '(' expr ')'                              # PAREN_EXPR___ // Not to be used explicitly
     | incdecexpr                                # INCDECEXPR___ // Not to be used explicitly
+    | expr '[' expr ']'                         # SUBSCRIPT_EXPR
     | '-' expr                                  # MINUS_EXPR
     | '!' expr                                  # NEGATION_EXPR
     | '~' expr                                  # ONES_COMPLEMENT_EXPR
@@ -30,7 +31,6 @@ expr
     | '*' expr                                  # DEREF_EXPR
     | '&' lvalue                                # ADDROF_EXPR
     | 'sizeof' sizeofTerm                       # SIZEOF_EXPR
-    | expr '[' expr ']'                         # SUBSCRIPT_EXPR
     | expr op=( '*' | '/' | '%' ) expr          # MULT_EXPR
     | expr op=( '+' | '-' ) expr                # ADD_EXPR
     | expr op=( '<<' | '>>' ) expr              # BITSHIFT_EXPR

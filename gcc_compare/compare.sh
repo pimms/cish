@@ -8,7 +8,7 @@ term() {
 }
 
 compare_file() {
-    gcc "$file" -o $GCCDIR/a.out || term "failed to compile '$file'"
+    gcc -w "$file" -o $GCCDIR/a.out || term "failed to compile '$file'"
 
     GCC_OUT=$($GCCDIR/a.out)
     GCC_CODE=$?

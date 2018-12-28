@@ -6,3 +6,4 @@ grammar/tmp/
 .ycm_extra_conf.py
 .DS_Store
 gcc_compare/.tmp/
+a.out
