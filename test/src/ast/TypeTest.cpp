@@ -265,3 +265,16 @@ TEST(TypeTest, pointerNaming)
     EXPECT_EQ("const void***", std::string(tdptr(tdptr(tdptr(tdconst(TypeDecl::VOID)))).getName()));
 }
 
+TEST(TypeTest, safeFromBufferOverflowInTypeName)
+{
+    TypeDecl type = TypeDecl::INT;
+
+    for (int i=0; i<1000; i++) {
+        type = tdptr(type);
+    }
+
+    std::string name = type.getName();
+    ASSERT_EQ(98, name.length());
+    ASSERT_EQ("...", name.substr(95));
+}
+

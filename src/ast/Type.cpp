@@ -320,8 +320,9 @@ template<> TypeDecl TypeDecl::getFromNative<double>() { return TypeDecl(TypeDecl
 
 static const char* getComplexName(const TypeDecl *type)
 {
+    static const int STRLEN = 100;
     static const int numNameBufs = 15;
-    static char nameBufs[numNameBufs][100] = {{""}};
+    static char nameBufs[numNameBufs][STRLEN] = {{""}};
     static std::atomic_int nextIndex = 0;
 
     const uint32_t bufIdx = (nextIndex++) % numNameBufs;
@@ -334,7 +335,6 @@ static const char* getComplexName(const TypeDecl *type)
         stack.push(stack.top()->getReferencedType());
     }
 
-    // Iterate over the stack in reverse
     while (stack.size()) {
         const TypeDecl *td = stack.top();
         stack.pop();
@@ -343,6 +343,11 @@ static const char* getComplexName(const TypeDecl *type)
             buf = stpcpy(buf, "*");
         } else {
             buf = stpcpy(buf, td->getName());
+        }
+
+        if (buf - nameBufs[bufIdx] >= STRLEN-5) {
+            buf = stpcpy(nameBufs[bufIdx] + (STRLEN-5), "...");
+            break;
         }
     }
 
