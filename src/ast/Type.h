@@ -10,6 +10,9 @@ namespace cish
 namespace ast
 {
 
+class StructLayout;
+class DeclarationContext;
+
 class TypeDecl
 {
 public:
@@ -27,15 +30,18 @@ public:
         DOUBLE,
 
         POINTER,
+
+        STRUCT,
     };
 
     template<typename T>
     static TypeDecl getFromNative();
     static TypeDecl getFromString(const std::string &str);
-    static TypeDecl getFromTokens(const std::vector<std::string>& tokens);
+    static TypeDecl getFromTokens(const DeclarationContext *declContext, const std::vector<std::string>& tokens);
     static TypeDecl getPointer(Type referencedType);
     static TypeDecl getPointer(const TypeDecl &referencedType);
     static TypeDecl getConst(const TypeDecl &type);
+    static TypeDecl getStruct(const StructLayout *structLayout);
 
 
     TypeDecl();
@@ -51,6 +57,9 @@ public:
 
     // This method is ONLY valid if this type is a POINTER.
     const TypeDecl* getReferencedType() const;
+
+    // This method is ONLY valid if this type is a STRUCT
+    const StructLayout* getStructLayout() const;
 
     bool operator==(const TypeDecl &o) const;
     bool operator==(const TypeDecl::Type &o) const;
@@ -70,6 +79,7 @@ private:
     Type _type;
     TypeDecl *_referencedType;
     bool _const;
+    const StructLayout *_structLayout;
 };
 
 

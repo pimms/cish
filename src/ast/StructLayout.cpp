@@ -62,6 +62,12 @@ StructLayout::StructLayout(const std::string &name, const std::vector<VarDeclara
 
         _fieldLookup[decl.name] = index++;
     }
+
+    assert(_size != 0);
+    assert(offset > 0);
+    assert(!_fields.empty());
+    assert(!_fieldLookup.empty());
+    assert(_fieldLookup.size() == _fields.size());
 }
 
 const std::string& StructLayout::getName() const
@@ -77,6 +83,11 @@ const StructField* StructLayout::getField(const std::string &name) const
 
     Throw(NoSuchFieldException, "No field '%s' in struct %s", name.c_str(), _name.c_str());
     return nullptr;
+}
+
+uint32_t StructLayout::getSize() const
+{
+    return _size;
 }
 
 

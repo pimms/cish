@@ -44,6 +44,18 @@ TEST(StructLayoutTest, offset)
     ASSERT_EQ(9, layout.getField("my_ptr")->getOffset());
 }
 
+TEST(StructLayoutTest, size)
+{
+    StructLayout layout("s", {
+        {TypeDecl::INT, "my_int"},
+        {TypeDecl::BOOL, "my_bool"},
+        {TypeDecl::FLOAT, "my_float"},
+        {TypeDecl::getPointer(TypeDecl::VOID), "my_ptr"},
+    });
+
+    ASSERT_EQ(13, layout.getSize());
+}
+
 TEST(StructLayoutTest, invalidFieldLookupThrows)
 {
     StructLayout layout("s", {{TypeDecl::INT, "foo"}});

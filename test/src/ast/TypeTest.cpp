@@ -2,6 +2,7 @@
 
 #include "ast/Type.h"
 #include "ast/AstNodes.h"
+#include "ast/DeclarationContext.h"
 
 using namespace cish::ast;
 
@@ -34,13 +35,14 @@ TEST(TypeTest, resolveFromString)
 
 TEST(TypeTest, resolveConstFromTokens)
 {
-    ASSERT_EQ(tdconst(TypeDecl::VOID), TypeDecl::getFromTokens({"const", "void"}));
-    ASSERT_EQ(tdconst(TypeDecl::BOOL), TypeDecl::getFromTokens({"const", "bool"}));
-    ASSERT_EQ(tdconst(TypeDecl::CHAR), TypeDecl::getFromTokens({"const", "char"}));
-    ASSERT_EQ(tdconst(TypeDecl::SHORT), TypeDecl::getFromTokens({"const", "short"}));
-    ASSERT_EQ(tdconst(TypeDecl::INT), TypeDecl::getFromTokens({"const", "int"}));
-    ASSERT_EQ(tdconst(TypeDecl::FLOAT), TypeDecl::getFromTokens({"const", "float"}));
-    ASSERT_EQ(tdconst(TypeDecl::DOUBLE), TypeDecl::getFromTokens({"const", "double"}));
+    DeclarationContext dc;
+    ASSERT_EQ(tdconst(TypeDecl::VOID), TypeDecl::getFromTokens(&dc, {"const", "void"}));
+    ASSERT_EQ(tdconst(TypeDecl::BOOL), TypeDecl::getFromTokens(&dc, {"const", "bool"}));
+    ASSERT_EQ(tdconst(TypeDecl::CHAR), TypeDecl::getFromTokens(&dc, {"const", "char"}));
+    ASSERT_EQ(tdconst(TypeDecl::SHORT), TypeDecl::getFromTokens(&dc, {"const", "short"}));
+    ASSERT_EQ(tdconst(TypeDecl::INT), TypeDecl::getFromTokens(&dc, {"const", "int"}));
+    ASSERT_EQ(tdconst(TypeDecl::FLOAT), TypeDecl::getFromTokens(&dc, {"const", "float"}));
+    ASSERT_EQ(tdconst(TypeDecl::DOUBLE), TypeDecl::getFromTokens(&dc, {"const", "double"}));
 }
 
 TEST(TypeTest, resolvePointerFromString)
@@ -216,19 +218,49 @@ TEST(TypeTest, pointerTypeDeclWithPointerTypeIsShallow)
 
 TEST(TypeTest, getFromTokens)
 {
+    DeclarationContext dc;
+
     TypeDecl constIntPtrPtr = TypeDecl::INT;
     constIntPtrPtr.setConst(true);
     constIntPtrPtr = TypeDecl::getPointer(constIntPtrPtr);
     constIntPtrPtr = TypeDecl::getPointer(constIntPtrPtr);
     std::vector<std::string> cippTokens = {"const", "int", "*", "*"};
-    ASSERT_EQ(constIntPtrPtr, TypeDecl::getFromTokens(cippTokens));
+    ASSERT_EQ(constIntPtrPtr, TypeDecl::getFromTokens(&dc, cippTokens));
 
     TypeDecl intPtr = TypeDecl::getPointer(TypeDecl::INT);
     std::vector<std::string> ipTokens = {"int", "*"};
-    ASSERT_EQ(intPtr, TypeDecl::getFromTokens(ipTokens));
+    ASSERT_EQ(intPtr, TypeDecl::getFromTokens(&dc, ipTokens));
 
     std::vector<std::string> iTokens = { "int" };
-    ASSERT_EQ(TypeDecl(TypeDecl::INT), TypeDecl::getFromTokens(iTokens));
+    ASSERT_EQ(TypeDecl(TypeDecl::INT), TypeDecl::getFromTokens(&dc, iTokens));
+}
+
+TEST(TypeTest, getStructFromTokens)
+{
+    DeclarationContext dc;
+    dc.declareStruct("s1", {{TypeDecl::INT, "n"}});
+    dc.declareStruct("s2", {{TypeDecl::INT, "n"}});
+
+    auto raw = TypeDecl::getFromTokens(&dc, {"struct", "s1"});
+    auto constant = TypeDecl::getFromTokens(&dc, {"const", "struct", "s1"});
+    auto ptr = TypeDecl::getFromTokens(&dc, {"struct", "s2", "*"});
+    auto constPtr = TypeDecl::getFromTokens(&dc, {"const", "struct", "s1", "*"});
+
+    ASSERT_EQ(TypeDecl::STRUCT, raw.getType());
+    ASSERT_EQ(dc.getStruct("s1"), raw.getStructLayout());
+    ASSERT_FALSE(raw.isConst());
+
+    ASSERT_EQ(TypeDecl::STRUCT, constant.getType());
+    ASSERT_EQ(dc.getStruct("s1"), constant.getStructLayout());
+    ASSERT_TRUE(constant.isConst());
+
+    ASSERT_EQ(TypeDecl::POINTER, ptr.getType());
+    ASSERT_EQ(TypeDecl::STRUCT, ptr.getReferencedType()->getType());
+    ASSERT_EQ(dc.getStruct("s2"), ptr.getReferencedType()->getStructLayout());
+    ASSERT_FALSE(ptr.getReferencedType()->isConst());
+
+    ASSERT_EQ(TypeDecl::POINTER, constPtr.getType());
+    ASSERT_EQ(constant, *constPtr.getReferencedType());
 }
 
 TEST(TypeTest, primitivesDoesntCareAboutConstInCasting)

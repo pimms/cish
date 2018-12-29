@@ -2,6 +2,8 @@
 #include "../Exception.h"
 
 #include "AstNodes.h"   // InvalidTypeException
+#include "StructLayout.h"
+#include "DeclarationContext.h"
 
 #include <stack>
 #include <map>
@@ -40,7 +42,7 @@ TypeDecl TypeDecl::getFromString(const std::string &str)
     return TypeDecl(map.at(str));
 }
 
-TypeDecl TypeDecl::getFromTokens(const std::vector<std::string> &tokens)
+TypeDecl TypeDecl::getFromTokens(const DeclarationContext *declContext, const std::vector<std::string> &tokens)
 {
     auto it = tokens.begin();
     bool constant = false;
@@ -52,7 +54,15 @@ TypeDecl TypeDecl::getFromTokens(const std::vector<std::string> &tokens)
     if (it == tokens.end())
         Throw(Exception, "too few tokens to work with");
 
-    TypeDecl type = getFromString(*it);
+    TypeDecl type;
+
+    if (*it == "struct") {
+        it++;
+        type = TypeDecl::getStruct(declContext->getStruct(*it));
+    } else {
+        type = getFromString(*it);
+    }
+
     type.setConst(constant);
     it++;
 
@@ -89,11 +99,20 @@ TypeDecl TypeDecl::getConst(const TypeDecl &type)
     return copy;
 }
 
+TypeDecl TypeDecl::getStruct(const StructLayout *structLayout)
+{
+    TypeDecl type;
+    type._structLayout = structLayout;
+    type._type = TypeDecl::STRUCT;
+    return type;
+}
+
 
 TypeDecl::TypeDecl():
     _type(VOID),
     _referencedType(nullptr),
-    _const(false)
+    _const(false),
+    _structLayout(nullptr)
  {}
 
 TypeDecl::TypeDecl(const TypeDecl &o):
@@ -105,10 +124,13 @@ TypeDecl::TypeDecl(const TypeDecl &o):
 TypeDecl::TypeDecl(Type t):
     _type(t),
     _referencedType(nullptr),
-    _const(false)
+    _const(false),
+    _structLayout(nullptr)
 {
     if (_type == POINTER) {
         Throw(Exception, "Pointer types cannot be constructed through TypeDecl::TypeDecl(Type)");
+    } else if (_type == STRUCT) {
+        Throw(Exception, "Struct types cannot be constructed through TypeDecl::TypeDecl(Type)");
     }
 }
 
@@ -122,6 +144,7 @@ TypeDecl& TypeDecl::operator=(const TypeDecl &o)
 {
     _type = o._type;
     _const = o._const;
+    _structLayout = o._structLayout;
     if (o._referencedType != nullptr) {
         // NB! potentially recursive initialization
         assert(_type == POINTER);
@@ -158,6 +181,8 @@ uint32_t TypeDecl::getSize() const
             return 8;
         case POINTER:
             return 4;
+        case STRUCT:
+            return _structLayout->getSize();
     }
 
     Throw(Exception, "Type '%d' has undefined size", (int)_type);
@@ -165,7 +190,7 @@ uint32_t TypeDecl::getSize() const
 
 const char* TypeDecl::getName() const
 {
-    if (_type == POINTER) {
+    if (_type == POINTER || _type == STRUCT) {
         return getComplexName(this);
     }
 
@@ -185,8 +210,8 @@ const char* TypeDecl::getName() const
                 return "float";
             case DOUBLE:
                 return "double";
-            case POINTER:
-                return "<pointer>";
+            default:
+                return "<error>";
         }
     } else {
         switch (_type) {
@@ -204,8 +229,8 @@ const char* TypeDecl::getName() const
                 return "const float";
             case DOUBLE:
                 return "const double";
-            case POINTER:
-                return "<const pointer>";
+            default:
+                return "<error>";
         }
     }
 
@@ -214,11 +239,20 @@ const char* TypeDecl::getName() const
 
 const TypeDecl* TypeDecl::getReferencedType() const
 {
-    if (_type != Type::POINTER) {
+    if (_type != POINTER) {
         Throw(InvalidTypeException, "Cannot get referenced type of non-pointer TypeDecl");
     }
     assert(_referencedType != nullptr);
     return _referencedType;
+}
+
+const StructLayout* TypeDecl::getStructLayout() const
+{
+    if (_type != STRUCT) {
+        Throw(InvalidTypeException, "Cannot get struct layout of non-struct TypeDecl");
+    }
+    assert(_structLayout != nullptr);
+    return _structLayout;
 }
 
 bool TypeDecl::operator==(const TypeDecl &o) const
@@ -229,6 +263,11 @@ bool TypeDecl::operator==(const TypeDecl &o) const
 
     if (o.getType() != Type::POINTER) {
         return false;
+    }
+
+    if (_type == Type::STRUCT) {
+        return _type == o._type
+            && _structLayout->getName() == o._structLayout->getName();
     }
 
     return (*_referencedType == *o._referencedType);
@@ -247,6 +286,8 @@ bool TypeDecl::castableTo(const TypeDecl &o) const
         return false;
 
     if (_type == POINTER && t == POINTER) {
+        /* Both of the types are pointers */
+
         // Only check for const-compatibility, we don't
         // care about the actual types at this point.
         const TypeDecl *myInner = getReferencedType();
@@ -260,7 +301,8 @@ bool TypeDecl::castableTo(const TypeDecl &o) const
         if (myInner->isConst())
             return theirInner->isConst();
         return true;
-    } if (_type == POINTER || t == POINTER) {
+    } else if (_type == POINTER || t == POINTER) {
+        /* One of the types is a pointer */
         Type other;
         if (_type == POINTER) {
             other = t;
@@ -276,6 +318,9 @@ bool TypeDecl::castableTo(const TypeDecl &o) const
             default:
                 return true;
         }
+    } else if (_type == STRUCT) {
+        return o._type == STRUCT 
+            && _structLayout->getName() == o._structLayout->getName();
     }
 
     return true;
@@ -318,7 +363,7 @@ template<> TypeDecl TypeDecl::getFromNative<double>() { return TypeDecl(TypeDecl
 
 
 
-static const char* getComplexName(const TypeDecl *type)
+static const char* getPointerName(const TypeDecl *type)
 {
     static const int STRLEN = 100;
     static const int numNameBufs = 15;
@@ -352,6 +397,32 @@ static const char* getComplexName(const TypeDecl *type)
     }
 
     return nameBufs[bufIdx];
+}
+
+static const char* getStructName(const TypeDecl *type)
+{
+    static const int STRLEN = 100;
+    static const int numNameBufs = 15;
+    static char nameBufs[numNameBufs][STRLEN] = {{""}};
+    static std::atomic_int nextIndex = 0;
+
+    const uint32_t bufIdx = (nextIndex++) % numNameBufs;
+    char *buf = nameBufs[bufIdx];
+
+    buf = stpcpy(buf, "struct ");
+    buf = stpcpy(buf, type->getStructLayout()->getName().c_str());
+    return nameBufs[bufIdx];
+}
+
+static const char* getComplexName(const TypeDecl *type)
+{
+    if (type->getType() == TypeDecl::POINTER) {
+        return getPointerName(type);
+    } else if (type->getType() == TypeDecl::STRUCT) {
+        return getStructName(type);
+    } else {
+        return type->getName();
+    }
 }
 
 

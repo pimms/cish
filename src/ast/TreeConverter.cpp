@@ -727,7 +727,7 @@ antlrcpp::Any TreeConverter::visitTypeIdentifier(CMParser::TypeIdentifierContext
     for (auto child: ctx->children) {
         tokens.push_back(child->getText());
     }
-    TypeDecl type = TypeDecl::getFromTokens(tokens);
+    TypeDecl type = TypeDecl::getFromTokens(&_declContext, tokens);
     return type;
 }
 

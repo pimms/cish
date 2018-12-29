@@ -42,7 +42,7 @@ public:
 
     const std::string& getName() const;
     const StructField* getField(const std::string &name) const;
-    const uint32_t getSize() const;
+    uint32_t getSize() const;
 
 private:
     std::string _name;
