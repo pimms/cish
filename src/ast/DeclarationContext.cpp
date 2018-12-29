@@ -18,6 +18,7 @@ DeclarationContext::DeclarationContext():
 void DeclarationContext::declareVariable(TypeDecl type, const std::string &name)
 {
     checkForReservedKeyword(name);
+    checkIdentifierLength(name);
 
     for (const auto &var: _varScope.back()) {
         if (var.name == name) {
@@ -151,6 +152,14 @@ void DeclarationContext::checkForReservedKeyword(const std::string &identifier) 
 
     if (reservedKeywords.count(identifier) != 0) {
         Throw(InvalidIdentifierException, "Identifier '%s' is reserved", identifier.c_str());
+    }
+}
+
+void DeclarationContext::checkIdentifierLength(const std::string &identifier) const
+{
+    // 64 is a completely arbitrary limitation
+    if (identifier.length() >= 64) {
+        Throw(InvalidIdentifierException, "Identifier name '%s' is too long", identifier.c_str());
     }
 }
 

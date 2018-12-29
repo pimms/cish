@@ -58,6 +58,7 @@ private:
     VarDeclaration* findInScope(const std::string &name, VariableScope *scope);
     void verifyIdenticalDeclarations(const FuncDeclaration *existing, const FuncDeclaration *redecl);
     void checkForReservedKeyword(const std::string &identifier) const;
+    void checkIdentifierLength(const std::string &identifier) const;
 };
 
 
