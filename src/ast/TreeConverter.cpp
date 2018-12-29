@@ -83,9 +83,10 @@ antlrcpp::Any TreeConverter::visitRootBlock(CMParser::RootBlockContext *ctx)
         CMParser::FunctionDefinitionContext *funcDef = rootItem->functionDefinition();
         CMParser::FunctionDeclarationContext *funcDecl = rootItem->functionDeclaration();
         CMParser::SystemIncludeContext *systemInclude = rootItem->systemInclude();
+        CMParser::StructDeclarationContext *structDecl = rootItem->structDeclaration();
 
         // If this assert ever fails, the grammar has likely changed
-        assert(varDecl || funcDef || funcDecl || systemInclude);
+        assert(varDecl || funcDef || funcDecl || systemInclude || structDecl);
 
         if (varDecl != nullptr) {
             Result res = visitVariableDeclaration(varDecl).as<Result>();
@@ -94,7 +95,6 @@ antlrcpp::Any TreeConverter::visitRootBlock(CMParser::RootBlockContext *ctx)
         } else if (funcDef != nullptr) {
             Result res = visitFunctionDefinition(funcDef).as<Result>();
             assert(res.size() == 1);
-
             vm::Callable::Ptr callable = std::dynamic_pointer_cast<vm::Callable>(res[0]);
             assert(callable != nullptr);
             ast->addFunctionDefinition(callable);
@@ -107,6 +107,8 @@ antlrcpp::Any TreeConverter::visitRootBlock(CMParser::RootBlockContext *ctx)
         } else if (systemInclude != nullptr) {
             std::string moduleName = visitSystemInclude(systemInclude).as<std::string>();
             includeModule(ast.get(), moduleName);
+        } else if (structDecl != nullptr) {
+            visitStructDeclaration(structDecl);
         }
     }
 
@@ -550,6 +552,21 @@ antlrcpp::Any TreeConverter::visitVariableDeclaration(CMParser::VariableDeclarat
     auto varDecl = std::make_shared<VariableDeclarationStatement>(&_declContext, type, varName, expression);
 
     return createResult(varDecl);
+}
+
+antlrcpp::Any TreeConverter::visitStructDeclaration(CMParser::StructDeclarationContext *ctx)
+{
+    const std::string name = ctx->identifier()->getText();
+
+    std::vector<VarDeclaration> fields;
+    for (auto fieldDecl: ctx->structFieldDeclaration()) {
+        const TypeDecl type = visitTypeIdentifier(fieldDecl->typeIdentifier()).as<TypeDecl>();;
+        const std::string varName = fieldDecl->identifier()->getText();
+        fields.push_back( VarDeclaration{type, varName} );
+    }
+
+    _declContext.declareStruct(name, fields);
+    return nullptr;
 }
 
 antlrcpp::Any TreeConverter::visitArithmeticAssignment(CMParser::ArithmeticAssignmentContext *ctx)

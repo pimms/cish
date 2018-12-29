@@ -3,16 +3,15 @@ grammar CM;
 root
     : rootBlock EOF
     ;
-
 rootBlock
     : rootItem*
     ;
-
 rootItem
     : functionDefinition
     | functionDeclaration
     | variableDeclaration ';'
     | systemInclude
+    | structDeclaration
     ;
 
 
@@ -112,10 +111,17 @@ arithmeticAssignment
     : lvalue op=( '+=' | '-=' | '*=' | '/=' | '%=' | '<<=' | '>>=' | '&=' | '^=' | '|=' ) expression
     ;
 
-
 variableDeclaration
     : typeIdentifier identifier ('=' expression)?
     ;
+
+structDeclaration
+    : 'struct' identifier '{' structFieldDeclaration* '}' ';'
+    ;
+structFieldDeclaration
+    : typeIdentifier identifier ';'
+    ;
+
 
 functionDeclaration
     : typeIdentifier identifier '(' identifierList ')' ';'
@@ -173,6 +179,7 @@ typeName
     | 'float'
     | 'double'
     | 'void'
+    | 'struct' identifier
     ;
 
 sizeofTerm
@@ -220,21 +227,17 @@ Integer
     : [0-9]+
     | '0x'[a-fA-F0-9]+
     ;
-
 Floating
     : [0-9]+ '.' [0-9]* ('f' | 'F')?
     | '.' [0-9]+ ('f' | 'F')?
     ;
-
 Boolean
     : 'true'
     | 'false'
     ;
-
 String
     : ["] ( ~["\r\n\\] | '\\' ~[\r\n] )* ["]
     ;
-
 Char
     : ['] ( ~['\r\n\\] | '\\' ~[\r\n] )* [']
     ;
@@ -244,15 +247,13 @@ Identifier
     : [_a-zA-Z][_a-zA-Z0-9]*
     ;
 
-
-
 Comment
     : ( '//' ~[\r\n]* | '/*' .*? '*/' ) -> skip
     ;
-
 Space
     : [ \t\r\n\u000C] -> skip
     ;
+
 SysModuleName
     : '<' ('a'..'z'|'A'..'Z'|'0'..'9'|'/'|'.'|'_'|'-')+ '>'
     ;

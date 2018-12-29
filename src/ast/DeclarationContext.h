@@ -18,6 +18,7 @@ namespace ast
 
 DECLARE_EXCEPTION(VariableAlreadyDeclaredException);
 DECLARE_EXCEPTION(FunctionAlreadyDeclaredException);
+DECLARE_EXCEPTION(StructAlreadyDeclaredException);
 DECLARE_EXCEPTION(FunctionAlreadyDefinedException);
 DECLARE_EXCEPTION(InvalidIdentifierException);
 
@@ -25,12 +26,14 @@ DECLARE_EXCEPTION(InvalidDeclarationScope);
 
 
 class FunctionDefinition;
+class StructLayout;
 
 class DeclarationContext
 {
 public:
 
     DeclarationContext();
+    ~DeclarationContext();
 
     void declareVariable(TypeDecl type, const std::string &name);
 
@@ -38,6 +41,9 @@ public:
     // after the next call to 'popVariableScope', so take a copy if
     // you want to keep any of the values.
     const VarDeclaration* getVariableDeclaration(const std::string &name) const;
+
+    void declareStruct(const std::string &name, const std::vector<VarDeclaration> &fields);
+    const StructLayout* getStruct(const std::string &name) const;
 
     void pushVariableScope();
     void popVariableScope();
@@ -54,6 +60,7 @@ private:
     std::vector<VariableScope> _varScope;
     FunctionDefinition::Ptr _currentFunction;
     std::map<std::string, FuncDeclaration> _funcs;
+    std::map<std::string, StructLayout*> _structs;
 
     VarDeclaration* findInScope(const std::string &name, VariableScope *scope);
     void verifyIdenticalDeclarations(const FuncDeclaration *existing, const FuncDeclaration *redecl);

@@ -1,4 +1,5 @@
 #include "DeclarationContext.h"
+#include "StructLayout.h"
 
 #include <set>
 
@@ -13,6 +14,13 @@ DeclarationContext::DeclarationContext():
     _currentFunction(nullptr)
 {
     _varScope.push_back(VariableScope());
+}
+
+DeclarationContext::~DeclarationContext()
+{
+    for (auto pair: _structs) {
+        delete pair.second;
+    }
 }
 
 void DeclarationContext::declareVariable(TypeDecl type, const std::string &name)
@@ -42,6 +50,24 @@ const VarDeclaration* DeclarationContext::getVariableDeclaration(const std::stri
     }
 
     return nullptr;
+}
+
+void DeclarationContext::declareStruct(const std::string &name, const std::vector<VarDeclaration> &fields)
+{
+    if (_structs.count(name) != 0) {
+        Throw(StructAlreadyDeclaredException, "Struct with name '%s' already declared", name.c_str());
+    }
+
+    _structs[name] = new StructLayout(name, fields);
+}
+
+const StructLayout* DeclarationContext::getStruct(const std::string &name) const
+{
+    if (_structs.count(name) != 0) {
+        return _structs.at(name);
+    }
+
+    Throw(Exception, "Unable to resolve struct with name '%s'", name.c_str());
 }
 
 void DeclarationContext::pushVariableScope()

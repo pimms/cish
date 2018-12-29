@@ -2,8 +2,10 @@
 
 #include "ast/DeclarationContext.h"
 #include "ast/FunctionDefinition.h"
+#include "ast/StructLayout.h"
 
 
+using namespace cish;
 using namespace cish::ast;
 
 
@@ -52,6 +54,35 @@ TEST(DeclarationContextTest, shadowingAllowedInNewScopes)
     ASSERT_EQ(TypeDecl::INT, context.getVariableDeclaration("var")->type.getType());
 
     context.exitFunction();
+}
+
+
+TEST(DeclarationContextTest, undeclaredStructsThrows)
+{
+    DeclarationContext context;
+    ASSERT_THROW(context.getStruct("foo"), Exception);
+}
+
+TEST(DeclarationContextTest, declaredStructsReturnsNonNull)
+{
+    DeclarationContext context;
+
+    context.declareStruct("s1", {{TypeDecl::INT, "foo"}});
+    context.declareStruct("s2", {{TypeDecl::INT, "foo"}});
+
+    ASSERT_NE(nullptr, context.getStruct("s1"));
+    ASSERT_NE(nullptr, context.getStruct("s2"));
+
+    ASSERT_EQ("s1", context.getStruct("s1")->getName());
+    ASSERT_EQ("s2", context.getStruct("s2")->getName());
+}
+
+TEST(DeclarationContextTest, redeclaringStructThrows)
+{
+    DeclarationContext context;
+
+    ASSERT_NO_THROW(context.declareStruct("s1", {{TypeDecl::INT, "foo"}}));
+    ASSERT_THROW(context.declareStruct("s1", {{TypeDecl::INT, "foo"}}), StructAlreadyDeclaredException);
 }
 
 

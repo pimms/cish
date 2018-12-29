@@ -957,6 +957,16 @@ TEST(SimpleProgramsTest, mallocFailureReturnsNULL)
     );
 }
 
+TEST(SimpleProgramsTest, structDeclaration)
+{
+    assertExitCode(
+        "struct s { int n; };"
+        "int main() {"
+        "    return 0;"
+        "}", 0
+    );
+}
+
 
 /* COMPILATION FAILURES */
 
@@ -1150,6 +1160,41 @@ TEST(SimpleProgramsTest, doubleNegativeLiteralWithoutSpacing)
 {
     assertCompilationFailure("int main() { return --10; }");
 }
+
+TEST(SimpleProgramsTest, emptyStructsAreNotAllowed)
+{
+    assertCompilationFailure("struct foo {}; int main(){ return 0; }");
+}
+
+TEST(SimpleProgramsTest, redeclaringStructsIsNotAllowed)
+{
+    assertCompilationFailure(
+        "struct foo { int a; };"
+        "struct foo { int b; };"
+        "int main(){ return 0; }"
+    );
+}
+
+TEST(SimpleProgramsTest, defaultValueForStructsIsNotAllowed)
+{
+    assertCompilationFailure(
+        "struct foo { int a = 10; };"
+        "int main(){ return 0; }"
+    );
+}
+
+TEST(SimpleProgramsTest, structSemicolonRequirements)
+{
+    assertCompilationFailure(
+        "struct foo { int a };"
+        "int main(){ return 0; }"
+    );
+    assertCompilationFailure(
+        "struct foo { int a; }"
+        "int main(){ return 0; }"
+    );
+}
+
 
 
 /* RUNTIME FAILURES */
