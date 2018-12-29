@@ -3,12 +3,18 @@
 
 #include "AstNodes.h"   // InvalidTypeException
 
+#include <stack>
 #include <map>
+
 
 namespace cish
 {
 namespace ast
 {
+
+static const char* getComplexName(const TypeDecl *td);
+
+
 
 TypeDecl TypeDecl::getFromString(const std::string &str)
 {
@@ -159,23 +165,48 @@ uint32_t TypeDecl::getSize() const
 
 const char* TypeDecl::getName() const
 {
-    switch (_type) {
-        case VOID:
-            return "void";
-        case BOOL:
-            return "bool";
-        case CHAR:
-            return "char";
-        case SHORT:
-            return "short";
-        case INT:
-            return "int";
-        case FLOAT:
-            return "float";
-        case DOUBLE:
-            return "double";
-        case POINTER:
-            return "pointer (todo)";
+    if (_type == POINTER) {
+        return getComplexName(this);
+    }
+
+    if (isConst() == false) {
+        switch (_type) {
+            case VOID:
+                return "void";
+            case BOOL:
+                return "bool";
+            case CHAR:
+                return "char";
+            case SHORT:
+                return "short";
+            case INT:
+                return "int";
+            case FLOAT:
+                return "float";
+            case DOUBLE:
+                return "double";
+            case POINTER:
+                return "<pointer>";
+        }
+    } else {
+        switch (_type) {
+            case VOID:
+                return "const void";
+            case BOOL:
+                return "const bool";
+            case CHAR:
+                return "const char";
+            case SHORT:
+                return "const short";
+            case INT:
+                return "const int";
+            case FLOAT:
+                return "const float";
+            case DOUBLE:
+                return "const double";
+            case POINTER:
+                return "<const pointer>";
+        }
     }
 
     return "<undef>";
@@ -284,6 +315,39 @@ template<> TypeDecl TypeDecl::getFromNative<int>() { return TypeDecl(TypeDecl::I
 template<> TypeDecl TypeDecl::getFromNative<float>() { return TypeDecl(TypeDecl::FLOAT); }
 template<> TypeDecl TypeDecl::getFromNative<double>() { return TypeDecl(TypeDecl::DOUBLE); }
 
+
+
+
+static const char* getComplexName(const TypeDecl *type)
+{
+    static const int numNameBufs = 15;
+    static char nameBufs[numNameBufs][100] = {{""}};
+    static std::atomic_int nextIndex = 0;
+
+    const uint32_t bufIdx = (nextIndex++) % numNameBufs;
+    char *buf = nameBufs[bufIdx];
+
+    std::stack<const TypeDecl*> stack;
+    stack.push(type);
+
+    while (stack.top()->getType() == TypeDecl::POINTER) {
+        stack.push(stack.top()->getReferencedType());
+    }
+
+    // Iterate over the stack in reverse
+    while (stack.size()) {
+        const TypeDecl *td = stack.top();
+        stack.pop();
+
+        if (td->getType() == TypeDecl::POINTER) {
+            buf = stpcpy(buf, "*");
+        } else {
+            buf = stpcpy(buf, td->getName());
+        }
+    }
+
+    return nameBufs[bufIdx];
+}
 
 
 }

@@ -6,6 +6,10 @@
 using namespace cish::ast;
 
 
+#define tdptr(x) TypeDecl::getPointer(x)
+#define tdconst(x) TypeDecl::getConst(x)
+
+
 TEST(TypeTest, sizeTest)
 {
     ASSERT_EQ(0, TypeDecl(TypeDecl::VOID).getSize());
@@ -26,6 +30,17 @@ TEST(TypeTest, resolveFromString)
     ASSERT_EQ(TypeDecl(TypeDecl::INT), TypeDecl::getFromString("int"));
     ASSERT_EQ(TypeDecl(TypeDecl::FLOAT), TypeDecl::getFromString("float"));
     ASSERT_EQ(TypeDecl(TypeDecl::DOUBLE), TypeDecl::getFromString("double"));
+}
+
+TEST(TypeTest, resolveConstFromTokens)
+{
+    ASSERT_EQ(tdconst(TypeDecl::VOID), TypeDecl::getFromTokens({"const", "void"}));
+    ASSERT_EQ(tdconst(TypeDecl::BOOL), TypeDecl::getFromTokens({"const", "bool"}));
+    ASSERT_EQ(tdconst(TypeDecl::CHAR), TypeDecl::getFromTokens({"const", "char"}));
+    ASSERT_EQ(tdconst(TypeDecl::SHORT), TypeDecl::getFromTokens({"const", "short"}));
+    ASSERT_EQ(tdconst(TypeDecl::INT), TypeDecl::getFromTokens({"const", "int"}));
+    ASSERT_EQ(tdconst(TypeDecl::FLOAT), TypeDecl::getFromTokens({"const", "float"}));
+    ASSERT_EQ(tdconst(TypeDecl::DOUBLE), TypeDecl::getFromTokens({"const", "double"}));
 }
 
 TEST(TypeTest, resolvePointerFromString)
@@ -241,3 +256,12 @@ TEST(TypeTest, castingConstPointersToMutablePointersNotAllowed)
     ASSERT_TRUE(iPtr.castableTo(ciPtr));
     ASSERT_FALSE(ciPtr.castableTo(iPtr));
 }
+
+
+TEST(TypeTest, pointerNaming)
+{
+    EXPECT_EQ("int*", std::string(tdptr(TypeDecl::INT).getName()));
+    EXPECT_EQ("const int*", std::string(tdptr(tdconst(TypeDecl::INT)).getName()));
+    EXPECT_EQ("const void***", std::string(tdptr(tdptr(tdptr(tdconst(TypeDecl::VOID)))).getName()));
+}
+
