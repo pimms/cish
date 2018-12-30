@@ -116,7 +116,7 @@ variableDeclaration
     ;
 
 structDeclaration
-    : 'struct' identifier '{' structFieldDeclaration* '}' ';'
+    : Struct identifier '{' structFieldDeclaration* '}' ';'
     ;
 structFieldDeclaration
     : typeIdentifier identifier ';'
@@ -179,7 +179,7 @@ typeName
     | 'float'
     | 'double'
     | 'void'
-    | 'struct' identifier
+    | Struct identifier
     ;
 
 sizeofTerm
@@ -222,6 +222,7 @@ SColon   : ';';
 Assign   : '=';
 Null     : 'NULL';
 Const    : 'const';
+Struct   : 'struct';
 
 Integer
     : [0-9]+

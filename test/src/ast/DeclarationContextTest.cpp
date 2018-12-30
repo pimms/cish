@@ -67,8 +67,14 @@ TEST(DeclarationContextTest, declaredStructsReturnsNonNull)
 {
     DeclarationContext context;
 
-    context.declareStruct("s1", {{TypeDecl::INT, "foo"}});
-    context.declareStruct("s2", {{TypeDecl::INT, "foo"}});
+    StructLayout *s1 = new StructLayout("s1");
+    s1->addField(TypeDecl::INT, "foo");
+    StructLayout *s2 = new StructLayout("s2");
+    s2->addField(TypeDecl::FLOAT, "foo");
+
+
+    context.declareStruct(s1);
+    context.declareStruct(s2);
 
     ASSERT_NE(nullptr, context.getStruct("s1"));
     ASSERT_NE(nullptr, context.getStruct("s2"));
@@ -81,8 +87,11 @@ TEST(DeclarationContextTest, redeclaringStructThrows)
 {
     DeclarationContext context;
 
-    ASSERT_NO_THROW(context.declareStruct("s1", {{TypeDecl::INT, "foo"}}));
-    ASSERT_THROW(context.declareStruct("s1", {{TypeDecl::INT, "foo"}}), StructAlreadyDeclaredException);
+    StructLayout *structA = new StructLayout("s1");
+    StructLayout *structB = new StructLayout("s1");
+
+    ASSERT_NO_THROW(context.declareStruct(structA));
+    ASSERT_THROW(context.declareStruct(structB), StructAlreadyDeclaredException);
 }
 
 

@@ -67,3 +67,24 @@ void assertExitCodeStdlib(const std::string &source, int expectedExitCode)
     context->addModule(stdlib::buildModule());
     assertExitCode(std::move(context), source, expectedExitCode);
 }
+
+
+void assertCompilationFailure(const std::string &source)
+{
+    ASSERT_ANY_THROW(createAst(source));
+}
+
+void assertRuntimeFailure(const std::string &source)
+{
+    ModuleContext::Ptr context = ModuleContext::create();
+    context->addModule(stdlib::buildModule());
+
+    VmPtr vm = createVm(std::move(context), source);
+    vm->startSync();
+    while (vm->isRunning()) {
+        vm->executeNextStatement();
+    }
+
+    ASSERT_FALSE(vm->getRuntimeError().get() == nullptr);
+}
+

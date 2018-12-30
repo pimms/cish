@@ -25,6 +25,9 @@
 #include "WhileStatement.h"
 #include "ExpressionStatement.h"
 
+#include "StructLayout.h"
+
+
 namespace cish
 {
 namespace ast
@@ -558,14 +561,25 @@ antlrcpp::Any TreeConverter::visitStructDeclaration(CMParser::StructDeclarationC
 {
     const std::string name = ctx->identifier()->getText();
 
-    std::vector<VarDeclaration> fields;
+    StructLayout *structLayout = new StructLayout(name);
+    _declContext.declareStruct(structLayout);
+
+    std::vector<std::pair<TypeDecl,std::string>> fields;
     for (auto fieldDecl: ctx->structFieldDeclaration()) {
         const TypeDecl type = visitTypeIdentifier(fieldDecl->typeIdentifier()).as<TypeDecl>();;
         const std::string varName = fieldDecl->identifier()->getText();
-        fields.push_back( VarDeclaration{type, varName} );
+        fields.push_back(std::make_pair(type, varName));
     }
 
-    _declContext.declareStruct(name, fields);
+    if (fields.empty()) {
+        Throw(EmptyStructException, "Struct '%s' has no declared fields", name.c_str());
+    }
+
+    for (const auto &field: fields) {
+        structLayout->addField(field.first, field.second);
+    }
+
+    structLayout->finalize();
     return nullptr;
 }
 
@@ -723,10 +737,7 @@ antlrcpp::Any TreeConverter::visitIdentifier(CMParser::IdentifierContext *ctx)
 
 antlrcpp::Any TreeConverter::visitTypeIdentifier(CMParser::TypeIdentifierContext *ctx)
 {
-    std::vector<std::string> tokens;
-    for (auto child: ctx->children) {
-        tokens.push_back(child->getText());
-    }
+    std::vector<std::string> tokens = tokenizeTree(ctx);
     TypeDecl type = TypeDecl::getFromTokens(&_declContext, tokens);
     return type;
 }
@@ -895,6 +906,28 @@ void TreeConverter::includeModule(Ast *ast, std::string moduleName)
     ast->addModule(module);
     _includedModules.insert(moduleName);
 }
+
+
+static void treeTokenizerHelper(std::vector<std::string> &res, antlr4::tree::ParseTree *tree);
+
+std::vector<std::string> TreeConverter::tokenizeTree(antlr4::tree::ParseTree *tree)
+{
+    std::vector<std::string> res;
+    treeTokenizerHelper(res, tree);
+    return res;
+}
+
+static void treeTokenizerHelper(std::vector<std::string> &res, antlr4::tree::ParseTree *tree)
+{
+    if (tree->children.empty()) {
+        res.push_back(tree->getText());
+    } else {
+        for (auto child: tree->children) {
+            treeTokenizerHelper(res, child);
+        }
+    }
+}
+
 
 
 }

@@ -40,34 +40,47 @@ const uint32_t StructField::getOffset() const
 StructLayout
 ===================
 */
-StructLayout::StructLayout(const std::string &name, const std::vector<VarDeclaration> &fields):
+StructLayout::StructLayout(const std::string &name):
     _name(name),
-    _size(0)
+    _size(0),
+    _finalized(false)
 {
-    uint32_t offset = 0;
-    uint32_t index = 0;
+}
 
-    if (fields.size() == 0) {
-        Throw(EmptyStructException, "Struct '%s' has no fields", name.c_str());
+void StructLayout::addField(TypeDecl type, const std::string &name)
+{
+    if (_finalized) {
+        Throw(StructFinalizedException,
+              "Cannot add field '%s %s' to struct '%s' - already finalized",
+              type.getName(), name.c_str(), _name.c_str());
     }
 
-    for (const VarDeclaration &decl: fields) {
-        _fields.push_back(StructField(decl.name, decl.type, offset));
-        offset += decl.type.getSize();
-        _size += decl.type.getSize();
-
-        if (_fieldLookup.count(decl.name) != 0) {
-            Throw(FieldAlreadyDeclaredException, "Duplicate field with name '%s'", decl.name.c_str());
-        }
-
-        _fieldLookup[decl.name] = index++;
+    if (type.getType() == TypeDecl::STRUCT && !type.getStructLayout()->isFinalized()) {
+        Throw(IncompleteTypeException,
+              "Cannot declare field of incomplete type '%s' in struct %s",
+              type.getName(), _name.c_str());
     }
 
-    assert(_size != 0);
-    assert(offset > 0);
-    assert(!_fields.empty());
-    assert(!_fieldLookup.empty());
-    assert(_fieldLookup.size() == _fields.size());
+    const int index = _fields.size();
+
+    _fields.push_back(StructField(name, type, _size));
+    _size += type.getSize();
+
+    if (_fieldLookup.count(name) != 0) {
+        Throw(FieldAlreadyDeclaredException, "Duplicate field with name '%s'", name.c_str());
+    }
+
+    _fieldLookup[name] = index;
+}
+
+void StructLayout::finalize()
+{
+    _finalized = true;
+}
+
+bool StructLayout::isFinalized() const
+{
+    return _finalized;
 }
 
 const std::string& StructLayout::getName() const

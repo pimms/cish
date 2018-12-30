@@ -3,6 +3,7 @@
 #include "ast/Type.h"
 #include "ast/AstNodes.h"
 #include "ast/DeclarationContext.h"
+#include "ast/StructLayout.h"
 
 using namespace cish::ast;
 
@@ -238,8 +239,14 @@ TEST(TypeTest, getFromTokens)
 TEST(TypeTest, getStructFromTokens)
 {
     DeclarationContext dc;
-    dc.declareStruct("s1", {{TypeDecl::INT, "n"}});
-    dc.declareStruct("s2", {{TypeDecl::INT, "n"}});
+
+    StructLayout *s1 = new StructLayout("s1");
+    s1->addField(TypeDecl::INT, "n");
+    StructLayout *s2 = new StructLayout("s2");
+    s2->addField(TypeDecl::INT, "n");
+
+    dc.declareStruct(s1);
+    dc.declareStruct(s2);
 
     auto raw = TypeDecl::getFromTokens(&dc, {"struct", "s1"});
     auto constant = TypeDecl::getFromTokens(&dc, {"const", "struct", "s1"});

@@ -42,7 +42,8 @@ public:
     // you want to keep any of the values.
     const VarDeclaration* getVariableDeclaration(const std::string &name) const;
 
-    void declareStruct(const std::string &name, const std::vector<VarDeclaration> &fields);
+    // The DeclarationContext takes ownership of the StructLayout.
+    void declareStruct(StructLayout *structLayout);
     const StructLayout* getStruct(const std::string &name) const;
 
     void pushVariableScope();

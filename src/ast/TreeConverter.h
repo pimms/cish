@@ -119,6 +119,8 @@ private:
 
     void verifyAllFunctionsDefined(Ast *ast);
     void includeModule(Ast *ast, std::string moduleName);
+
+    std::vector<std::string> tokenizeTree(antlr4::tree::ParseTree *tree);
 };
 
 

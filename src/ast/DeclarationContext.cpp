@@ -52,13 +52,17 @@ const VarDeclaration* DeclarationContext::getVariableDeclaration(const std::stri
     return nullptr;
 }
 
-void DeclarationContext::declareStruct(const std::string &name, const std::vector<VarDeclaration> &fields)
+void DeclarationContext::declareStruct(StructLayout *structLayout)
 {
+    const std::string name = structLayout->getName();
     if (_structs.count(name) != 0) {
-        Throw(StructAlreadyDeclaredException, "Struct with name '%s' already declared", name.c_str());
+        delete structLayout;
+        Throw(StructAlreadyDeclaredException,
+              "Struct with name '%s' already declared",
+              name.c_str());
     }
 
-    _structs[name] = new StructLayout(name, fields);
+    _structs[name] = structLayout;
 }
 
 const StructLayout* DeclarationContext::getStruct(const std::string &name) const
