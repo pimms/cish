@@ -12,6 +12,7 @@
 #include "TypeCastExpression.h"
 #include "ArithmeticAssignmentStatement.h"
 #include "MinusExpression.h"
+#include "StructAccessExpression.h"
 
 #include "VariableAssignmentStatement.h"
 #include "VariableDeclarationStatement.h"
@@ -133,6 +134,27 @@ antlrcpp::Any TreeConverter::visitSystemInclude(CMParser::SystemIncludeContext *
 antlrcpp::Any TreeConverter::visitExpression(CMParser::ExpressionContext *ctx)
 {
     return visitChildren(ctx);
+}
+
+antlrcpp::Any TreeConverter::visitSTRUCT_ACCESS_EXPR(CMParser::STRUCT_ACCESS_EXPRContext *ctx)
+{
+    Result res = visitChildren(ctx);
+    assert(res.size() == 1);
+    Expression::Ptr expr = castToExpression(res[0]);
+
+    const std::string method = ctx->op->getText();
+    StructAccessExpression::AccessType accessMethod;
+    if (method == ".") {
+        accessMethod = StructAccessExpression::AccessType::OBJECT;
+    } else if (method == "->") {
+        accessMethod = StructAccessExpression::AccessType::POINTER;
+    } else {
+        Throw(AstConversionException, "'%s' is not a valid struct member access operator", method.c_str());
+    }
+
+    const std::string identifier = ctx->identifier()->getText();
+
+    return createResult(std::make_shared<StructAccessExpression>(expr, identifier, accessMethod));
 }
 
 antlrcpp::Any TreeConverter::visitPOSTFIX_INC_EXPR(CMParser::POSTFIX_INC_EXPRContext *ctx)

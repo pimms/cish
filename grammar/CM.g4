@@ -22,6 +22,7 @@ expression
 
 expr
     : '(' expr ')'                              # PAREN_EXPR___ // Not to be used explicitly
+    | expr op=( '.' | '->' ) identifier         # STRUCT_ACCESS_EXPR
     | expr '[' expr ']'                         # SUBSCRIPT_EXPR
     | expr '++'                                 # POSTFIX_INC_EXPR
     | expr '--'                                 # POSTFIX_DEC_EXPR

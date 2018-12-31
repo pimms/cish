@@ -75,6 +75,10 @@ void StructLayout::addField(TypeDecl type, const std::string &name)
 
 void StructLayout::finalize()
 {
+    if (_fields.empty()) {
+        Throw(EmptyStructException, "Struct '%s' has no fields", _name.c_str());
+    }
+
     _finalized = true;
 }
 

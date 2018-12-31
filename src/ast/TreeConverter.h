@@ -47,6 +47,7 @@ public:
     virtual antlrcpp::Any visitRootItem(CMParser::RootItemContext *ctx) override;
     virtual antlrcpp::Any visitSystemInclude(CMParser::SystemIncludeContext *ctx) override;
     virtual antlrcpp::Any visitExpression(CMParser::ExpressionContext *ctx) override;
+    virtual antlrcpp::Any visitSTRUCT_ACCESS_EXPR(CMParser::STRUCT_ACCESS_EXPRContext *ctx) override;
     virtual antlrcpp::Any visitPOSTFIX_INC_EXPR(CMParser::POSTFIX_INC_EXPRContext *ctx) override;
     virtual antlrcpp::Any visitPREFIX_INC_EXPR(CMParser::PREFIX_INC_EXPRContext *ctx) override;
     virtual antlrcpp::Any visitPOSTFIX_DEC_EXPR(CMParser::POSTFIX_DEC_EXPRContext *ctx) override;

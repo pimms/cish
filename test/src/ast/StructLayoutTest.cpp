@@ -5,12 +5,19 @@
 using namespace cish::ast;
 
 
-/* TODO: How should we check this now? Finalization?
-TEST(StrutLayoutTest, emptyStructsThrows)
+TEST(StructLayoutTest, emptyStructsThrows)
 {
-    ASSERT_THROW(StructLayout layout("empty_lol", {}), EmptyStructException);
+    StructLayout layout("empty_lol");
+    ASSERT_THROW(layout.finalize(), EmptyStructException);
 }
-*/
+
+TEST(StructLayoutTest, cannotAddFieldAfterFinalizing)
+{
+    StructLayout layout("empty_lol");
+    layout.addField(TypeDecl::INT, "A");
+    layout.finalize();
+    ASSERT_THROW(layout.addField(TypeDecl::INT, "B"), StructFinalizedException);
+}
 
 TEST(StructLayoutTest, fieldNamesMustBeUnique)
 {
