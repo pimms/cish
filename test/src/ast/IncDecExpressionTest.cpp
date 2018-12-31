@@ -6,6 +6,7 @@
 
 #include "ast/IncDecExpression.h"
 #include "ast/DeclarationContext.h"
+#include "ast/Lvalue.h"
 #include "vm/ExecutionContext.h"
 #include "vm/Memory.h"
 #include "vm/Variable.h"
@@ -52,7 +53,8 @@ TEST(IncDecExpressionTest, verifyOperationsOnPointers)
 			dc.declareVariable(type, "i");
 			ec.getScope()->addVariable("i", var);
 
-			IncDecExpression expr(&dc, pair.first, "i");
+            auto lvalue = std::make_shared<VariableReference>(&dc, "i");
+			IncDecExpression expr(pair.first, lvalue);
 			ExpressionValue value = expr.evaluate(&ec);
 
             const auto refType = *type.getReferencedType();
@@ -94,7 +96,8 @@ TEST(IncDecExpressionTest, verifyOperationsOnPrimitives)
 			dc.declareVariable(type, "i");
 			ec.getScope()->addVariable("i", var);
 
-			IncDecExpression expr(&dc, pair.first, "i");
+            auto lvalue = std::make_shared<VariableReference>(&dc, "i");
+			IncDecExpression expr(pair.first, lvalue);
 			ExpressionValue value = expr.evaluate(&ec);
 			ASSERT_EQ(10 + std::get<0>(pair.second), value.get<uint8_t>());
 			ASSERT_EQ(10 + std::get<1>(pair.second), var->getAllocation()->read<uint8_t>());
@@ -114,7 +117,8 @@ TEST(IncDecExpressionTest, charOverflow)
     dc.declareVariable(TypeDecl::CHAR, "i");
     ec.getScope()->addVariable("i", var);
 
-    IncDecExpression expr(&dc, IncDecExpression::POSTFIX_INCREMENT, "i");
+    auto lvalue = std::make_shared<VariableReference>(&dc, "i");
+    IncDecExpression expr(IncDecExpression::POSTFIX_INCREMENT, lvalue);
     ExpressionValue value = expr.evaluate(&ec);
 
     ASSERT_EQ(-128, var->getAllocation()->read<char>());
@@ -133,7 +137,8 @@ TEST(IncDecExpressionTest, charUnderflow)
     dc.declareVariable(TypeDecl::CHAR, "i");
     ec.getScope()->addVariable("i", var);
 
-    IncDecExpression expr(&dc, IncDecExpression::POSTFIX_DECREMENT, "i");
+    auto lvalue = std::make_shared<VariableReference>(&dc, "i");
+    IncDecExpression expr(IncDecExpression::POSTFIX_DECREMENT, lvalue);
     ExpressionValue value = expr.evaluate(&ec);
 
     ASSERT_EQ(127, var->getAllocation()->read<char>());
@@ -148,7 +153,8 @@ TEST(IncDecExpressionTest, operatingOnConstVariablesNotAllowed)
     type.setConst(true);
     dc.declareVariable(type, "i");
 
-    ASSERT_THROW(IncDecExpression expr(&dc, IncDecExpression::POSTFIX_DECREMENT, "i"),
+    auto lvalue = std::make_shared<VariableReference>(&dc, "i");
+    ASSERT_THROW(IncDecExpression expr(IncDecExpression::POSTFIX_DECREMENT, lvalue),
                  InvalidOperationException);
 }
 

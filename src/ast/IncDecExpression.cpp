@@ -1,5 +1,4 @@
 #include "IncDecExpression.h"
-#include "VariableReferenceExpression.h"
 #include "DeclarationContext.h"
 
 #include "../vm/ExecutionContext.h"
@@ -34,17 +33,12 @@ static ExpressionValue evaluate(IncDecExpression::Operation op,
 }
 
 
-IncDecExpression::IncDecExpression(DeclarationContext *context,
-                                   IncDecExpression::Operation operation,
-                                   const std::string &varName):
+IncDecExpression::IncDecExpression(IncDecExpression::Operation operation,
+                                   Lvalue::Ptr lvalue):
     _operation(operation),
-    _varName(varName)
+    _lvalue(lvalue)
 {
-    const VarDeclaration *varDecl = context->getVariableDeclaration(_varName);
-    if (varDecl == nullptr)
-        Throw(VariableNotDeclaredException, "Variable '%s' not declared", _varName.c_str());
-
-    _type = varDecl->type;
+    _type = _lvalue->getType();
 
     if (!_type.isIntegral()) {
         Throw(InvalidTypeException,
@@ -52,7 +46,7 @@ IncDecExpression::IncDecExpression(DeclarationContext *context,
     }
 
     if (_type.isConst()) {
-        Throw(InvalidOperationException, "Cannot alter a const variable");
+        Throw(InvalidOperationException, "Cannot alter a const lvalue");
     }
 }
 
@@ -63,11 +57,7 @@ TypeDecl IncDecExpression::getType() const
 
 ExpressionValue IncDecExpression::evaluate(vm::ExecutionContext *context) const
 {
-    vm::Variable *var = context->getScope()->getVariable(_varName);
-    if (var == nullptr || var->getType() != _type)
-        Throw(Exception, "Unable to resolve var '%s' to expected type", _varName.c_str());
-
-    vm::MemoryView view = *var->getAllocation();
+    vm::MemoryView view = _lvalue->getMemoryView(context);
     const int delta = getMutationValue();
 
     switch (_type.getType()) {

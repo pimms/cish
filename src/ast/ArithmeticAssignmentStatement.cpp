@@ -45,37 +45,37 @@ ArithmeticAssignmentStatement::ArithmeticAssignmentStatement(Lvalue::Ptr lvalue,
 
 void ArithmeticAssignmentStatement::execute(vm::ExecutionContext *ctx) const
 {
-    ExpressionValue lhs = getLeftValue(ctx);
+    vm::MemoryView memView = _lvalue->getMemoryView(ctx);
+
+    ExpressionValue lhs = getLeftValue(memView);
     ExpressionValue rhs = _expression->evaluate(ctx);
 
     ((MutableLiteralExpression*)_leftExpr.get())->setValue(lhs);
     ((MutableLiteralExpression*)_rightExpr.get())->setValue(rhs);
     ExpressionValue nval = _binaryExpression->evaluate(ctx);
 
-    vm::MemoryView memView = _lvalue->getMemoryView(ctx);
     writeResult(memView, nval);
 }
 
-ExpressionValue ArithmeticAssignmentStatement::getLeftValue(vm::ExecutionContext *context) const
+ExpressionValue ArithmeticAssignmentStatement::getLeftValue(vm::MemoryView &memoryView) const
 {
     TypeDecl intrinsicType = _lvalue->getType();
-    vm::MemoryView memView = _lvalue->getMemoryView(context);
 
     switch (_lvalue->getType().getType()) {
         case TypeDecl::BOOL:
-            return ExpressionValue(intrinsicType, memView.read<bool>());
+            return ExpressionValue(intrinsicType, memoryView.read<bool>());
         case TypeDecl::CHAR:
-            return ExpressionValue(intrinsicType, memView.read<int8_t>());
+            return ExpressionValue(intrinsicType, memoryView.read<int8_t>());
         case TypeDecl::SHORT:
-            return ExpressionValue(intrinsicType, memView.read<int16_t>());
+            return ExpressionValue(intrinsicType, memoryView.read<int16_t>());
         case TypeDecl::INT:
-            return ExpressionValue(intrinsicType, memView.read<int32_t>());
+            return ExpressionValue(intrinsicType, memoryView.read<int32_t>());
         case TypeDecl::FLOAT:
-            return ExpressionValue(intrinsicType, memView.read<float>());
+            return ExpressionValue(intrinsicType, memoryView.read<float>());
         case TypeDecl::DOUBLE:
-            return ExpressionValue(intrinsicType, memView.read<double>());
+            return ExpressionValue(intrinsicType, memoryView.read<double>());
         case TypeDecl::POINTER:
-            return ExpressionValue(intrinsicType, memView.read<uint32_t>());
+            return ExpressionValue(intrinsicType, memoryView.read<uint32_t>());
         default:
             Throw(InvalidTypeException, "Unable to handle type %s in arithmetic assignment",
                     intrinsicType.getName());

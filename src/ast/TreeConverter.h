@@ -47,7 +47,6 @@ public:
     virtual antlrcpp::Any visitRootItem(CMParser::RootItemContext *ctx) override;
     virtual antlrcpp::Any visitSystemInclude(CMParser::SystemIncludeContext *ctx) override;
     virtual antlrcpp::Any visitExpression(CMParser::ExpressionContext *ctx) override;
-    virtual antlrcpp::Any manuallyVisitIncdecexpr(CMParser::IncdecexprContext *ctx);
     virtual antlrcpp::Any visitPOSTFIX_INC_EXPR(CMParser::POSTFIX_INC_EXPRContext *ctx) override;
     virtual antlrcpp::Any visitPREFIX_INC_EXPR(CMParser::PREFIX_INC_EXPRContext *ctx) override;
     virtual antlrcpp::Any visitPOSTFIX_DEC_EXPR(CMParser::POSTFIX_DEC_EXPRContext *ctx) override;
@@ -90,9 +89,6 @@ public:
     virtual antlrcpp::Any visitIdentifierList(CMParser::IdentifierListContext *ctx) override;
     virtual antlrcpp::Any visitFunctionParameter(CMParser::FunctionParameterContext *ctx) override;
     virtual antlrcpp::Any visitStringLiteral(CMParser::StringLiteralContext *ctx) override;
-    virtual antlrcpp::Any visitLvalVariableReference(CMParser::LvalVariableReferenceContext *ctx) override;
-    virtual antlrcpp::Any visitLvalDereference(CMParser::LvalDereferenceContext *ctx) override;
-    virtual antlrcpp::Any visitLvalSubscript(CMParser::LvalSubscriptContext *ctx) override;
     virtual antlrcpp::Any visitIdentifier(CMParser::IdentifierContext *ctx) override;
     virtual antlrcpp::Any visitTypeIdentifier(CMParser::TypeIdentifierContext *ctx) override;
 
@@ -108,6 +104,7 @@ private:
     Result buildBinaryExpression(BinaryExpression::Operator op, antlr4::tree::ParseTree *tree);
 
     Expression::Ptr castToExpression(AstNode::Ptr node);
+    Lvalue::Ptr castToLvalue(AstNode::Ptr node);
     Statement::Ptr castToStatement(AstNode::Ptr node);
     Expression::Ptr manuallyVisitExpression(CMParser::ExpressionContext *ctx);
     Statement::Ptr manuallyVisitStatement(CMParser::StatementContext *ctx);

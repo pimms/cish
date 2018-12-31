@@ -1,7 +1,6 @@
 #include "TreeConverter.h"
 
 #include "BinaryExpression.h"
-#include "VariableReferenceExpression.h"
 #include "FunctionCallExpression.h"
 #include "LiteralExpression.h"
 #include "IncDecExpression.h"
@@ -136,47 +135,40 @@ antlrcpp::Any TreeConverter::visitExpression(CMParser::ExpressionContext *ctx)
     return visitChildren(ctx);
 }
 
-antlrcpp::Any TreeConverter::manuallyVisitIncdecexpr(CMParser::IncdecexprContext *ctx)
-{
-    if (dynamic_cast<CMParser::POSTFIX_INC_EXPRContext*>(ctx)) {
-        return visitPOSTFIX_INC_EXPR((CMParser::POSTFIX_INC_EXPRContext*)ctx);
-    } else if (dynamic_cast<CMParser::PREFIX_INC_EXPRContext*>(ctx)) {
-        return visitPREFIX_INC_EXPR((CMParser::PREFIX_INC_EXPRContext*)ctx);
-    } else if (dynamic_cast<CMParser::POSTFIX_DEC_EXPRContext*>(ctx)) {
-        return visitPOSTFIX_DEC_EXPR((CMParser::POSTFIX_DEC_EXPRContext*)ctx);
-    } else if (dynamic_cast<CMParser::PREFIX_DEC_EXPRContext*>(ctx)) {
-        return visitPREFIX_DEC_EXPR((CMParser::PREFIX_DEC_EXPRContext*)ctx);
-    } else {
-        Throw(AstConversionException, "Manual visit of Incdecexpr failed");
-    }
-}
-
 antlrcpp::Any TreeConverter::visitPOSTFIX_INC_EXPR(CMParser::POSTFIX_INC_EXPRContext *ctx)
 {
     IncDecExpression::Operation op = IncDecExpression::POSTFIX_INCREMENT;
-    const std::string varName = ctx->Identifier()->getText();
-    return createResult(std::make_shared<IncDecExpression>(&_declContext, op, varName));
+    Result res = visitChildren(ctx).as<Result>();
+    assert(res.size() == 1);
+    Lvalue::Ptr lvalue = castToLvalue(res[0]);
+    return createResult(std::make_shared<IncDecExpression>(op, lvalue));
 }
 
 antlrcpp::Any TreeConverter::visitPREFIX_INC_EXPR(CMParser::PREFIX_INC_EXPRContext *ctx)
 {
     IncDecExpression::Operation op = IncDecExpression::PREFIX_INCREMENT;
-    const std::string varName = ctx->Identifier()->getText();
-    return createResult(std::make_shared<IncDecExpression>(&_declContext, op, varName));
+    Result res = visitChildren(ctx).as<Result>();
+    assert(res.size() == 1);
+    Lvalue::Ptr lvalue = castToLvalue(res[0]);
+    return createResult(std::make_shared<IncDecExpression>(op, lvalue));
 }
 
 antlrcpp::Any TreeConverter::visitPOSTFIX_DEC_EXPR(CMParser::POSTFIX_DEC_EXPRContext *ctx)
 {
     IncDecExpression::Operation op = IncDecExpression::POSTFIX_DECREMENT;
-    const std::string varName = ctx->Identifier()->getText();
-    return createResult(std::make_shared<IncDecExpression>(&_declContext, op, varName));
+    Result res = visitChildren(ctx).as<Result>();
+    assert(res.size() == 1);
+    Lvalue::Ptr lvalue = castToLvalue(res[0]);
+    return createResult(std::make_shared<IncDecExpression>(op, lvalue));
 }
 
 antlrcpp::Any TreeConverter::visitPREFIX_DEC_EXPR(CMParser::PREFIX_DEC_EXPRContext *ctx)
 {
     IncDecExpression::Operation op = IncDecExpression::PREFIX_DECREMENT;
-    const std::string varName = ctx->Identifier()->getText();
-    return createResult(std::make_shared<IncDecExpression>(&_declContext, op, varName));
+    Result res = visitChildren(ctx).as<Result>();
+    assert(res.size() == 1);
+    Lvalue::Ptr lvalue = castToLvalue(res[0]);
+    return createResult(std::make_shared<IncDecExpression>(op, lvalue));
 }
 
 antlrcpp::Any TreeConverter::visitTYPE_CAST_EXPR(CMParser::TYPE_CAST_EXPRContext *ctx)
@@ -203,7 +195,7 @@ antlrcpp::Any TreeConverter::visitADDROF_EXPR(CMParser::ADDROF_EXPRContext *ctx)
 {
     Result result = visitChildren(ctx).as<Result>();
     assert(result.size() == 1);
-    Lvalue::Ptr lvalue = std::dynamic_pointer_cast<Lvalue>(result[0]);
+    Lvalue::Ptr lvalue = castToLvalue(result[0]);
     return createResult(std::make_shared<AddrofExpression>(lvalue));
 }
 
@@ -379,7 +371,7 @@ antlrcpp::Any TreeConverter::visitAND_EXPR(CMParser::AND_EXPRContext *ctx)
 antlrcpp::Any TreeConverter::visitVAR_REF_EXPR(CMParser::VAR_REF_EXPRContext *ctx)
 {
     const std::string varName = ctx->Identifier()->getText();
-    return createResult(std::make_shared<VariableReferenceExpression>(&_declContext, varName));
+    return createResult(std::make_shared<VariableReference>(&_declContext, varName));
 }
 
 antlrcpp::Any TreeConverter::visitCOMPARE_EXPR(CMParser::COMPARE_EXPRContext *ctx)
@@ -523,20 +515,15 @@ antlrcpp::Any TreeConverter::visitExpressionStatement(CMParser::ExpressionStatem
 
 antlrcpp::Any TreeConverter::visitAssignment(CMParser::AssignmentContext *ctx)
 {
-    Result res = visitLvalue(ctx->lvalue()).as<Result>();
-    assert(res.size() == 1);
-    Lvalue::Ptr lvalue = std::dynamic_pointer_cast<Lvalue>(res[0]);
-
-    Expression::Ptr expression = nullptr;
-
-    if (ctx->expression()) {
-        expression = manuallyVisitExpression(ctx->expression());
-    } else {
-        Throw(AstConversionException, "no rvalue for assignment");
+    Result res = visitChildren(ctx).as<Result>();
+    if (res.size() != 2) {
+        Throw(AstConversionException, "Expected 2 expressions in assignment, found %d", (int)res.size());
     }
 
-    auto varAssign = std::make_shared<VariableAssignmentStatement>(&_declContext, lvalue, expression);
+    Lvalue::Ptr lvalue = castToLvalue(res[0]);
+    Expression::Ptr rvalue = castToExpression(res[1]);
 
+    auto varAssign = std::make_shared<VariableAssignmentStatement>(&_declContext, lvalue, rvalue);
     return createResult(varAssign);
 }
 
@@ -598,18 +585,20 @@ antlrcpp::Any TreeConverter::visitArithmeticAssignment(CMParser::ArithmeticAssig
         { "|=",     BinaryExpression::Operator::BITWISE_OR },
     };
 
-    Result res = visitLvalue(ctx->lvalue()).as<Result>();
-    assert(res.size() == 1);
-    Lvalue::Ptr lvalue = std::dynamic_pointer_cast<Lvalue>(res[0]);
+    Result res = visitChildren(ctx).as<Result>();
+    if (res.size() != 2) {
+        Throw(AstConversionException, "Expected 2 expressions in arithmetic assignment, found %d", (int)res.size());
+    }
 
-    Expression::Ptr expr = manuallyVisitExpression(ctx->expression());
+    Lvalue::Ptr lvalue = castToLvalue(res[0]);
+    Expression::Ptr rvalue = castToExpression(res[1]);
 
     const std::string op = ctx->op->getText();
     if (opmap.count(op) == 0)
         Throw(AstConversionException, "Unable to handle arith.ass. operator '%s'", op.c_str());
     BinaryExpression::Operator oper = opmap.at(op);
 
-    auto stmt = std::make_shared<ArithmeticAssignmentStatement>(lvalue, oper, expr);
+    auto stmt = std::make_shared<ArithmeticAssignmentStatement>(lvalue, oper, rvalue);
     return createResult(stmt);
 }
 
@@ -699,36 +688,6 @@ antlrcpp::Any TreeConverter::visitStringLiteral(CMParser::StringLiteralContext *
     return createResult(manuallyVisitStringLiteral(ctx));
 }
 
-
-antlrcpp::Any TreeConverter::visitLvalVariableReference(CMParser::LvalVariableReferenceContext *ctx)
-{
-    std::string declName = ctx->getText();
-    auto varRef = std::make_shared<VariableReference>(&_declContext, declName);
-    return createResult(varRef);
-}
-
-antlrcpp::Any TreeConverter::visitLvalDereference(CMParser::LvalDereferenceContext *ctx)
-{
-    Result result = visitChildren(ctx).as<Result>();
-    assert(result.size() == 1);
-    Expression::Ptr expr = castToExpression(result[0]);
-
-    auto deref = std::make_shared<DereferenceExpression>(expr);
-    return createResult(deref);
-}
-
-antlrcpp::Any TreeConverter::visitLvalSubscript(CMParser::LvalSubscriptContext *ctx)
-{
-    Result res = visitChildren(ctx);
-    assert(res.size() == 2);
-
-    Expression::Ptr ptrExpr = castToExpression(res[0]);
-    Expression::Ptr idxExpr = castToExpression(res[1]);
-
-    auto subscript = std::make_shared<SubscriptExpression>(ptrExpr, idxExpr);
-    return createResult(subscript);
-}
-
 antlrcpp::Any TreeConverter::visitIdentifier(CMParser::IdentifierContext *ctx)
 {
     // Will never be implemented!
@@ -771,8 +730,23 @@ TreeConverter::Result TreeConverter::buildBinaryExpression(BinaryExpression::Ope
 Expression::Ptr TreeConverter::castToExpression(AstNode::Ptr node)
 {
     Expression::Ptr expr = std::dynamic_pointer_cast<Expression>(node);
-    assert(expr != nullptr);
+    if (expr == nullptr) {
+        Throw(AstConversionException, "Expected expression");
+    }
+
     return expr;
+}
+
+Lvalue::Ptr TreeConverter::castToLvalue(AstNode::Ptr node)
+{
+    Lvalue::Ptr lvalue = std::dynamic_pointer_cast<Lvalue>(node);
+    if (lvalue == nullptr) {
+        // TODO: This will produce some absolute bullshit "compiler" errors,
+        // as we strip away any line information or other context.
+        Throw(AstConversionException, "Expected lvalue");
+    }
+
+    return lvalue;
 }
 
 Statement::Ptr TreeConverter::castToStatement(AstNode::Ptr node)
@@ -857,16 +831,13 @@ Statement::Ptr TreeConverter::manuallyVisitForIterator(CMParser::ForIteratorCont
         res = visitAssignment(ctx->assignment()).as<Result>();
         assert(res.size() == 1);
         return castToStatement(res[0]);
-    } else if (ctx->functionCall()) {
-        res = visitFunctionCall(ctx->functionCall()).as<Result>();
+    } else if (ctx->arithmeticAssignment()) {
+        res = visitArithmeticAssignment(ctx->arithmeticAssignment()).as<Result>();
         assert(res.size() == 1);
-        auto functionCallExpression = castToExpression(res[0]);
-        return std::make_shared<ExpressionStatement>(functionCallExpression);
-    } else if (ctx->incdecexpr()) {
-        res = manuallyVisitIncdecexpr(ctx->incdecexpr()).as<Result>();
-        assert(res.size() == 1);
-        auto incDecExpr = castToExpression(res[0]);
-        return std::make_shared<ExpressionStatement>(incDecExpr);
+        return castToStatement(res[0]);
+    } else if (ctx->expression()) {
+        Expression::Ptr expr = manuallyVisitExpression(ctx->expression());
+        return std::make_shared<ExpressionStatement>(expr);
     } else {
         Throw(Exception, "Unsupported initialization in for-loop");
     }

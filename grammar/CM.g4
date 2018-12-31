@@ -3,6 +3,7 @@ grammar CM;
 root
     : rootBlock EOF
     ;
+
 rootBlock
     : rootItem*
     ;
@@ -21,14 +22,17 @@ expression
 
 expr
     : '(' expr ')'                              # PAREN_EXPR___ // Not to be used explicitly
-    | incdecexpr                                # INCDECEXPR___ // Not to be used explicitly
     | expr '[' expr ']'                         # SUBSCRIPT_EXPR
+    | expr '++'                                 # POSTFIX_INC_EXPR
+    | expr '--'                                 # POSTFIX_DEC_EXPR
+    | '++' expr                                 # PREFIX_INC_EXPR
+    | '--' expr                                 # PREFIX_DEC_EXPR
     | '-' expr                                  # MINUS_EXPR
     | '!' expr                                  # NEGATION_EXPR
     | '~' expr                                  # ONES_COMPLEMENT_EXPR
     | '(' typeIdentifier ')' expr               # TYPE_CAST_EXPR
     | '*' expr                                  # DEREF_EXPR
-    | '&' lvalue                                # ADDROF_EXPR
+    | '&' expr                                  # ADDROF_EXPR
     | 'sizeof' sizeofTerm                       # SIZEOF_EXPR
     | expr op=( '*' | '/' | '%' ) expr          # MULT_EXPR
     | expr op=( '+' | '-' ) expr                # ADD_EXPR
@@ -44,12 +48,6 @@ exprAtom
     | Identifier                                # VAR_REF_EXPR
     | functionCall                              # FUNC_CALL_EXPR
     | stringLiteral                             # STR_LITERAL_EXPR
-    ;
-incdecexpr
-    : Identifier '++'                           # POSTFIX_INC_EXPR
-    | Identifier '--'                           # POSTFIX_DEC_EXPR
-    | '++' Identifier                           # PREFIX_INC_EXPR
-    | '--' Identifier                           # PREFIX_DEC_EXPR
     ;
 
 statement
@@ -89,9 +87,9 @@ forInitializer
     | assignment
     ;
 forIterator
-    : assignment
-    | functionCall
-    | incdecexpr
+    : arithmeticAssignment
+    | assignment
+    | expression
     ;
 
 whileStatement
@@ -104,11 +102,11 @@ doWhileStatement
 
 
 assignment
-    : lvalue '=' expression
+    : expression '=' expression
     ;
 
 arithmeticAssignment
-    : lvalue op=( '+=' | '-=' | '*=' | '/=' | '%=' | '<<=' | '>>=' | '&=' | '^=' | '|=' ) expression
+    : expression  op=( '+=' | '-=' | '*=' | '/=' | '%=' | '<<=' | '>>=' | '&=' | '^=' | '|=' ) expression
     ;
 
 variableDeclaration
@@ -149,22 +147,6 @@ functionParameter
 
 identifier
     : Identifier
-    ;
-
-lvalue
-    : '(' lvalue ')'
-    | lvalSubscript
-    | lvalDereference
-    | lvalVariableReference
-    ;
-lvalVariableReference
-    : Identifier
-    ;
-lvalDereference
-    : '*' expr
-    ;
-lvalSubscript
-    : expression '[' expression ']'
     ;
 
 

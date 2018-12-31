@@ -51,7 +51,8 @@ TEST(DereferenceExpressionTest, testWithIncrementalOperand)
     ptrVar->getAllocation()->write<int>(rawVal->getAllocation()->getAddress());
     ec.getScope()->addVariable("ptr", ptrVar);
 
-    auto inc = std::make_shared<IncDecExpression>(&dc, IncDecExpression::POSTFIX_INCREMENT, "ptr");
+    auto lvalue = std::make_shared<VariableReference>(&dc, "ptr");
+    auto inc = std::make_shared<IncDecExpression>(IncDecExpression::POSTFIX_INCREMENT, lvalue);
 
     DereferenceExpression deref(inc);
     ASSERT_EQ(TypeDecl::INT, deref.getType().getType());

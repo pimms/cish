@@ -24,6 +24,11 @@ public:
 
     virtual ~Lvalue() = default;
     virtual ExpressionValue evaluate(vm::ExecutionContext *context) const override;
+
+    /**
+     * IMPORTANT!!! This method MUST be considered to have side-effects, and must only
+     * be called once per evaluation.
+     */
     virtual vm::MemoryView getMemoryView(vm::ExecutionContext *context) const = 0;
 };
 

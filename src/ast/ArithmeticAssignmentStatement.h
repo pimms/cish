@@ -31,7 +31,7 @@ private:
     mutable MutableLiteralExpression::Ptr _rightExpr;
 
 
-    ExpressionValue getLeftValue(vm::ExecutionContext *context) const;
+    ExpressionValue getLeftValue(vm::MemoryView &memoryView) const;
     void writeResult(vm::MemoryView &memView, const ExpressionValue &value) const;
 };
 
