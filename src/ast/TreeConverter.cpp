@@ -634,7 +634,9 @@ antlrcpp::Any TreeConverter::visitFunctionDefinition(CMParser::FunctionDefinitio
     FunctionDefinition::Ptr funcDef = std::make_shared<FunctionDefinition>(&_declContext, funcDecl);
     _declContext.enterFunction(funcDef);
     for (const VarDeclaration &varDecl: params) {
-        _declContext.declareVariable(varDecl.type, varDecl.name);
+        if (varDecl.name != "") {
+            _declContext.declareVariable(varDecl.type, varDecl.name);
+        }
     }
 
     for (CMParser::StatementContext *stmtContext: ctx->statement()) {
@@ -792,7 +794,7 @@ std::vector<VarDeclaration> TreeConverter::manuallyVisitIdentifierList(CMParser:
 VarDeclaration TreeConverter::manuallyVisitFunctionParameter(CMParser::FunctionParameterContext *ctx)
 {
     TypeDecl type = visitTypeIdentifier(ctx->typeIdentifier()).as<TypeDecl>();
-    const std::string varName = ctx->identifier()->getText();
+    const std::string varName = (ctx->identifier() ? ctx->identifier()->getText() : "");
 
     VarDeclaration decl;
     decl.type = type;

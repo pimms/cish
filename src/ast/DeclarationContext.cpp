@@ -126,6 +126,11 @@ FunctionDefinition::Ptr DeclarationContext::getCurrentFunction() const
 void DeclarationContext::declareFunction(FuncDeclaration func)
 {
     checkForReservedKeyword(func.name);
+    checkIdentifierLength(func.name);
+    for (auto param: func.params) {
+        checkForReservedKeyword(param.name);
+        checkIdentifierLength(param.name);
+    }
 
     const FuncDeclaration *existing = getFunctionDeclaration(func.name);
     if (existing != nullptr) {

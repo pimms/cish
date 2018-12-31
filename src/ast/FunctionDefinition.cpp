@@ -49,8 +49,10 @@ ExpressionValue FunctionDefinition::execute(vm::ExecutionContext *context, const
         }
 
         const std::string varName = _decl.params[i].name;
-        vm::Variable *var = convertToVariable(memory, params[i]);
-        scope->addVariable(varName, var);
+        if (varName != "") {
+            vm::Variable *var = convertToVariable(memory, params[i]);
+            scope->addVariable(varName, var);
+        }
     }
 
     Statement::execute(context);

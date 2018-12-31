@@ -304,7 +304,6 @@ TEST(SimpleProgramsTest, doWhileLoopOnlyRunOnce)
     assertExitCode(source, 1);
 }
 
-
 TEST(SimpleProgramsTest, postfixIncrement)
 {
     const std::string source =
@@ -355,7 +354,6 @@ TEST(SimpleProgramsTest, standaloneIncrements)
         "}";
     assertExitCode(source, 1);
 }
-
 
 TEST(SimpleProgramsTest, forLoopWithIncrement)
 {
@@ -954,6 +952,26 @@ TEST(SimpleProgramsTest, mallocFailureReturnsNULL)
         "#include <stdlib.h>"
         "int main() { return malloc(1 << 30) == NULL; }",
         1
+    );
+}
+
+TEST(SimpleProgramsTest, functionDeclCanOmitVarNames)
+{
+    assertExitCode(
+        "void foo(int, char* STRING, const void*);"
+        "int main() { return 0; }"
+        "void foo(int a, char* b, const void* c){}",
+        0
+    );
+}
+
+TEST(SimpleProgramsTest, functionDefCanOmitVarNames)
+{
+    assertExitCode(
+        "int echo(int, int WILL_BE_IGNORED, int WILL_ALSO_BE_IGNORED, int, int);"
+        "int main() { return echo(15, 99, 98, 97, 96); }"
+        "int echo(int n, int, int, int, int) { return n; }",
+        15 
     );
 }
 
