@@ -48,7 +48,8 @@ TEST(StructProgramsTest, sizeofStruct)
     );
 }
 
-TEST(StructProgramsTest, assignAndReturnField)
+
+TEST(StructProgramsTest, obj_assignAndReturnField)
 {
     assertExitCode(
         "struct node_t {"
@@ -62,7 +63,7 @@ TEST(StructProgramsTest, assignAndReturnField)
     );
 }
 
-TEST(StructProgramsTest, assignAndMultiplyFields)
+TEST(StructProgramsTest, obj_assignAndMultiplyFields)
 {
     assertExitCode(
         "struct node_t {"
@@ -78,7 +79,7 @@ TEST(StructProgramsTest, assignAndMultiplyFields)
     );
 }
 
-TEST(SructProgramsTest, passFieldToFunction)
+TEST(SructProgramsTest, obj_passFieldToFunction)
 {
     assertExitCode(
         "struct node_t {"
@@ -90,6 +91,91 @@ TEST(SructProgramsTest, passFieldToFunction)
         "   var.val = 199;"
         "   return echo(var.val);"
         "}", 199
+    );
+}
+
+TEST(StructProgramsTest, obj_combinedFieldOps)
+{
+    assertExitCode(
+        "struct node_t {"
+        "    int val1;"
+        "    float val2;"
+        "};"
+        "int echo(int n) { return n; }"
+        "int main() {"
+        "    struct node_t var;"
+        "    var.val1 = 10;"
+        "    var.val2 = 4.9f;"
+        "    int param = var.val1 * var.val2;"
+        "    return echo(var.val1 * var.val2);"
+        "}", 49
+    );
+}
+
+
+TEST(StructProgramsTest, ptr_assignAndReturnField)
+{
+    assertExitCode(
+        "#include <stdlib.h>"
+        "struct node_t {"
+        "   int value;"
+        "};"
+        "int main() {"
+        "   struct node_t *var = malloc(sizeof(struct node_t));"
+        "   var->value = 20;"
+        "   return var->value + 4;"
+        "}", 24
+    );
+}
+
+TEST(StructProgramsTest, ptr_assignAndMultiplyFields)
+{
+    assertExitCode(
+        "#include <stdlib.h>"
+        "struct node_t {"
+        "   int val1;"
+        "   float val2;"
+        "};"
+        "int main() {"
+        "   struct node_t *var = malloc(sizeof(struct node_t));"
+        "   var->val1 = 10;"
+        "   var->val2 = 4.9;"
+        "   return var->val1 * var->val2;"
+        "}", 49
+    );
+}
+
+TEST(SructProgramsTest, ptr_passFieldToFunction)
+{
+    assertExitCode(
+        "#include <stdlib.h>"
+        "struct node_t {"
+        "   float val;"
+        "};"
+        "int echo(int n) { return n; }"
+        "int main() {"
+        "   struct node_t *var = malloc(sizeof(struct node_t));"
+        "   var->val = (int)199;"
+        "   return (int)echo((float)var->val);"
+        "}", 199
+    );
+}
+
+TEST(StructProgramsTest, ptr_combinedFieldOps)
+{
+    assertExitCode(
+        "#include <stdlib.h>"
+        "struct node_t {"
+        "    int val1;"
+        "    float val2;"
+        "};"
+        "int echo(int n) { return n; }"
+        "int main() {"
+        "    struct node_t *var = malloc(sizeof(struct node_t));"
+        "    var->val1 = 10;"
+        "    var->val2 = 4.9f;"
+        "    return echo(var->val1 * var->val2);"
+        "}", 49
     );
 }
 

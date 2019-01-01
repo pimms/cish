@@ -862,7 +862,7 @@ TEST(SimpleProgramsTest, simpleArithAss)
 
 TEST(SimpleProgramsTest, subcriptSimple)
 {
-    assertExitCodeStdlib(
+    assertExitCode(
         "#include <stdlib.h>"
         "int main()"
         "{"
@@ -877,7 +877,7 @@ TEST(SimpleProgramsTest, subcriptSimple)
 
 TEST(SimpleProgramsTest, subscriptWithCast)
 {
-    assertExitCodeStdlib(
+    assertExitCode(
         "#include <stdlib.h>"
         "int main()"
         "{"
@@ -893,7 +893,7 @@ TEST(SimpleProgramsTest, subscriptWithCast)
 
 TEST(SimpleProgramsTest, subscriptNegativeIndex)
 {
-    assertExitCodeStdlib(
+    assertExitCode(
         "#include <stdlib.h>"
         "int main()"
         "{"
@@ -911,7 +911,7 @@ TEST(SimpleProgramsTest, subscriptEvaluationOrder)
     // a[foo()] = foo();
     //    ^        ^
     //   2nd      1st
-    assertExitCodeStdlib(
+    assertExitCode(
         "#include <stdlib.h>"
         ""
         "int global = 0;"
@@ -939,7 +939,7 @@ TEST(SimpleProgramsTest, subscriptEvaluationOrder)
 
 TEST(SimpleProgramsTest, leakingMemoryDoesNotCrash)
 {
-    assertExitCodeStdlib(
+    assertExitCode(
         "#include <stdlib.h>"
         "int main() { malloc(40); return 0; }",
         0
@@ -948,7 +948,7 @@ TEST(SimpleProgramsTest, leakingMemoryDoesNotCrash)
 
 TEST(SimpleProgramsTest, mallocFailureReturnsNULL)
 {
-    assertExitCodeStdlib(
+    assertExitCode(
         "#include <stdlib.h>"
         "int main() { return malloc(1 << 30) == NULL; }",
         1

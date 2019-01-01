@@ -1,6 +1,7 @@
 #include "TestHelpers.h"
 #include "module/ModuleContext.h"
 #include "module/stdlib/stdlibModule.h"
+#include "module/stdio/stdioModule.h"
 
 using namespace cish::vm;
 using namespace cish::ast;
@@ -51,6 +52,9 @@ void assertExitCode(const std::string &source, int expectedExitCode)
 
 void assertExitCode(ModuleContext::Ptr moduleContext, const std::string &source, int expectedExitCode)
 {
+    moduleContext->addModule(stdlib::buildModule());
+    moduleContext->addModule(stdio::buildModule());
+
     VmPtr vm = createVm(std::move(moduleContext), source);
     vm->startSync();
 
@@ -60,14 +64,6 @@ void assertExitCode(ModuleContext::Ptr moduleContext, const std::string &source,
 
     EXPECT_EQ(expectedExitCode, vm->getExitCode());
 }
-
-void assertExitCodeStdlib(const std::string &source, int expectedExitCode)
-{
-    ModuleContext::Ptr context = ModuleContext::create();
-    context->addModule(stdlib::buildModule());
-    assertExitCode(std::move(context), source, expectedExitCode);
-}
-
 
 void assertCompilationFailure(const std::string &source)
 {

@@ -30,7 +30,7 @@ public:
     ExpressionValue getReturnValue() const;
 
 private:
-    vm::Variable* convertToVariable(vm::Memory *memory, const ExpressionValue &expr) const;
+    vm::Variable* convertToVariable(vm::Memory *memory, const ExpressionValue &expr, const TypeDecl &targetType) const;
 
     FuncDeclaration _decl;
 };

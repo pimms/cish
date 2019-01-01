@@ -50,7 +50,7 @@ ExpressionValue FunctionDefinition::execute(vm::ExecutionContext *context, const
 
         const std::string varName = _decl.params[i].name;
         if (varName != "") {
-            vm::Variable *var = convertToVariable(memory, params[i]);
+            vm::Variable *var = convertToVariable(memory, params[i], _decl.params[i].type);
             scope->addVariable(varName, var);
         }
     }
@@ -62,12 +62,14 @@ ExpressionValue FunctionDefinition::execute(vm::ExecutionContext *context, const
     return retVal;
 }
 
-vm::Variable* FunctionDefinition::convertToVariable(vm::Memory *memory, const ExpressionValue &expr) const
+vm::Variable* FunctionDefinition::convertToVariable(vm::Memory *memory,
+                                                    const ExpressionValue &expr,
+                                                    const TypeDecl &targetType) const
 {
     TypeDecl type = expr.getIntrinsicType();
     vm::Allocation::Ptr alloc = memory->allocate(type.getSize());
 
-    switch (type.getType()) {
+    switch (targetType.getType()) {
         case TypeDecl::BOOL:
             alloc->write<bool>(expr.get<bool>());
             break;
