@@ -1,5 +1,6 @@
 #include "StructAccessExpression.h"
-
+#include "StructField.h"
+#include "../vm/ExecutionContext.h"
 
 namespace cish
 {
@@ -9,7 +10,8 @@ namespace ast
 
 StructAccessExpression::StructAccessExpression(Expression::Ptr structExpr,
                                                const std::string &memberName,
-                                               AccessType accessType)
+                                               AccessType accessType):
+    _expression(structExpr)
 {
     TypeDecl type = structExpr->getType();
 
@@ -37,7 +39,12 @@ TypeDecl StructAccessExpression::getType() const
 
 vm::MemoryView StructAccessExpression::getMemoryView(vm::ExecutionContext *context) const
 {
-    Throw(Exception, "TODO");
+    ExpressionValue value = _expression->evaluate(context);
+    const uint32_t base = value.get<uint32_t>();
+    const uint32_t offset = _struct->getField(_field->getName())->getOffset();
+    const uint32_t addr = (base + offset);
+
+    return context->getMemory()->getView(addr);
 }
 
 

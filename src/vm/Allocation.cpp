@@ -46,6 +46,8 @@ ast::ExpressionValue MemoryView::evaluateAs(const ast::TypeDecl &type) const
             return ast::ExpressionValue(type, read<double>());
         case ast::TypeDecl::POINTER:
             return ast::ExpressionValue(type, read<uint32_t>());
+        case ast::TypeDecl::STRUCT:
+            return ast::ExpressionValue(type, _addr);
 
         default:
             Throw(Exception, "Unhandled type: %s", type.getName());

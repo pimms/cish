@@ -4,6 +4,7 @@
 #include "ast/AstNodes.h"
 #include "ast/DeclarationContext.h"
 #include "ast/StructLayout.h"
+#include "ast/StructField.h"
 
 using namespace cish::ast;
 
@@ -240,10 +241,13 @@ TEST(TypeTest, getStructFromTokens)
 {
     DeclarationContext dc;
 
-    StructLayout *s1 = new StructLayout("s1");
-    s1->addField(TypeDecl::INT, "n");
-    StructLayout *s2 = new StructLayout("s2");
-    s2->addField(TypeDecl::INT, "n");
+    StructLayout *raws1 = new StructLayout("s1");
+    raws1->addField(new StructField(TypeDecl::INT, "n"));
+    StructLayout::Ptr s1 = StructLayout::Ptr(raws1);
+
+    StructLayout *raws2 = new StructLayout("s2");
+    raws2->addField(new StructField(TypeDecl::INT, "n"));
+    StructLayout::Ptr s2 = StructLayout::Ptr(raws2);
 
     dc.declareStruct(s1);
     dc.declareStruct(s2);

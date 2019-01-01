@@ -4,13 +4,14 @@
 #include <vector>
 #include <string>
 
+#include "StructLayout.h"
+
 
 namespace cish
 {
 namespace ast
 {
 
-class StructLayout;
 class DeclarationContext;
 
 class TypeDecl
@@ -31,6 +32,8 @@ public:
 
         POINTER,
 
+        // Note: STRUCT-typed ExpressionValues always contains the memory address
+        // of the structure object. We never pass the struct-buffer itself.
         STRUCT,
     };
 
@@ -41,7 +44,7 @@ public:
     static TypeDecl getPointer(Type referencedType);
     static TypeDecl getPointer(const TypeDecl &referencedType);
     static TypeDecl getConst(const TypeDecl &type);
-    static TypeDecl getStruct(const StructLayout *structLayout);
+    static TypeDecl getStruct(StructLayout::Ptr structLayout);
 
 
     TypeDecl();
@@ -59,7 +62,7 @@ public:
     const TypeDecl* getReferencedType() const;
 
     // This method is ONLY valid if this type is a STRUCT
-    const StructLayout* getStructLayout() const;
+    StructLayout::Ptr getStructLayout() const;
 
     bool operator==(const TypeDecl &o) const;
     bool operator==(const TypeDecl::Type &o) const;
@@ -79,7 +82,7 @@ private:
     Type _type;
     TypeDecl *_referencedType;
     bool _const;
-    const StructLayout *_structLayout;
+    StructLayout::Ptr _structLayout;
 };
 
 

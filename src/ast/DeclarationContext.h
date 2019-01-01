@@ -9,6 +9,7 @@
 #include "VarDeclaration.h"
 #include "FuncDeclaration.h"
 #include "FunctionDefinition.h"
+#include "StructLayout.h"
 
 
 namespace cish
@@ -33,7 +34,7 @@ class DeclarationContext
 public:
 
     DeclarationContext();
-    ~DeclarationContext();
+    ~DeclarationContext() = default;
 
     void declareVariable(TypeDecl type, const std::string &name);
 
@@ -43,8 +44,8 @@ public:
     const VarDeclaration* getVariableDeclaration(const std::string &name) const;
 
     // The DeclarationContext takes ownership of the StructLayout.
-    void declareStruct(StructLayout *structLayout);
-    const StructLayout* getStruct(const std::string &name) const;
+    void declareStruct(StructLayout::Ptr structLayout);
+    StructLayout::Ptr getStruct(const std::string &name) const;
 
     void pushVariableScope();
     void popVariableScope();
@@ -61,7 +62,7 @@ private:
     std::vector<VariableScope> _varScope;
     FunctionDefinition::Ptr _currentFunction;
     std::map<std::string, FuncDeclaration> _funcs;
-    std::map<std::string, StructLayout*> _structs;
+    std::map<std::string, StructLayout::Ptr> _structs;
 
     VarDeclaration* findInScope(const std::string &name, VariableScope *scope);
     void verifyIdenticalDeclarations(const FuncDeclaration *existing, const FuncDeclaration *redecl);

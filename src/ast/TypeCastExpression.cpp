@@ -52,6 +52,9 @@ ExpressionValue TypeCastExpression::evaluate(vm::ExecutionContext *ctx) const
         case TypeDecl::POINTER:
             casted = ExpressionValue(_type, uncasted.get<uint32_t>());
             break;
+        case TypeDecl::STRUCT:
+            casted = ExpressionValue(_type, uncasted.get<uint32_t>());
+            break;
     }
 
     return casted;

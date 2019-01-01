@@ -26,6 +26,7 @@
 #include "ExpressionStatement.h"
 
 #include "StructLayout.h"
+#include "StructField.h"
 
 
 namespace cish
@@ -58,6 +59,10 @@ antlrcpp::Any TreeConverter::visitChildren(antlr4::tree::ParseTree *node)
     Result result;
 
     for (auto child: node->children) {
+        if (dynamic_cast<CMParser::IdentifierContext*>(child) != nullptr) {
+            continue;
+        }
+
         antlrcpp::Any childResult = child->accept(this);
         if (childResult.isNotNull() && childResult.is<Result>()) {
             Result childResultNodes = childResult.as<Result>();
@@ -570,8 +575,9 @@ antlrcpp::Any TreeConverter::visitStructDeclaration(CMParser::StructDeclarationC
 {
     const std::string name = ctx->identifier()->getText();
 
-    StructLayout *structLayout = new StructLayout(name);
-    _declContext.declareStruct(structLayout);
+    StructLayout *rawStruct = new StructLayout(name);
+    StructLayout::Ptr sharedStruct = StructLayout::Ptr(rawStruct);
+    _declContext.declareStruct(sharedStruct);
 
     std::vector<std::pair<TypeDecl,std::string>> fields;
     for (auto fieldDecl: ctx->structFieldDeclaration()) {
@@ -585,10 +591,11 @@ antlrcpp::Any TreeConverter::visitStructDeclaration(CMParser::StructDeclarationC
     }
 
     for (const auto &field: fields) {
-        structLayout->addField(field.first, field.second);
+        rawStruct->addField(new StructField(field.first, field.second));
     }
 
-    structLayout->finalize();
+    rawStruct->finalize();
+
     return nullptr;
 }
 

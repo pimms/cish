@@ -48,6 +48,50 @@ TEST(StructProgramsTest, sizeofStruct)
     );
 }
 
+TEST(StructProgramsTest, assignAndReturnField)
+{
+    assertExitCode(
+        "struct node_t {"
+        "   int value;"
+        "};"
+        "int main() {"
+        "   struct node_t var;"
+        "   var.value = 20;"
+        "   return var.value + 4;"
+        "}", 24
+    );
+}
+
+TEST(StructProgramsTest, assignAndMultiplyFields)
+{
+    assertExitCode(
+        "struct node_t {"
+        "   int val1;"
+        "   float val2;"
+        "};"
+        "int main() {"
+        "   struct node_t var;"
+        "   var.val1 = 10;"
+        "   var.val2 = 4.9;"
+        "   return var.val1 * var.val2;"
+        "}", 49
+    );
+}
+
+TEST(SructProgramsTest, passFieldToFunction)
+{
+    assertExitCode(
+        "struct node_t {"
+        "   int val;"
+        "};"
+        "int echo(int n) { return n; }"
+        "int main() {"
+        "   struct node_t var;"
+        "   var.val = 199;"
+        "   return echo(var.val);"
+        "}", 199
+    );
+}
 
 
 /* COMPILATION FAILURES */

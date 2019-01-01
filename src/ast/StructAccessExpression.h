@@ -32,7 +32,7 @@ public:
 private:
     Expression::Ptr _expression;
 
-    const StructLayout *_struct;
+    StructLayout::Ptr _struct;
     const StructField *_field;
 };
 

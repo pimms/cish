@@ -16,13 +16,6 @@ DeclarationContext::DeclarationContext():
     _varScope.push_back(VariableScope());
 }
 
-DeclarationContext::~DeclarationContext()
-{
-    for (auto pair: _structs) {
-        delete pair.second;
-    }
-}
-
 void DeclarationContext::declareVariable(TypeDecl type, const std::string &name)
 {
     checkForReservedKeyword(name);
@@ -52,11 +45,10 @@ const VarDeclaration* DeclarationContext::getVariableDeclaration(const std::stri
     return nullptr;
 }
 
-void DeclarationContext::declareStruct(StructLayout *structLayout)
+void DeclarationContext::declareStruct(StructLayout::Ptr structLayout)
 {
     const std::string name = structLayout->getName();
     if (_structs.count(name) != 0) {
-        delete structLayout;
         Throw(StructAlreadyDeclaredException,
               "Struct with name '%s' already declared",
               name.c_str());
@@ -65,7 +57,7 @@ void DeclarationContext::declareStruct(StructLayout *structLayout)
     _structs[name] = structLayout;
 }
 
-const StructLayout* DeclarationContext::getStruct(const std::string &name) const
+StructLayout::Ptr DeclarationContext::getStruct(const std::string &name) const
 {
     if (_structs.count(name) != 0) {
         return _structs.at(name);

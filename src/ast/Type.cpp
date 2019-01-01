@@ -2,7 +2,6 @@
 #include "../Exception.h"
 
 #include "AstNodes.h"   // InvalidTypeException
-#include "StructLayout.h"
 #include "DeclarationContext.h"
 
 #include <stack>
@@ -99,7 +98,7 @@ TypeDecl TypeDecl::getConst(const TypeDecl &type)
     return copy;
 }
 
-TypeDecl TypeDecl::getStruct(const StructLayout *structLayout)
+TypeDecl TypeDecl::getStruct(StructLayout::Ptr structLayout)
 {
     TypeDecl type;
     type._structLayout = structLayout;
@@ -246,7 +245,7 @@ const TypeDecl* TypeDecl::getReferencedType() const
     return _referencedType;
 }
 
-const StructLayout* TypeDecl::getStructLayout() const
+StructLayout::Ptr TypeDecl::getStructLayout() const
 {
     if (_type != STRUCT) {
         Throw(InvalidTypeException, "Cannot get struct layout of non-struct TypeDecl");

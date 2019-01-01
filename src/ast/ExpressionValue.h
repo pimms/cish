@@ -61,6 +61,8 @@ ExpressionValue::ExpressionValue(TypeDecl type, T value)
         _value.bval = value;
     } else if (type.isIntegral()) {
         _value.ival = value;
+    } else if (type == TypeDecl::STRUCT) {
+        _value.ival = value;
     } else if (type.isFloating()) {
         _value.fval = value;
     }
