@@ -50,7 +50,7 @@ ExpressionValue FunctionDefinition::execute(vm::ExecutionContext *context, const
 
         const std::string varName = _decl.params[i].name;
         if (varName != "") {
-            vm::Variable *var = convertToVariable(memory, params[i], _decl.params[i].type);
+            vm::Variable *var = convertToVariable(memory, _decl.params[i].type, params[i]);
             scope->addVariable(varName, var);
         }
     }
@@ -63,40 +63,57 @@ ExpressionValue FunctionDefinition::execute(vm::ExecutionContext *context, const
 }
 
 vm::Variable* FunctionDefinition::convertToVariable(vm::Memory *memory,
-                                                    const ExpressionValue &expr,
-                                                    const TypeDecl &targetType) const
+                                                    const TypeDecl &targetType,
+                                                    const ExpressionValue &sourceValue) const
 {
-    TypeDecl type = expr.getIntrinsicType();
-    vm::Allocation::Ptr alloc = memory->allocate(type.getSize());
+    TypeDecl sourceType = sourceValue.getIntrinsicType();
+    vm::Allocation::Ptr alloc = memory->allocate(targetType.getSize());
 
     switch (targetType.getType()) {
         case TypeDecl::BOOL:
-            alloc->write<bool>(expr.get<bool>());
+            alloc->write<bool>(sourceValue.get<bool>());
             break;
         case TypeDecl::CHAR:
-            alloc->write<char>(expr.get<char>());
+            alloc->write<char>(sourceValue.get<char>());
             break;
         case TypeDecl::SHORT:
-            alloc->write<short>(expr.get<short>());
+            alloc->write<short>(sourceValue.get<short>());
             break;
         case TypeDecl::INT:
-            alloc->write<int>(expr.get<int>());
+            alloc->write<int>(sourceValue.get<int>());
             break;
         case TypeDecl::FLOAT:
-            alloc->write<float>(expr.get<float>());
+            alloc->write<float>(sourceValue.get<float>());
             break;
         case TypeDecl::DOUBLE:
-            alloc->write<double>(expr.get<double>());
+            alloc->write<double>(sourceValue.get<double>());
             break;
         case TypeDecl::POINTER:
-            alloc->write<uint32_t>(expr.get<uint32_t>());
+            alloc->write<uint32_t>(sourceValue.get<uint32_t>());
+            break;
+        case TypeDecl::STRUCT:
+            copyStruct(memory, alloc.get(), targetType, sourceValue);
             break;
         default:
             Throw(InvalidTypeException, "Unable to allocate variable of type '%s' for function '%s'",
-                    type.getName(), _decl.name.c_str());
+                    targetType.getName(), _decl.name.c_str());
     }
 
-    return new vm::Variable(type, std::move(alloc));
+    return new vm::Variable(sourceType, std::move(alloc));
+}
+
+void FunctionDefinition::copyStruct(vm::Memory *memory,
+                                    vm::Allocation *target,
+                                    const TypeDecl &targetType,
+                                    const ExpressionValue &sourceValue) const
+{
+    const uint32_t sourceBaseAddr = sourceValue.get<uint32_t>();
+    const uint32_t size = targetType.getSize();
+    
+    const vm::MemoryView sourceView = memory->getView(sourceBaseAddr);
+    const uint8_t *sourceBuf = sourceView.readBuf(size);
+
+    target->writeBuf(sourceBuf, size);
 }
 
 

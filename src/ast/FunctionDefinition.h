@@ -7,7 +7,7 @@
 
 namespace cish
 {
-namespace vm { class Memory; class Variable; }
+namespace vm { class Memory; class Variable; class Allocation; }
 namespace ast
 {
 
@@ -30,7 +30,8 @@ public:
     ExpressionValue getReturnValue() const;
 
 private:
-    vm::Variable* convertToVariable(vm::Memory *memory, const ExpressionValue &expr, const TypeDecl &targetType) const;
+    vm::Variable* convertToVariable(vm::Memory *memory, const TypeDecl &targetType, const ExpressionValue &sourceValue) const;
+    void copyStruct(vm::Memory *memory, vm::Allocation *target, const TypeDecl &targetType, const ExpressionValue &sourceValue) const;
 
     FuncDeclaration _decl;
 };

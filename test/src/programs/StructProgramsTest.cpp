@@ -243,6 +243,27 @@ TEST(StructProgramsTest, obj_assignmentFromDerefPointer)
 }
 
 
+TEST(StructProgramsTest, passByValue)
+{
+    assertExitCode(
+        "struct item { int a; int b; };"
+        "int double_sum(struct item item) {"
+        "   item.a *= 2;"
+        "   item.b *= 2;"
+        "   return item.a + item.b;"
+        "}"
+        "int main() {"
+        "   struct item item;"
+        "   item.a = 10;"
+        "   item.b = 15;"
+        ""
+        "   int n = double_sum(item);"
+        "   return item.a + item.b + n;"
+        "}", 10 + 15 + 20 + 30
+    );
+}
+
+
 
 /* COMPILATION FAILURES */
 

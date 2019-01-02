@@ -14,6 +14,7 @@ int main()
     me.age = 45;
 
     struct person_t corrected;
+    corrected = me;
     corrected.age = 27;
 
     struct person_t corrected2 = me;
