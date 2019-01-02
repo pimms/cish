@@ -9,11 +9,11 @@ namespace vm
 {
 
 // If this ever occurs, something fucky is definitely going on
-const int MAX_STACK_FRAMES = 100;
+const int MAX_STACK_FRAMES = 4096;
+
 
 
 ExecutionContext::ExecutionContext(Memory *memory):
-    _currentStatement(nullptr),
     _memory(memory),
     _stdout(&std::cout)
 {
@@ -84,7 +84,7 @@ void ExecutionContext::pushFunctionFrame()
     }
 
     Scope *scope = new Scope(_globalScope);
-    _frameStack.push_back(FunctionFrame { {scope}, false, ast::ExpressionValue(0) });
+    _frameStack.push_back(FunctionFrame { {scope}, false, ast::ExpressionValue(0), nullptr });
 }
 
 void ExecutionContext::popFunctionFrame()
@@ -99,6 +99,15 @@ void ExecutionContext::popFunctionFrame()
 
     delete _frameStack.back().scopes[0];
     _frameStack.pop_back();
+}
+
+void ExecutionContext::setFunctionReturnBuffer(vm::Variable *buffer)
+{
+    if (_frameStack.empty())
+        Throw(Exception, "No function frame");
+    if (_frameStack.back().returnBuffer != nullptr)
+        Throw(Exception, "Current frame already has a return buffer");
+    _frameStack.back().returnBuffer = buffer;
 }
 
 void ExecutionContext::returnCurrentFunction(ast::ExpressionValue retval)
@@ -131,9 +140,21 @@ ast::ExpressionValue ExecutionContext::getCurrentFunctionReturnValue() const
     return _frameStack.back().returnValue;
 }
 
+vm::Variable* ExecutionContext::getCurrentFunctionReturnBuffer() const
+{
+    if (_frameStack.empty())
+        Throw(Exception, "No function frames on stack");
+    if (_frameStack.back().returnBuffer == nullptr)
+        Throw(Exception, "No return buffer defined for current function");
+
+    return _frameStack.back().returnBuffer;
+}
+
 const ast::Statement* ExecutionContext::getCurrentStatement() const
 {
-    return _currentStatement;
+    if (_statementStack.empty())
+        return nullptr;
+    return _statementStack.top();
 }
 
 Scope* ExecutionContext::getScope() const
@@ -151,7 +172,20 @@ Memory* ExecutionContext::getMemory() const
 
 void ExecutionContext::onStatementEnter(const ast::Statement *statement)
 {
-    _currentStatement = statement;
+    if (!_statementStack.empty() && _statementStack.top() == statement) {
+        return;
+    }
+
+    _statementStack.push(statement);
+}
+
+void ExecutionContext::onStatementExit(const ast::Statement *statement)
+{
+    if (_statementStack.empty())
+        Throw(Exception, "Statement-stack is empty");
+    if (_statementStack.top() != statement)
+        Throw(Exception, "Last statement is not the exited one");
+    _statementStack.pop();
 }
 
 const Callable::Ptr ExecutionContext::getFunctionDefinition(const std::string &funcName) const

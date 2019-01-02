@@ -32,7 +32,8 @@ public:
     }
 
     ExpressionValue execute(ExecutionContext *context,
-                            const std::vector<ExpressionValue>& params) const override
+                            const std::vector<ExpressionValue>& params,
+                            Variable*) const override
     {
         verifyParams(params);
         _callCount++;

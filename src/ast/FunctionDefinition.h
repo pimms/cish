@@ -24,7 +24,9 @@ public:
 
     const FuncDeclaration* getDeclaration() const override;
 
-    ExpressionValue execute(vm::ExecutionContext *context, const std::vector<ExpressionValue>& params) const override;
+    ExpressionValue execute(vm::ExecutionContext *context,
+                            const std::vector<ExpressionValue>& params,
+                            vm::Variable *returnBuffer) const override;
 
 protected:
     void virtualExecute(vm::ExecutionContext*) const override;

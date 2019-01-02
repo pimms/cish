@@ -3,14 +3,17 @@
 #include <stdint.h>
 #include <functional>
 #include <memory>
+#include <stack>
 
 #include "Type.h"
 #include "ExpressionValue.h"
 
+#include "../vm/Variable.h"
+
 
 namespace cish
 {
-namespace vm { class ExecutionContext; class Variable; }
+namespace vm { class ExecutionContext; }
 namespace ast
 {
 
@@ -48,13 +51,23 @@ protected:
     /**
      * Synchronize execution with the execution thread. This method
      * may block for an undetermined amount of time.
+     *
+     * synchronize is in itself idempotent, but if called more than
+     * once (per execute-cycle) the call(s) must be followed by
+     * EXACTLY one 'desynchronize()' call.
      */
     void synchronize(vm::ExecutionContext *context) const;
 
-private:
-    void freeEphemeralAllocations() const;
+    /**
+     * Only call if you're ad-hoc implementing a Statement outside
+     * the default Statement::execute method.
+     */
+    void desynchronize(vm::ExecutionContext *context) const;
 
-    mutable std::vector<vm::Variable*> _ephemeralVariables;
+private:
+
+    mutable std::stack<std::vector<std::unique_ptr<vm::Variable>>> _ephemeralVariables;
+
 };
 
 class Expression: public AstNode

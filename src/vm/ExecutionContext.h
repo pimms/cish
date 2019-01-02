@@ -12,6 +12,7 @@
 
 #include <vector>
 #include <iostream>
+#include <stack>
 
 
 namespace cish
@@ -56,15 +57,18 @@ public:
 
     void pushFunctionFrame();
     void popFunctionFrame();
+    void setFunctionReturnBuffer(vm::Variable *buffer);
     void returnCurrentFunction(ast::ExpressionValue retval);
     bool currentFunctionHasReturned() const;
     ast::ExpressionValue getCurrentFunctionReturnValue() const;
+    vm::Variable* getCurrentFunctionReturnBuffer() const;
     const ast::Statement* getCurrentStatement() const;
 
     Scope* getScope() const;
     Memory* getMemory() const;
 
     virtual void onStatementEnter(const ast::Statement *statement);
+    virtual void onStatementExit(const ast::Statement *statement);
     virtual const Callable::Ptr getFunctionDefinition(const std::string &funcName) const;
 
     std::ostream* getStdout();
@@ -75,12 +79,13 @@ private:
         std::vector<Scope*> scopes;
         bool hasReturned;
         ast::ExpressionValue returnValue;
+        Variable *returnBuffer;
     };
 
     Scope *_globalScope;
     std::vector<FunctionFrame> _frameStack;
 
-    const ast::Statement *_currentStatement;
+    std::stack<const ast::Statement*> _statementStack;
 
     Memory *_memory;
     std::map<ast::StringId, Allocation::Ptr> _stringMap;

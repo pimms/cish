@@ -264,6 +264,70 @@ TEST(StructProgramsTest, passByValue)
 }
 
 
+TEST(StructProgramsTest, returnStructByValue)
+{
+    assertExitCode(
+        "struct item_t { int a; int b; };"
+        "struct item_t foo() {"
+        "   struct item_t item;"
+        "   item.a = 9;"
+        "   item.b = 11;"
+        "   if (1 == 1) {"
+        "       return item;"
+        "   }"
+        "}"
+        "int main() {"
+        "   struct item_t item = foo();"
+        "   return item.a + item.b;"
+        "}", 20
+    );
+}
+
+TEST(StructProgramsTest, recursiveStructByValue)
+{
+    assertExitCode(
+        "struct wrapper_t { int value; int count; };"
+        "struct wrapper_t foo(struct wrapper_t wrapper) {"
+        "   if (wrapper.value >= 100) {"
+        "       return wrapper;"
+        "   } else {"
+        "       wrapper.value += 5;"
+        "       wrapper.count++;"
+        "       return foo(wrapper);"
+        "   }"
+        "}"
+        "int main() {"
+        "   struct wrapper_t wrap;"
+        "   wrap.value = 0;"
+        "   wrap.count = 0;"
+        "   wrap = foo(wrap);"
+        "   return wrap.value * wrap.count;"
+        "}", 100 * 20
+    );
+}
+
+TEST(StructProgramsTest, passStructFuncAsParam)
+{
+    assertExitCode(
+        "struct item_t { int n; };"
+        ""
+        "int get_n(struct item_t a, struct item_t b) { "
+        "   return a.n + b.n;"
+        "}"
+        ""
+        "int global = 99;"
+        "struct item_t get_item() {"
+        "   struct item_t item;"
+        "   item.n = global++;"
+        "   return item;"
+        "}"
+        "int main() {"
+        "   return get_n(get_item(), get_item());"
+        "}", 199
+    );
+}
+
+
 
 /* COMPILATION FAILURES */
 

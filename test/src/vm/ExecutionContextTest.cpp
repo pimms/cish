@@ -184,6 +184,38 @@ TEST(ExecutionContextTest, functionReturnValueDefaultsToZeroIfUndefined)
     ASSERT_EQ(0, context.getCurrentFunctionReturnValue().get<int>());
 }
 
+TEST(ExecutionContextTest, functionReturnBuffersCanOnlyBeAssignedOnce)
+{
+    Memory memory(100, 1);
+    ExecutionContext context(&memory);
+
+    Variable buf1(TypeDecl::INT, memory.allocate(4));
+    Variable buf2(TypeDecl::INT, memory.allocate(4));
+
+    context.pushFunctionFrame();
+    ASSERT_NO_THROW(context.setFunctionReturnBuffer(&buf1));
+    ASSERT_ANY_THROW(context.setFunctionReturnBuffer(&buf1));
+
+    ASSERT_NO_THROW(context.pushFunctionFrame());
+    ASSERT_NO_THROW(context.setFunctionReturnBuffer(&buf2));
+
+    ASSERT_EQ(&buf2, context.getCurrentFunctionReturnBuffer());
+    context.popFunctionFrame();
+    ASSERT_EQ(&buf1, context.getCurrentFunctionReturnBuffer());
+    context.popFunctionFrame();
+}
+
+TEST(ExecutionContextTest, gettingFunctionReturnBufferThrowsIfUndefined)
+{
+    Memory memory(100, 1);
+    ExecutionContext context(&memory);
+
+    context.pushFunctionFrame();
+    ASSERT_ANY_THROW(context.getCurrentFunctionReturnBuffer());
+    context.popFunctionFrame();
+}
+
+
 TEST(ExecutionContextTest, resolvingUndefinedStringsReturnsNull)
 {
     Memory memory(100, 1);

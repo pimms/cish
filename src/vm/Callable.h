@@ -20,7 +20,8 @@ public:
     virtual ~Callable() = default;
     virtual const ast::FuncDeclaration* getDeclaration() const = 0;
     virtual ast::ExpressionValue execute(ExecutionContext *context,
-                                         const std::vector<ast::ExpressionValue>& params) const = 0;
+                                         const std::vector<ast::ExpressionValue>& params,
+                                         vm::Variable *returnBuffer) const = 0;
 };
 
 

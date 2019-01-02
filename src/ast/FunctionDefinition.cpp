@@ -24,7 +24,9 @@ const FuncDeclaration* FunctionDefinition::getDeclaration() const
     return &_decl;
 }
 
-ExpressionValue FunctionDefinition::execute(vm::ExecutionContext *context, const std::vector<ExpressionValue>& params) const
+ExpressionValue FunctionDefinition::execute(vm::ExecutionContext *context,
+                                            const std::vector<ExpressionValue>& params, 
+                                            vm::Variable *returnBuffer) const
 {
     synchronize(context);
 
@@ -33,7 +35,12 @@ ExpressionValue FunctionDefinition::execute(vm::ExecutionContext *context, const
                 _decl.name.c_str(), _decl.params.size(), params.size());
     }
 
+    if (_decl.returnType.getType() == TypeDecl::STRUCT && returnBuffer == nullptr) {
+        Throw(Exception, "No returnbuffer given to function with return-type '%s'", _decl.returnType.getName());
+    }
+
     context->pushFunctionFrame();
+    context->setFunctionReturnBuffer(returnBuffer);
     vm::Memory *memory = context->getMemory();
     vm::Scope *scope = context->getScope();
 
@@ -57,6 +64,7 @@ ExpressionValue FunctionDefinition::execute(vm::ExecutionContext *context, const
     executeChildStatements(context);
     ExpressionValue retVal = context->getCurrentFunctionReturnValue();
     context->popFunctionFrame();
+    desynchronize(context);
     return retVal;
 }
 

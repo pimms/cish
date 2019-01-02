@@ -60,7 +60,7 @@ void Executor::execute()
         statement->execute(this);
     }
 
-    _exitStatus = main->execute(this, {});
+    _exitStatus = main->execute(this, {}, nullptr);
     _hasTerminated = true;
 }
 

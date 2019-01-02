@@ -39,7 +39,13 @@ ExpressionValue FunctionCallExpression::evaluate(vm::ExecutionContext *context) 
         params.push_back(expr->evaluate(context));
     }
 
-    return funcDef->execute(context, params);
+    vm::Variable *returnBuffer = nullptr;
+    if (_funcDecl.returnType == TypeDecl::STRUCT) {
+        const Statement *statement = context->getCurrentStatement();
+        returnBuffer = statement->allocateEphemeral(context, _funcDecl.returnType);
+    }
+
+    return funcDef->execute(context, params, returnBuffer);
 }
 
 void FunctionCallExpression::verifyParameterTypes()

@@ -29,7 +29,8 @@ public:
 
     Puts();
     ast::ExpressionValue execute(vm::ExecutionContext *context,
-                                 FuncParams params) const override;
+                                 FuncParams params,
+                                 vm::Variable*) const override;
 };
 
 class Printf: public Function
@@ -39,7 +40,8 @@ public:
 
     Printf();
     ast::ExpressionValue execute(vm::ExecutionContext *context,
-                                 FuncParams params) const override;
+                                 FuncParams params, 
+                                 vm::Variable*) const override;
 };
 
 

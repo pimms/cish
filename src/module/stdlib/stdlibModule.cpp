@@ -67,7 +67,8 @@ ast::FuncDeclaration Atof::getSignature()
 Atof::Atof(): Function(getSignature()) {}
 
 ast::ExpressionValue Atof::execute(vm::ExecutionContext *context,
-                                   FuncParams params) const
+                                   FuncParams params,
+                                   vm::Variable*) const
 {
     ExpressionValue param = params[0];
     const uint32_t addr = param.get<uint32_t>();
@@ -105,7 +106,8 @@ ast::FuncDeclaration Atoi::getSignature()
 Atoi::Atoi(): Function(getSignature()) {}
 
 ast::ExpressionValue Atoi::execute(vm::ExecutionContext *context,
-                                   FuncParams params) const
+                                   FuncParams params,
+                                   vm::Variable*) const
 {
     ExpressionValue param = params[0];
     const uint32_t addr = param.get<uint32_t>();
@@ -132,7 +134,8 @@ ast::FuncDeclaration Rand::getSignature()
 Rand::Rand(): Function(getSignature()) {}
 
 ast::ExpressionValue Rand::execute(vm::ExecutionContext *context,
-                                   FuncParams params) const
+                                   FuncParams params,
+                                   vm::Variable*) const
 {
     return ExpressionValue(TypeDecl::INT, (int)rand());
 }
@@ -155,7 +158,8 @@ ast::FuncDeclaration Srand::getSignature()
 Srand::Srand(): Function(getSignature()) {}
 
 ast::ExpressionValue Srand::execute(vm::ExecutionContext *context,
-                                    FuncParams params) const
+                                    FuncParams params,
+                                    vm::Variable*) const
 {
     srand(params[0].get<int>());
     return ExpressionValue(TypeDecl::VOID);
@@ -182,7 +186,8 @@ Malloc::Malloc(MallocContext::Ptr mallocContext):
 {}
 
 ast::ExpressionValue Malloc::execute(vm::ExecutionContext *context,
-                                     FuncParams params) const
+                                     FuncParams params,
+                                     vm::Variable*) const
 {
     try {
         const uint32_t size = params[0].get<uint32_t>();
@@ -218,7 +223,8 @@ Free::Free(MallocContext::Ptr mallocContext):
 {}
 
 ast::ExpressionValue Free::execute(vm::ExecutionContext *context,
-                                     FuncParams params) const
+                                     FuncParams params,
+                                     vm::Variable*) const
 {
     const uint32_t addr = params[0].get<uint32_t>();
     if (!_mallocContext->attemptDeallocation(addr)) {

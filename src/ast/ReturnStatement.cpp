@@ -42,10 +42,39 @@ ReturnStatement::ReturnStatement(DeclarationContext *context, Expression::Ptr ex
 void ReturnStatement::virtualExecute(vm::ExecutionContext *context) const
 {
     if (_expression) {
-        context->returnCurrentFunction(_expression->evaluate(context));
+        ExpressionValue value = getReturnValue(context);
+        context->returnCurrentFunction(value);
     } else {
         context->returnCurrentFunction(TypeDecl::VOID);
     }
+}
+
+ExpressionValue ReturnStatement::getReturnValue(vm::ExecutionContext *context) const
+{
+    ExpressionValue value = _expression->evaluate(context);
+    const TypeDecl &type = value.getIntrinsicType();
+
+    if (type != TypeDecl::STRUCT) {
+        return ExpressionValue(value);
+    }
+
+    // -- Struct-by-value --
+    //
+    // We need to copy the contents of 'value' into the call-site defined
+    // return-buffer, retrievable from the execution-context.
+    //
+    // We then return the address of the return-buffer; keep in mind that
+    // the struct being returned is allocated on the stack and will be
+    // freed shortly!
+    const uint32_t sourceAddr = value.get<uint32_t>();
+    const uint32_t size = type.getSize();
+    vm::MemoryView sourceView = context->getMemory()->getView(sourceAddr);
+    const uint8_t *sourceBuf = sourceView.readBuf(size);
+
+    vm::Variable *returnBuffer = context->getCurrentFunctionReturnBuffer();
+    returnBuffer->getAllocation()->writeBuf(sourceBuf, size);
+
+    return ExpressionValue(type, returnBuffer->getHeapAddress());
 }
 
 

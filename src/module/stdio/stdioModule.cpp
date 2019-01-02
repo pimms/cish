@@ -57,7 +57,8 @@ ast::FuncDeclaration Puts::getSignature()
 Puts::Puts(): Function(getSignature()) {}
 
 ast::ExpressionValue Puts::execute(vm::ExecutionContext *context,
-                                   FuncParams params) const
+                                   FuncParams params,
+                                   vm::Variable*) const
 {
     const uint32_t addr = params[0].get<uint32_t>();
     MemoryView view = context->getMemory()->getView(addr);
@@ -94,7 +95,8 @@ ast::FuncDeclaration Printf::getSignature()
 Printf::Printf(): Function(getSignature()) {}
 
 ast::ExpressionValue Printf::execute(vm::ExecutionContext *context,
-                                     FuncParams params) const
+                                     FuncParams params,
+                                     vm::Variable*) const
 {
     const uint32_t addr = params[0].get<uint32_t>();
     vm::Memory *memory = context->getMemory();

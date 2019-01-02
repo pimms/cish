@@ -32,7 +32,8 @@ public:
 
     Atof();
     ast::ExpressionValue execute(vm::ExecutionContext *context,
-                                 FuncParams params) const override;
+                                 FuncParams params,
+                                 vm::Variable*) const override;
 };
 
 class Atoi: public Function
@@ -42,7 +43,8 @@ public:
 
     Atoi();
     ast::ExpressionValue execute(vm::ExecutionContext *context,
-                                 FuncParams params) const override;
+                                 FuncParams params,
+                                 vm::Variable*) const override;
 };
 
 class Rand: public Function
@@ -52,7 +54,8 @@ public:
 
     Rand();
     ast::ExpressionValue execute(vm::ExecutionContext *context,
-                                 FuncParams params) const override;
+                                 FuncParams params,
+                                 vm::Variable*) const override;
 };
 
 class Srand: public Function
@@ -62,7 +65,8 @@ public:
 
     Srand();
     ast::ExpressionValue execute(vm::ExecutionContext *context,
-                                 FuncParams params) const override;
+                                 FuncParams params,
+                                 vm::Variable*) const override;
 };
 
 class Malloc: public Function
@@ -72,7 +76,8 @@ public:
 
     Malloc(MallocContext::Ptr mallocContext);
     ast::ExpressionValue execute(vm::ExecutionContext *context,
-                                 FuncParams params) const override;
+                                 FuncParams params,
+                                 vm::Variable*) const override;
 private:
     MallocContext::Ptr _mallocContext;
 };
@@ -84,7 +89,8 @@ public:
 
     Free(MallocContext::Ptr mallocContext);
     ast::ExpressionValue execute(vm::ExecutionContext *context,
-                                 FuncParams params) const override;
+                                 FuncParams params,
+                                 vm::Variable*) const override;
 private:
     MallocContext::Ptr _mallocContext;
 };

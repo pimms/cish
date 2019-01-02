@@ -21,6 +21,8 @@ protected:
     virtual void virtualExecute(vm::ExecutionContext *context) const override;
 
 private:
+    ExpressionValue getReturnValue(vm::ExecutionContext *context) const;
+
     Expression::Ptr _expression;
 };
 

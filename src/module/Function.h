@@ -23,7 +23,8 @@ public:
 
     const ast::FuncDeclaration* getDeclaration() const override;
     virtual ast::ExpressionValue execute(vm::ExecutionContext *context,
-                                         FuncParams params) const override = 0;
+                                         FuncParams params,
+                                         vm::Variable *returnBuffer) const override = 0;
 private:
     ast::FuncDeclaration _declaration;
 };
