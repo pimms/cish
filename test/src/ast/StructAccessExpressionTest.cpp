@@ -45,7 +45,7 @@ StructLayout::Ptr createStruct()
 TEST(StructAccessExpressionTest, objectAccessIntoPointerThrows)
 {
     auto layout = createStruct();
-    TypeDecl type = TypeDecl::getPointer(TypeDecl::getStruct(layout));
+    TypeDecl type = TypeDecl::getPointer(TypeDecl::getStruct(layout.get()));
     auto expr = std::make_shared<DummyExpression>(type);
 
     ASSERT_THROW(StructAccessExpression e(expr, "n", AccessType::OBJECT), InvalidAccessException);
@@ -54,7 +54,7 @@ TEST(StructAccessExpressionTest, objectAccessIntoPointerThrows)
 TEST(StructAccessExpressionTest, pointerAccessIntoObjectThrows)
 {
     auto layout = createStruct();
-    TypeDecl type = TypeDecl::getStruct(layout);
+    TypeDecl type = TypeDecl::getStruct(layout.get());
     auto expr = std::make_shared<DummyExpression>(type);
 
     ASSERT_THROW(StructAccessExpression e(expr, "n", AccessType::POINTER), InvalidAccessException);
@@ -63,7 +63,7 @@ TEST(StructAccessExpressionTest, pointerAccessIntoObjectThrows)
 TEST(StructAccessExpressionTest, expressionCannotBePointerToPointerToStruct)
 {
     auto layout = createStruct();
-    TypeDecl type = TypeDecl::getPointer(TypeDecl::getPointer(TypeDecl::getStruct(layout)));
+    TypeDecl type = TypeDecl::getPointer(TypeDecl::getPointer(TypeDecl::getStruct(layout.get())));
     auto expr = std::make_shared<DummyExpression>(type);
 
     ASSERT_THROW(StructAccessExpression e(expr, "n", AccessType::POINTER), InvalidTypeException);
@@ -88,7 +88,7 @@ TEST(StructAccessExpressionTest, expressionCannotBeInt)
 TEST(StructAccessExpressionTest, nonExistingMemberThrows)
 {
     auto layout = createStruct();
-    TypeDecl type = TypeDecl::getStruct(layout);
+    TypeDecl type = TypeDecl::getStruct(layout.get());
     auto expr = std::make_shared<DummyExpression>(type);
 
     ASSERT_THROW(StructAccessExpression e(expr, "doesntexistlol", AccessType::OBJECT), NoSuchFieldException);
@@ -98,7 +98,7 @@ TEST(StructAccessExpressionTest, nonExistingMemberThrows)
 TEST(StructAccessExpressionTest, validPointerAccess)
 {
     auto layout = createStruct();
-    TypeDecl type = TypeDecl::getPointer(TypeDecl::getStruct(layout));
+    TypeDecl type = TypeDecl::getPointer(TypeDecl::getStruct(layout.get()));
     auto expr = std::make_shared<DummyExpression>(type);
 
     StructAccessExpression e(expr, "n", AccessType::POINTER);
@@ -107,7 +107,7 @@ TEST(StructAccessExpressionTest, validPointerAccess)
 TEST(StructAccessExpressionTest, validObjectAccess)
 {
     auto layout = createStruct();
-    TypeDecl type = TypeDecl::getStruct(layout);
+    TypeDecl type = TypeDecl::getStruct(layout.get());
     auto expr = std::make_shared<DummyExpression>(type);
 
     StructAccessExpression e(expr, "n", AccessType::OBJECT);
@@ -116,28 +116,25 @@ TEST(StructAccessExpressionTest, validObjectAccess)
 
 TEST(StructAccessExpressionTest, typeIsInheritedFromMember)
 {
-    StructLayout *__subStruct = new StructLayout("subbie");
-    __subStruct->addField(new StructField(TypeDecl::FLOAT, "n"));
-    __subStruct->finalize();
-    StructLayout::Ptr subStruct = StructLayout::Ptr(__subStruct);
+    StructLayout subStruct("subbie");
+    subStruct.addField(new StructField(TypeDecl::FLOAT, "n"));
+    subStruct.finalize();
     
-
     std::vector<TypeDecl> types = {
         TypeDecl::getPointer(TypeDecl::INT),
         TypeDecl::getPointer(TypeDecl::VOID),
         TypeDecl::getPointer(TypeDecl::getPointer(TypeDecl::VOID)),
         TypeDecl::INT,
         TypeDecl::FLOAT,
-        TypeDecl::getStruct(subStruct),
-        TypeDecl::getPointer(TypeDecl::getStruct(subStruct)),
+        TypeDecl::getStruct(&subStruct),
+        TypeDecl::getPointer(TypeDecl::getStruct(&subStruct)),
     };
 
     for (TypeDecl fieldType: types) {
-        StructLayout *rawLayout = new StructLayout("foo");
-        rawLayout->addField(new StructField(fieldType, "n"));
-        StructLayout::Ptr layout = StructLayout::Ptr(rawLayout);
+        StructLayout layout("foo");
+        layout.addField(new StructField(fieldType, "n"));
 
-        TypeDecl type = TypeDecl::getStruct(layout);
+        TypeDecl type = TypeDecl::getStruct(&layout);
         auto expr = std::make_shared<DummyExpression>(type);
 
         StructAccessExpression e(expr, "n", AccessType::OBJECT);

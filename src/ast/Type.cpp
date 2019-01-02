@@ -98,7 +98,7 @@ TypeDecl TypeDecl::getConst(const TypeDecl &type)
     return copy;
 }
 
-TypeDecl TypeDecl::getStruct(StructLayout::Ptr structLayout)
+TypeDecl TypeDecl::getStruct(const StructLayout *structLayout)
 {
     TypeDecl type;
     type._structLayout = structLayout;
@@ -245,7 +245,7 @@ const TypeDecl* TypeDecl::getReferencedType() const
     return _referencedType;
 }
 
-StructLayout::Ptr TypeDecl::getStructLayout() const
+const StructLayout* TypeDecl::getStructLayout() const
 {
     if (_type != STRUCT) {
         Throw(InvalidTypeException, "Cannot get struct layout of non-struct TypeDecl");

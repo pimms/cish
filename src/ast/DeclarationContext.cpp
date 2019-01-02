@@ -45,7 +45,7 @@ const VarDeclaration* DeclarationContext::getVariableDeclaration(const std::stri
     return nullptr;
 }
 
-void DeclarationContext::declareStruct(StructLayout::Ptr structLayout)
+void DeclarationContext::declareStruct(const StructLayout *structLayout)
 {
     const std::string name = structLayout->getName();
     if (_structs.count(name) != 0) {
@@ -57,7 +57,7 @@ void DeclarationContext::declareStruct(StructLayout::Ptr structLayout)
     _structs[name] = structLayout;
 }
 
-StructLayout::Ptr DeclarationContext::getStruct(const std::string &name) const
+const StructLayout* DeclarationContext::getStruct(const std::string &name) const
 {
     if (_structs.count(name) != 0) {
         return _structs.at(name);

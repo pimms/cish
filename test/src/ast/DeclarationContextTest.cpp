@@ -68,13 +68,13 @@ TEST(DeclarationContextTest, declaredStructsReturnsNonNull)
 {
     DeclarationContext context;
 
-    StructLayout *s1 = new StructLayout("s1");
-    s1->addField(new StructField(TypeDecl::INT, "foo"));
-    StructLayout *s2 = new StructLayout("s2");
-    s2->addField(new StructField(TypeDecl::FLOAT, "foo"));
+    StructLayout s1("s1");
+    s1.addField(new StructField(TypeDecl::INT, "foo"));
+    StructLayout s2("s2");
+    s2.addField(new StructField(TypeDecl::FLOAT, "foo"));
 
-    context.declareStruct(StructLayout::Ptr(s1));
-    context.declareStruct(StructLayout::Ptr(s2));
+    context.declareStruct(&s1);
+    context.declareStruct(&s2);
 
     ASSERT_NE(nullptr, context.getStruct("s1"));
     ASSERT_NE(nullptr, context.getStruct("s2"));
@@ -87,11 +87,11 @@ TEST(DeclarationContextTest, redeclaringStructThrows)
 {
     DeclarationContext context;
 
-    StructLayout *structA = new StructLayout("s1");
-    StructLayout *structB = new StructLayout("s1");
+    StructLayout structA("s1");
+    StructLayout structB("s1");
 
-    ASSERT_NO_THROW(context.declareStruct(StructLayout::Ptr(structA)));
-    ASSERT_THROW(context.declareStruct(StructLayout::Ptr(structB)),
+    ASSERT_NO_THROW(context.declareStruct(&structA));
+    ASSERT_THROW(context.declareStruct(&structB),
             StructAlreadyDeclaredException);
 }
 

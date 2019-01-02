@@ -241,16 +241,14 @@ TEST(TypeTest, getStructFromTokens)
 {
     DeclarationContext dc;
 
-    StructLayout *raws1 = new StructLayout("s1");
-    raws1->addField(new StructField(TypeDecl::INT, "n"));
-    StructLayout::Ptr s1 = StructLayout::Ptr(raws1);
+    StructLayout s1("s1");
+    s1.addField(new StructField(TypeDecl::INT, "n"));
 
-    StructLayout *raws2 = new StructLayout("s2");
-    raws2->addField(new StructField(TypeDecl::INT, "n"));
-    StructLayout::Ptr s2 = StructLayout::Ptr(raws2);
+    StructLayout s2("s2");
+    s2.addField(new StructField(TypeDecl::INT, "n"));
 
-    dc.declareStruct(s1);
-    dc.declareStruct(s2);
+    dc.declareStruct(&s1);
+    dc.declareStruct(&s2);
 
     auto raw = TypeDecl::getFromTokens(&dc, {"struct", "s1"});
     auto constant = TypeDecl::getFromTokens(&dc, {"const", "struct", "s1"});

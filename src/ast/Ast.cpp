@@ -78,6 +78,11 @@ const StringTable* Ast::getStringTable() const
     return _stringTable.get();
 }
 
+void Ast::addStructLayout(StructLayout::Ptr structLayout)
+{
+    _structLayouts.push_back(structLayout);
+}
+
 
 
 }

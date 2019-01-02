@@ -116,7 +116,8 @@ antlrcpp::Any TreeConverter::visitRootBlock(CMParser::RootBlockContext *ctx)
             std::string moduleName = visitSystemInclude(systemInclude).as<std::string>();
             includeModule(ast.get(), moduleName);
         } else if (structDecl != nullptr) {
-            visitStructDeclaration(structDecl);
+            auto structLayout = visitStructDeclaration(structDecl).as<StructLayout::Ptr>();
+            ast->addStructLayout(structLayout);
         }
     }
 
@@ -577,7 +578,7 @@ antlrcpp::Any TreeConverter::visitStructDeclaration(CMParser::StructDeclarationC
 
     StructLayout *rawStruct = new StructLayout(name);
     StructLayout::Ptr sharedStruct = StructLayout::Ptr(rawStruct);
-    _declContext.declareStruct(sharedStruct);
+    _declContext.declareStruct(rawStruct);
 
     std::vector<std::pair<TypeDecl,std::string>> fields;
     for (auto fieldDecl: ctx->structFieldDeclaration()) {
@@ -596,7 +597,7 @@ antlrcpp::Any TreeConverter::visitStructDeclaration(CMParser::StructDeclarationC
 
     rawStruct->finalize();
 
-    return nullptr;
+    return sharedStruct;
 }
 
 antlrcpp::Any TreeConverter::visitArithmeticAssignment(CMParser::ArithmeticAssignmentContext *ctx)

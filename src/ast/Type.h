@@ -44,7 +44,7 @@ public:
     static TypeDecl getPointer(Type referencedType);
     static TypeDecl getPointer(const TypeDecl &referencedType);
     static TypeDecl getConst(const TypeDecl &type);
-    static TypeDecl getStruct(StructLayout::Ptr structLayout);
+    static TypeDecl getStruct(const StructLayout* structLayout);
 
 
     TypeDecl();
@@ -62,7 +62,7 @@ public:
     const TypeDecl* getReferencedType() const;
 
     // This method is ONLY valid if this type is a STRUCT
-    StructLayout::Ptr getStructLayout() const;
+    const StructLayout* getStructLayout() const;
 
     bool operator==(const TypeDecl &o) const;
     bool operator==(const TypeDecl::Type &o) const;
@@ -82,7 +82,7 @@ private:
     Type _type;
     TypeDecl *_referencedType;
     bool _const;
-    StructLayout::Ptr _structLayout;
+    const StructLayout* _structLayout;
 };
 
 

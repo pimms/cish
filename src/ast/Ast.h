@@ -3,6 +3,7 @@
 #include "AstNodes.h"
 #include "FunctionDefinition.h"
 #include "StringTable.h"
+#include "StructLayout.h"
 #include "../module/Module.h"
 #include "../vm/Callable.h"
 
@@ -35,10 +36,16 @@ public:
     void setStringTable(StringTable::Ptr stringTable);
     const StringTable* getStringTable() const;
 
+    void addStructLayout(StructLayout::Ptr structLayout);
+
 private:
     std::vector<Statement::Ptr> _rootStatements;
     std::map<std::string,vm::Callable::Ptr> _funcDefs;
     StringTable::Ptr _stringTable;
+
+    // Structs are stored in the Ast purely for keeping the objects
+    // alive throughout this program's lifecycle.
+    std::vector<StructLayout::Ptr> _structLayouts;
 };
 
 
