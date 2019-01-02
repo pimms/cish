@@ -179,6 +179,70 @@ TEST(StructProgramsTest, ptr_combinedFieldOps)
     );
 }
 
+TEST(StructProgramsTest, ptr_recursiveStruct)
+{
+    assertExitCode(
+        "#include <stdlib.h>"
+        "struct node_t { struct node_t *next; int val; }; "
+        "int main() {"
+        "   struct node_t root;"
+        "   root.val = 1;"
+        "   root.next = malloc(sizeof(struct node_t));"
+        "   root.next->val = 2;"
+        "   root.next->next = malloc(sizeof(struct node_t));"
+        "   root.next->next->val = 3;"
+        "   int res = root.val + root.next->val + root.next->next->val;"
+        "   free(root.next->next);"
+        "   free(root.next);"
+        "   return res;"
+        "}", 1 + 2 + 3
+    );
+}
+
+
+TEST(StructProgramsTest, obj_assignmentOfStruct)
+{
+    assertExitCode(
+        "struct item { int a; int b; };"
+        "int main() {"
+        "   struct item a;"
+        "   a.a = 5;"
+        "   a.b = 10;"
+        ""
+        "   struct item b = a;"
+        "   b.a += 5;"
+        "   b.b += 5;"
+        ""
+        "   struct item c;"
+        "   c = b;"
+        "   c.a = 1;"
+        ""
+        "   return a.a+a.b + b.a+b.b + c.a+c.b;"
+        "}", 5 + 10 + 10 + 15 + 1 + 15
+    );
+}
+
+TEST(StructProgramsTest, obj_assignmentFromDerefPointer)
+{
+    assertExitCode(
+        "#include <stdlib.h>"
+        "struct item { int a; int b; };"
+        "int main() {"
+        "   struct item *orig = malloc(sizeof(struct item));"
+        "   orig->a = 10;"
+        "   orig->b = 10;"
+        ""
+        "   struct item copy = *orig;"
+        "   orig->a++;"
+        "   orig->b++;"
+        ""
+        "   /* leak schmeak */"
+        "   return orig->a + orig->b + copy.a + copy.b;"
+        "}", 11 + 11 + 10 + 10
+    );
+}
+
+
 
 /* COMPILATION FAILURES */
 

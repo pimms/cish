@@ -75,12 +75,28 @@ void VariableAssignmentStatement::executeAssignment(vm::ExecutionContext *contex
         case TypeDecl::POINTER:
             view.write<uint32_t>(value.get<uint32_t>());
             break;
+        case TypeDecl::STRUCT:
+            handleStructAssignment(context, view, value);
+            break;
 
         default:
             Throw(InvalidTypeException,
-                "Cannot assign to variable of type '%s'",
+                "Unhandled assignment to variable of type '%s'",
                 _lvalue->getType().getName());
     }
+}
+
+void VariableAssignmentStatement::handleStructAssignment(vm::ExecutionContext *execContext, 
+                                                         vm::MemoryView &dest, 
+                                                         const ExpressionValue &sourceValue) const
+{
+    const uint32_t sourceAddr = sourceValue.get<uint32_t>();
+    const vm::MemoryView sourceView = execContext->getMemory()->getView(sourceAddr);
+
+    const uint32_t structSize = sourceValue.getIntrinsicType().getSize();
+    const uint8_t *sourceBuf = sourceView.readBuf(structSize);
+
+    dest.writeBuf(sourceBuf, structSize);
 }
 
 

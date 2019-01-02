@@ -38,6 +38,11 @@ public:
 private:
     Lvalue::Ptr _lvalue;
     Expression::Ptr _expression;
+
+
+    void handleStructAssignment(vm::ExecutionContext *execContext, 
+                                vm::MemoryView &dest, 
+                                const ExpressionValue &source) const;
 };
 
 
