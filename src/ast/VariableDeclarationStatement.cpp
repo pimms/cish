@@ -29,13 +29,13 @@ VariableDeclarationStatement::VariableDeclarationStatement(
     }
 }
 
-void VariableDeclarationStatement::execute(vm::ExecutionContext *context) const
+const TypeDecl& VariableDeclarationStatement::getDeclaredType() const
 {
-    if (context->currentFunctionHasReturned())
-        return;
+    return _type;
+}
 
-    Statement::execute(context);
-
+void VariableDeclarationStatement::virtualExecute(vm::ExecutionContext *context) const
+{
     vm::Allocation::Ptr alloc = context->getMemory()->allocate(_type.getSize());
     vm::Variable *var = new vm::Variable(_type, std::move(alloc));
 
@@ -44,11 +44,6 @@ void VariableDeclarationStatement::execute(vm::ExecutionContext *context) const
     if (_assignment != nullptr) {
         ((const VariableAssignmentStatement*)_assignment.get())->executeAssignment(context);
     }
-}
-
-const TypeDecl& VariableDeclarationStatement::getDeclaredType() const
-{
-    return _type;
 }
 
 

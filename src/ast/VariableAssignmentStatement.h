@@ -31,9 +31,11 @@ public:
                                 ConstAwareness constAwareness = ConstAwareness::STRICT);
 
     virtual ~VariableAssignmentStatement() = default;
-    virtual void execute(vm::ExecutionContext *context) const override;
 
     void executeAssignment(vm::ExecutionContext *context) const;
+
+protected:
+    virtual void virtualExecute(vm::ExecutionContext *context) const override;
 
 private:
     Lvalue::Ptr _lvalue;

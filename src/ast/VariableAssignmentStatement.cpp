@@ -35,21 +35,9 @@ VariableAssignmentStatement::VariableAssignmentStatement(
     }
 }
 
-void VariableAssignmentStatement::execute(vm::ExecutionContext *context) const
-{
-    if (context->currentFunctionHasReturned())
-        return;
-
-    Statement::execute(context);
-    executeAssignment(context);
-}
-
 
 void VariableAssignmentStatement::executeAssignment(vm::ExecutionContext *context) const
 {
-    if (context->currentFunctionHasReturned())
-        return;
-
     ExpressionValue value = _expression->evaluate(context);
     vm::MemoryView view = _lvalue->getMemoryView(context);
 
@@ -84,6 +72,11 @@ void VariableAssignmentStatement::executeAssignment(vm::ExecutionContext *contex
                 "Unhandled assignment to variable of type '%s'",
                 _lvalue->getType().getName());
     }
+}
+
+void VariableAssignmentStatement::virtualExecute(vm::ExecutionContext *context) const
+{
+    executeAssignment(context);
 }
 
 void VariableAssignmentStatement::handleStructAssignment(vm::ExecutionContext *execContext, 

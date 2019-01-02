@@ -26,8 +26,8 @@ public:
 
     ExpressionValue execute(vm::ExecutionContext *context, const std::vector<ExpressionValue>& params) const override;
 
-    bool hasReturned() const;
-    ExpressionValue getReturnValue() const;
+protected:
+    void virtualExecute(vm::ExecutionContext*) const override;
 
 private:
     vm::Variable* convertToVariable(vm::Memory *memory, const TypeDecl &targetType, const ExpressionValue &sourceValue) const;

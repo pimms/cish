@@ -9,12 +9,9 @@ namespace ast
 {
 
 
-void ElseStatement::execute(vm::ExecutionContext *context) const
+void ElseStatement::virtualExecute(vm::ExecutionContext *context) const
 {
-	if (context->currentFunctionHasReturned())
-		return;
-	Statement::execute(context);
-	SuperStatement::execute(context);
+	executeChildStatements(context);
 }
 
 

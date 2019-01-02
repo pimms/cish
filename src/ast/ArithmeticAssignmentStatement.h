@@ -19,7 +19,8 @@ public:
                                   BinaryExpression::Operator op,
                                   Expression::Ptr expr);
 
-    virtual void execute(vm::ExecutionContext*) const;
+protected:
+    virtual void virtualExecute(vm::ExecutionContext*) const;
 
 private:
     Lvalue::Ptr _lvalue;

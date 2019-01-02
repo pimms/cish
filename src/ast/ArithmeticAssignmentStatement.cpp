@@ -43,7 +43,7 @@ ArithmeticAssignmentStatement::ArithmeticAssignmentStatement(Lvalue::Ptr lvalue,
     }
 }
 
-void ArithmeticAssignmentStatement::execute(vm::ExecutionContext *ctx) const
+void ArithmeticAssignmentStatement::virtualExecute(vm::ExecutionContext *ctx) const
 {
     vm::MemoryView memView = _lvalue->getMemoryView(ctx);
 

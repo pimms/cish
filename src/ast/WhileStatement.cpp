@@ -20,18 +20,15 @@ WhileStatement::WhileStatement(Expression::Ptr condition):
 
 }
 
-void WhileStatement::execute(vm::ExecutionContext *context) const
+void WhileStatement::virtualExecute(vm::ExecutionContext *context) const
 {
-	if (context->currentFunctionHasReturned())
-		return;
-	Statement::execute(context);
 	context->pushScope();
 
 	while (evaluateCondition(context)) {
-		SuperStatement::execute(context);
+		executeChildStatements(context);
 		if (context->currentFunctionHasReturned())
 			break;
-		Statement::execute(context);
+        synchronize(context);
 	}
 
 	context->popScope();
@@ -52,18 +49,15 @@ DoWhileStatement
 DoWhileStatement::DoWhileStatement(Expression::Ptr condition)
 	: WhileStatement(condition) {}
 
-void DoWhileStatement::execute(vm::ExecutionContext *context) const
+void DoWhileStatement::virtualExecute(vm::ExecutionContext *context) const
 {
-	if (context->currentFunctionHasReturned())
-		return;
-	Statement::execute(context);
 	context->pushScope();
 
 	do {
-		SuperStatement::execute(context);
+		executeChildStatements(context);
 		if (context->currentFunctionHasReturned())
 			break;
-		Statement::execute(context);
+        synchronize(context);
 	} while (evaluateCondition(context));
 
 	context->popScope();

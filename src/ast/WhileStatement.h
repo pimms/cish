@@ -16,9 +16,8 @@ public:
 	WhileStatement(Expression::Ptr condition);
 	virtual ~WhileStatement() = default;
 
-	virtual void execute(vm::ExecutionContext *context) const override;
-
 protected:
+	virtual void virtualExecute(vm::ExecutionContext *context) const override;
 	bool evaluateCondition(vm::ExecutionContext *context) const;
 
 private:
@@ -30,7 +29,9 @@ class DoWhileStatement: public WhileStatement
 {
 public:
 	DoWhileStatement(Expression::Ptr condition);
-	virtual void execute(vm::ExecutionContext *context) const override;
+
+protected:
+	virtual void virtualExecute(vm::ExecutionContext *context) const override;
 };
 
 

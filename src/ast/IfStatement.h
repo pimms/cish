@@ -18,7 +18,8 @@ public:
 
     IfStatement(Expression::Ptr expression, ElseStatement::Ptr elseStatement);
 
-    void execute(vm::ExecutionContext *context) const override;
+protected:
+    void virtualExecute(vm::ExecutionContext *context) const override;
 
 private:
     Expression::Ptr _expression;

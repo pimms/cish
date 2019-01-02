@@ -25,7 +25,7 @@ TEST(SuperStatementTest, superStatementsCallAllTheirChildren)
     SuperStatement super;
     super.addStatement(std::dynamic_pointer_cast<Statement>(decl1));
     super.addStatement(std::dynamic_pointer_cast<Statement>(decl2));
-    super.execute(&ec);
+    super.executeChildStatements(&ec);
 
     ASSERT_NE(nullptr, ec.getScope()->getVariable("var1"));
     ASSERT_EQ(TypeDecl::INT, ec.getScope()->getVariable("var1")->getType().getType());

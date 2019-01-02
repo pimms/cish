@@ -17,23 +17,19 @@ ForLoopStatement::ForLoopStatement(Statement::Ptr init, Expression::Ptr cond, St
 
 }
 
-void ForLoopStatement::execute(vm::ExecutionContext *context) const
+void ForLoopStatement::virtualExecute(vm::ExecutionContext *context) const
 {
-    if (context->currentFunctionHasReturned())
-        return;
-    Statement::execute(context);
     context->pushScope();
-
     if (_initialization) {
         _initialization->execute(context);
     }
 
     while (evaluateCondition(context)) {
-        SuperStatement::execute(context);
+        executeChildStatements(context);
         if (context->currentFunctionHasReturned())
             break;
 
-        Statement::execute(context);
+        synchronize(context);
         if (_iterator) {
             _iterator->execute(context);
         }

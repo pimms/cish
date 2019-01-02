@@ -17,9 +17,6 @@ FunctionDefinition::FunctionDefinition(DeclarationContext *context,
     _decl(decl)
 {
     context->declareFunction(decl);
-
-    // TODO: Consider verifying that we actually return someting (if the returntype is
-    // non-void), but I don't believe it's in any of the C-standards, so maybe just don't.
 }
 
 const FuncDeclaration* FunctionDefinition::getDeclaration() const
@@ -29,6 +26,8 @@ const FuncDeclaration* FunctionDefinition::getDeclaration() const
 
 ExpressionValue FunctionDefinition::execute(vm::ExecutionContext *context, const std::vector<ExpressionValue>& params) const
 {
+    synchronize(context);
+
     if (params.size() != _decl.params.size()) {
         Throw(InvalidParameterException, "Function '%s' expected %d params, got %d",
                 _decl.name.c_str(), _decl.params.size(), params.size());
@@ -55,11 +54,15 @@ ExpressionValue FunctionDefinition::execute(vm::ExecutionContext *context, const
         }
     }
 
-    Statement::execute(context);
-    SuperStatement::execute(context);
+    executeChildStatements(context);
     ExpressionValue retVal = context->getCurrentFunctionReturnValue();
     context->popFunctionFrame();
     return retVal;
+}
+
+void FunctionDefinition::virtualExecute(vm::ExecutionContext*) const
+{
+    Throw(Exception, "FunctionDefinition::virtualExecute should never be called");
 }
 
 vm::Variable* FunctionDefinition::convertToVariable(vm::Memory *memory,

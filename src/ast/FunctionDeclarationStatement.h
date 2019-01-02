@@ -12,7 +12,9 @@ class FunctionDeclarationStatement: public Statement
 {
 public:
     FunctionDeclarationStatement(DeclarationContext *context, FuncDeclaration decl);
-    virtual void execute(vm::ExecutionContext*) const override;
+
+protected:
+    virtual void virtualExecute(vm::ExecutionContext*) const override;
 
 private:
     FuncDeclaration _decl;

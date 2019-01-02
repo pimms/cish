@@ -22,7 +22,8 @@ public:
     const StatementList& getStatements() const;
     void addStatement(Statement::Ptr statement);
 
-    virtual void execute(vm::ExecutionContext*) const override;
+    virtual void virtualExecute(vm::ExecutionContext*) const override;
+    void executeChildStatements(vm::ExecutionContext*) const;
 
 private:
     StatementList _statements;

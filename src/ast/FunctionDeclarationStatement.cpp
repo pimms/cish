@@ -14,10 +14,8 @@ FunctionDeclarationStatement::FunctionDeclarationStatement(DeclarationContext *c
     context->declareFunction(_decl);
 }
 
-void FunctionDeclarationStatement::execute(vm::ExecutionContext *context) const
+void FunctionDeclarationStatement::virtualExecute(vm::ExecutionContext *context) const
 {
-    if (context->currentFunctionHasReturned())
-        return;
 }
 
 

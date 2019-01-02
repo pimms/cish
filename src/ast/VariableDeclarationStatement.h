@@ -23,9 +23,11 @@ public:
             const std::string &varName,
             Expression::Ptr value);
     virtual ~VariableDeclarationStatement() = default;
-    virtual void execute(vm::ExecutionContext *context) const override;
 
     const TypeDecl& getDeclaredType() const;
+
+protected:
+    virtual void virtualExecute(vm::ExecutionContext *context) const override;
 
 private:
     const TypeDecl _type;

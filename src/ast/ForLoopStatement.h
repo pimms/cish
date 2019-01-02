@@ -19,7 +19,8 @@ public:
                      Expression::Ptr condition,
                      Statement::Ptr iter);
 
-    void execute(vm::ExecutionContext *context) const override;
+protected:
+    void virtualExecute(vm::ExecutionContext *context) const override;
 
 private:
     bool evaluateCondition(vm::ExecutionContext *context) const;

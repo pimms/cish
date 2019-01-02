@@ -14,7 +14,8 @@ class ElseStatement: public SuperStatement
 public:
     typedef std::shared_ptr<ElseStatement> Ptr;
 
-	void execute(vm::ExecutionContext *context) const override;
+protected:
+	void virtualExecute(vm::ExecutionContext *context) const override;
 };
 
 

@@ -39,18 +39,12 @@ ReturnStatement::ReturnStatement(DeclarationContext *context, Expression::Ptr ex
     }
 }
 
-void ReturnStatement::execute(vm::ExecutionContext *context) const
+void ReturnStatement::virtualExecute(vm::ExecutionContext *context) const
 {
-    if (context->currentFunctionHasReturned())
-        return;
-
-    Statement::execute(context);
-
     if (_expression) {
         context->returnCurrentFunction(_expression->evaluate(context));
     } else {
-        // TODO: Find a better way to handle void
-        context->returnCurrentFunction(ExpressionValue(0));
+        context->returnCurrentFunction(TypeDecl::VOID);
     }
 }
 
