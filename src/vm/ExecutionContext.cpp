@@ -172,9 +172,10 @@ Memory* ExecutionContext::getMemory() const
 
 void ExecutionContext::onStatementEnter(const ast::Statement *statement)
 {
-    if (!_statementStack.empty() && _statementStack.top() == statement) {
+    if (!statement)
         return;
-    }
+    if (!_statementStack.empty() && _statementStack.top() == statement)
+        return;
 
     _statementStack.push(statement);
 }
