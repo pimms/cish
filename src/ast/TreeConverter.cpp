@@ -896,13 +896,16 @@ void TreeConverter::includeModule(Ast *ast, std::string moduleName)
         Throw(ModuleNotFoundException, "Could not include module '%s'", moduleName.c_str());
     }
 
-    auto deps = module->getDependencies();
-    for (const auto depName: deps) {
+    for (const auto depName: module->getDependencies()) {
         includeModule(ast, depName);
     }
 
-    auto functions = module->getFunctions();
-    for (const auto &func: functions) {
+    for (const auto &structLayout: module->getStructs()) {
+        ast->addStructLayout(structLayout);
+        _declContext.declareStruct(structLayout.get());
+    }
+
+    for (const auto &func: module->getFunctions()) {
         _declContext.declareFunction(*func->getDeclaration());
     }
 

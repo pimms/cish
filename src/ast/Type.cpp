@@ -302,17 +302,18 @@ bool TypeDecl::castableTo(const TypeDecl &o) const
         return true;
     } else if (_type == POINTER || t == POINTER) {
         /* One of the types is a pointer */
-        Type other;
+        Type nonPointer;
         if (_type == POINTER) {
-            other = t;
+            nonPointer = t;
         } else {
-            other = _type;
+            nonPointer = _type;
         }
 
-        switch (other) {
+        switch (nonPointer) {
             case FLOAT:
             case DOUBLE:
             case VOID:
+            case STRUCT:
                 return false;
             default:
                 return true;

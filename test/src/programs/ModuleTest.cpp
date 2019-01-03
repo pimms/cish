@@ -51,12 +51,44 @@ private:
     mutable int _callCount;
 };
 
+class StructFunction: public Function {
+public:
+    StructFunction(const StructLayout *lib_t):
+        Function(FuncDeclaration { TypeDecl::getStruct(lib_t), "struct_func", {}}),
+        _structLayout(lib_t)
+    {}
+
+    ExpressionValue execute(ExecutionContext *context,
+                            const std::vector<ExpressionValue>& params,
+                            Variable *returnBuffer) const override
+    {
+        returnBuffer->getAllocation()->write<int32_t>(999, 0);
+        returnBuffer->getAllocation()->write<int32_t>(888, 4);
+        return ExpressionValue(TypeDecl::getStruct(_structLayout), returnBuffer->getHeapAddress());
+    }
+
+private:
+    const StructLayout *_structLayout;
+};
+
 ModuleContext::Ptr singletonModuleContext(std::string name, Callable::Ptr func)
 {
     Module::Ptr module = Module::Ptr(new Module(name));
-    module->addFunction(func);
+
+    if (func) {
+        module->addFunction(func);
+    }
+
+    StructLayout *structLayout = new StructLayout("lib_t");
+    structLayout->addField(new StructField(TypeDecl::INT, "a"));
+    structLayout->addField(new StructField(TypeDecl::INT, "b"));
+    structLayout->finalize();
+    module->addStruct(StructLayout::Ptr(structLayout));
+    module->addFunction(std::make_shared<StructFunction>(structLayout));
+
     ModuleContext::Ptr moduleContext = ModuleContext::create();
     moduleContext->addModule(module);
+
     return std::move(moduleContext);
 }
 
@@ -75,4 +107,19 @@ TEST(ModuleTest, simpleEchoModule)
 
     assertExitCode(std::move(modContext), source, 5);
     ASSERT_EQ(1, rawFunc->getCallCount());
+}
+
+TEST(ModuleTest, moduleDeclaredStruct)
+{
+    auto modContext = singletonModuleContext("module.h", nullptr);
+
+    const std::string source = 
+        "#include <module.h>"
+        "int main() {"
+        "   struct lib_t var = struct_func();"
+        "   return var.a + var.b;"
+        "}";
+
+    assertExitCode(std::move(modContext), source, 999 + 888);
+
 }

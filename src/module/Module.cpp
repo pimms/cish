@@ -31,6 +31,11 @@ void Module::addDependency(const std::string &dep)
     _dependencies.push_back(dep);
 }
 
+void Module::addStruct(ast::StructLayout::Ptr structLayout)
+{
+    _structs.push_back(structLayout);
+}
+
 std::string Module::getName() const
 {
     return _name;
@@ -44,6 +49,11 @@ std::vector<Function::Ptr> Module::getFunctions() const
 std::vector<std::string> Module::getDependencies() const
 {
     return _dependencies;
+}
+
+std::vector<ast::StructLayout::Ptr> Module::getStructs() const
+{
+    return _structs;
 }
 
 

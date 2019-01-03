@@ -386,6 +386,19 @@ TEST(StructProgramsTest, recursiveNonPointerStructs)
     );
 }
 
+TEST(StructProgramsTest, structByValueAreNotImplicitlyConvertible)
+{
+    assertCompilationFailure(
+        "struct A { int n; };"
+        "struct B { int n; };"
+        "int main() {"
+        "   struct A a;"
+        "   struct B b = a;"
+        "   return 0;"
+        "}"
+    );
+}
+
 
 
 /* RUNTIME FAILURES */

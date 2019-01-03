@@ -298,6 +298,30 @@ TEST(TypeTest, castingConstPointersToMutablePointersNotAllowed)
     ASSERT_FALSE(ciPtr.castableTo(iPtr));
 }
 
+TEST(TypeTest, transparentAndOpaquePointersAreImplicitlyCastable)
+{
+    StructLayout structLayout("layout");
+    structLayout.addField(new StructField(TypeDecl::INT, "n"));
+    structLayout.finalize();
+
+    std::vector<TypeDecl> types = {
+        TypeDecl::getPointer(TypeDecl::BOOL),
+        TypeDecl::getPointer(TypeDecl::CHAR),
+        TypeDecl::getPointer(TypeDecl::SHORT),
+        TypeDecl::getPointer(TypeDecl::INT),
+        TypeDecl::getPointer(TypeDecl::FLOAT),
+        TypeDecl::getPointer(TypeDecl::DOUBLE),
+        TypeDecl::getPointer(TypeDecl::getStruct(&structLayout)),
+    };
+
+    TypeDecl voidPointer = TypeDecl::getPointer(TypeDecl::VOID);
+
+    for (TypeDecl &type: types) {
+        ASSERT_TRUE(type.castableTo(voidPointer));
+        ASSERT_TRUE(voidPointer.castableTo(type));
+    }
+}
+
 
 TEST(TypeTest, pointerNaming)
 {
