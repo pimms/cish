@@ -174,7 +174,7 @@ void DeclarationContext::checkForReservedKeyword(const std::string &identifier) 
     static const std::set<std::string> reservedKeywords = {
         "sizeof", "for", "do", "while", "switch", "case", "goto",
         "bool", "char", "short", "int", "long", "float", 
-        "double", "void", "unsigned"
+        "double", "void", "unsigned", "break", "continue",
     };
 
     if (reservedKeywords.count(identifier) != 0) {
