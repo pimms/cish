@@ -7,6 +7,7 @@
 
 #include "module/stdio/stdioModule.h"
 #include "module/stdlib/stdlibModule.h"
+#include "module/string/stringModule.h"
 
 #include <iostream>
 #include <functional>
@@ -30,6 +31,7 @@ cish::module::ModuleContext::Ptr createModuleContext()
     cish::module::ModuleContext::Ptr moduleContext = cish::module::ModuleContext::create();
     moduleContext->addModule(cish::module::stdlib::buildModule());
     moduleContext->addModule(cish::module::stdio::buildModule());
+    moduleContext->addModule(cish::module::string::buildModule());
 
     // Bools are natively handled in cish, so add an empty module for compat
     cish::module::Module::Ptr stdbool = cish::module::Module::create("stdbool.h");

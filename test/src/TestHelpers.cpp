@@ -2,6 +2,7 @@
 #include "module/ModuleContext.h"
 #include "module/stdlib/stdlibModule.h"
 #include "module/stdio/stdioModule.h"
+#include "module/string/stringModule.h"
 
 using namespace cish::vm;
 using namespace cish::ast;
@@ -54,6 +55,7 @@ void assertExitCode(ModuleContext::Ptr moduleContext, const std::string &source,
 {
     moduleContext->addModule(stdlib::buildModule());
     moduleContext->addModule(stdio::buildModule());
+    moduleContext->addModule(string::buildModule());
 
     VmPtr vm = createVm(std::move(moduleContext), source);
     vm->startSync();
@@ -74,6 +76,8 @@ void assertRuntimeFailure(const std::string &source)
 {
     ModuleContext::Ptr context = ModuleContext::create();
     context->addModule(stdlib::buildModule());
+    context->addModule(stdio::buildModule());
+    context->addModule(string::buildModule());
 
     VmPtr vm = createVm(std::move(context), source);
     vm->startSync();
