@@ -33,6 +33,39 @@ public:
 };
 
 
+/*
+==================
+int memcmp(const void *str1, const void *str2, size_t n)
+==================
+*/
+class Memcmp : public Function
+{
+public:
+    static ast::FuncDeclaration getSignature();
+    Memcmp();
+    ast::ExpressionValue execute(vm::ExecutionContext *context,
+                                 FuncParams params,
+                                 vm::Variable*) const override;
+};
+
+
+/*
+==================
+void *memcpy(void *dest, const void *src, size_t n)
+==================
+*/
+class Memcpy : public Function
+{
+public:
+    static ast::FuncDeclaration getSignature();
+    Memcpy();
+    ast::ExpressionValue execute(vm::ExecutionContext *context,
+                                 FuncParams params,
+                                 vm::Variable*) const override;
+};
+
+
+
 
 }
 
