@@ -10,6 +10,20 @@ namespace string
 {
 
 
+/**
+ * Functions not yet implemented:
+ *  - strcspn
+ *  - strpbrk
+ *  - strrchr
+ *  - strspn
+ *  - strstr
+ *  - strtok
+ *
+ *  Functions that won't be implemented:
+ *  - strcoll
+ *  - strerror
+ *  - strxfrm
+ */
 Module::Ptr buildModule();
 
 namespace impl
@@ -187,6 +201,22 @@ class Strncpy : public Function
 public:
     static ast::FuncDeclaration getSignature();
     Strncpy();
+    ast::ExpressionValue execute(vm::ExecutionContext *context,
+                                 FuncParams params,
+                                 vm::Variable*) const override;
+};
+
+
+/*
+==================
+size_t strlen (const char *str)
+==================
+*/
+class Strlen : public Function
+{
+public:
+    static ast::FuncDeclaration getSignature();
+    Strlen();
     ast::ExpressionValue execute(vm::ExecutionContext *context,
                                  FuncParams params,
                                  vm::Variable*) const override;

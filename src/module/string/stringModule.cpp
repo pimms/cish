@@ -27,6 +27,7 @@ Module::Ptr buildModule()
     module->addFunction(std::make_shared<impl::Strncmp>());
     module->addFunction(std::make_shared<impl::Strcpy>());
     module->addFunction(std::make_shared<impl::Strncpy>());
+    module->addFunction(std::make_shared<impl::Strlen>());
     return module;
 }
 
@@ -609,6 +610,42 @@ ast::ExpressionValue Strncpy::execute(vm::ExecutionContext *context,
     destView.write<uint8_t>(0, offset);
 
     return ExpressionValue(TypeDecl::getPointer(TypeDecl::CHAR), destAddr);
+}
+
+
+/*
+==================
+size_t strlen (const char *str)
+==================
+*/
+ast::FuncDeclaration Strlen::getSignature()
+{
+    return FuncDeclaration(
+        TypeDecl::INT,
+        "strlen",
+        {
+            {
+                TypeDecl::getPointer(TypeDecl::getConst(TypeDecl::CHAR)),
+                "str"
+            }
+        }
+    );
+}
+
+Strlen::Strlen(): Function(getSignature()) { }
+
+ast::ExpressionValue Strlen::execute(vm::ExecutionContext *context,
+                                     FuncParams params,
+                                     vm::Variable*) const
+{
+    const uint32_t destAddr = params[0].get<uint32_t>();
+    vm::MemoryView destView = context->getMemory()->getView(destAddr);
+
+    int offset = 0;
+    while (destView.read<uint8_t>(offset) != 0)
+        offset++;
+
+    return ExpressionValue(TypeDecl::INT, offset);
 }
 
 
