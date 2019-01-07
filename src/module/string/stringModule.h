@@ -145,6 +145,22 @@ public:
 };
 
 
+/*
+==================
+int strncmp(const char *str1, const char *str2, size_t n)
+==================
+*/
+class Strncmp : public Function
+{
+public:
+    static ast::FuncDeclaration getSignature();
+    Strncmp();
+    ast::ExpressionValue execute(vm::ExecutionContext *context,
+                                 FuncParams params,
+                                 vm::Variable*) const override;
+};
+
+
 
 }
 
