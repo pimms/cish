@@ -23,6 +23,7 @@ Module::Ptr buildModule()
     module->addFunction(std::make_shared<impl::Strcat>());
     module->addFunction(std::make_shared<impl::Strncat>());
     module->addFunction(std::make_shared<impl::Strchr>());
+    module->addFunction(std::make_shared<impl::Strcmp>());
     return module;
 }
 
@@ -396,6 +397,56 @@ ast::ExpressionValue Strchr::execute(vm::ExecutionContext *context,
     }
 
     return ExpressionValue(TypeDecl::getPointer(TypeDecl::getConst(TypeDecl::CHAR)), result);
+}
+
+
+/*
+==================
+int strcmp(const char *str1, const char *str2)
+==================
+*/
+ast::FuncDeclaration Strcmp::getSignature()
+{
+    return FuncDeclaration(
+        TypeDecl::INT,
+        "strcmp",
+        {
+            {
+                TypeDecl::getPointer(TypeDecl::getConst(TypeDecl::CHAR)),
+                "str1"
+            },
+            {
+                TypeDecl::getPointer(TypeDecl::getConst(TypeDecl::CHAR)),
+                "str2"
+            }
+        }
+    );
+}
+
+Strcmp::Strcmp(): Function(getSignature()) { }
+
+ast::ExpressionValue Strcmp::execute(vm::ExecutionContext *context,
+                                     FuncParams params,
+                                     vm::Variable*) const
+{
+    const uint32_t addr1 = params[0].get<uint32_t>();
+    const uint32_t addr2 = params[1].get<uint32_t>();
+
+    vm::MemoryView view1 = context->getMemory()->getView(addr1);
+    vm::MemoryView view2 = context->getMemory()->getView(addr2);
+
+    uint32_t index = 0;
+    while (true) {
+        const uint8_t b1 = view1.read<uint8_t>(index);
+        const uint8_t b2 = view2.read<uint8_t>(index);
+
+        if (b1 != b2)
+            return ExpressionValue(TypeDecl::INT, (b1 < b2 ? -1 : 1));
+        if (b1 == 0) 
+            return ExpressionValue(TypeDecl::INT, 0);
+
+        index++;
+    }
 }
 
 
