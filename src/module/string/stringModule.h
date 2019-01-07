@@ -81,6 +81,21 @@ public:
 };
 
 
+/*
+==================
+char *strcat(char *dest, const char *src)
+==================
+*/
+class Strcat : public Function
+{
+public:
+    static ast::FuncDeclaration getSignature();
+    Strcat();
+    ast::ExpressionValue execute(vm::ExecutionContext *context,
+                                 FuncParams params,
+                                 vm::Variable*) const override;
+};
+
 
 
 }
