@@ -26,6 +26,7 @@ Module::Ptr buildModule()
     module->addFunction(std::make_shared<impl::Strcmp>());
     module->addFunction(std::make_shared<impl::Strncmp>());
     module->addFunction(std::make_shared<impl::Strcpy>());
+    module->addFunction(std::make_shared<impl::Strncpy>());
     return module;
 }
 
@@ -550,6 +551,62 @@ ast::ExpressionValue Strcpy::execute(vm::ExecutionContext *context,
         destView.write<uint8_t>(ch, offset);
         offset += 1;
     } while (ch != 0);
+
+    return ExpressionValue(TypeDecl::getPointer(TypeDecl::CHAR), destAddr);
+}
+
+
+/*
+==================
+char *strncpy(char *dest, const char *src, size_t n)
+==================
+*/
+ast::FuncDeclaration Strncpy::getSignature()
+{
+    return FuncDeclaration(
+        TypeDecl::getPointer(TypeDecl::CHAR),
+        "strncpy",
+        {
+            {
+                TypeDecl::getPointer(TypeDecl::CHAR),
+                "dest"
+            },
+            {
+                TypeDecl::getPointer(TypeDecl::getConst(TypeDecl::CHAR)),
+                "src"
+            },
+            {
+                TypeDecl::INT,
+                "n"
+            }
+        }
+    );
+}
+
+Strncpy::Strncpy(): Function(getSignature()) { }
+
+ast::ExpressionValue Strncpy::execute(vm::ExecutionContext *context,
+                                     FuncParams params,
+                                     vm::Variable*) const
+{
+    const uint32_t destAddr = params[0].get<uint32_t>();
+    const uint32_t srcAddr = params[1].get<uint32_t>();
+    const uint32_t maxLen = params[2].get<uint32_t>();
+
+    vm::MemoryView destView = context->getMemory()->getView(destAddr);
+    vm::MemoryView srcView = context->getMemory()->getView(srcAddr);
+
+    uint8_t ch = 0;
+    uint32_t offset = 0;
+    if (maxLen > 0) {
+        do {
+            ch = srcView.read<uint8_t>(offset);
+            destView.write<uint8_t>(ch, offset);
+            offset += 1;
+        } while (ch != 0 && offset < maxLen);
+    }
+
+    destView.write<uint8_t>(0, offset);
 
     return ExpressionValue(TypeDecl::getPointer(TypeDecl::CHAR), destAddr);
 }

@@ -177,6 +177,22 @@ public:
 };
 
 
+/*
+==================
+char *strncpy(char *dest, const char *src, size_t n)
+==================
+*/
+class Strncpy : public Function
+{
+public:
+    static ast::FuncDeclaration getSignature();
+    Strncpy();
+    ast::ExpressionValue execute(vm::ExecutionContext *context,
+                                 FuncParams params,
+                                 vm::Variable*) const override;
+};
+
+
 
 }
 
