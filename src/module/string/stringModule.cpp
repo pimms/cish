@@ -21,6 +21,7 @@ Module::Ptr buildModule()
     module->addFunction(std::make_shared<impl::Memcpy>());
     module->addFunction(std::make_shared<impl::Memset>());
     module->addFunction(std::make_shared<impl::Strcat>());
+    module->addFunction(std::make_shared<impl::Strncat>());
     return module;
 }
 
@@ -279,6 +280,66 @@ ast::ExpressionValue Strcat::execute(vm::ExecutionContext *context,
         destView.write<uint8_t>(ch, offset + i);
         i += 1;
     } while (ch);
+
+    return ExpressionValue(TypeDecl::getPointer(TypeDecl::CHAR), destAddr);
+}
+
+
+/*
+==================
+char *strncat(char *dest, const char *src, size_t n)
+==================
+*/
+ast::FuncDeclaration Strncat::getSignature()
+{
+    return FuncDeclaration(
+        TypeDecl::getPointer(TypeDecl::CHAR),
+        "strncat",
+        {
+            {
+                TypeDecl::getPointer(TypeDecl::CHAR),
+                "dest"
+            },
+            {
+                TypeDecl::getPointer(TypeDecl::getConst(TypeDecl::CHAR)),
+                "src"
+            },
+            {
+                TypeDecl::INT,
+                "n"
+            }
+        }
+    );
+}
+
+Strncat::Strncat(): Function(getSignature()) { }
+
+ast::ExpressionValue Strncat::execute(vm::ExecutionContext *context,
+                                     FuncParams params,
+                                     vm::Variable*) const
+{
+    const uint32_t destAddr = params[0].get<uint32_t>();
+    const uint32_t srcAddr = params[1].get<uint32_t>();
+    const uint32_t maxLen = params[2].get<uint32_t>();
+
+    vm::MemoryView destView = context->getMemory()->getView(destAddr);
+    vm::MemoryView srcView = context->getMemory()->getView(srcAddr);
+
+    uint32_t offset = 0;
+    while (destView.read<uint8_t>(offset) != 0) {
+        offset++;
+    }
+
+    uint32_t i = 0;
+    uint8_t ch = 0;
+
+    do {
+        ch = srcView.read<uint8_t>(i);
+        destView.write<uint8_t>(ch, offset + i);
+        i += 1;
+    } while (ch && i < maxLen);
+
+    destView.write<uint8_t>(0, offset + i);
 
     return ExpressionValue(TypeDecl::getPointer(TypeDecl::CHAR), destAddr);
 }
