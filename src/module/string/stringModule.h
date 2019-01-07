@@ -113,6 +113,22 @@ public:
 };
 
 
+/*
+==================
+char *strchr(const char *str, int character)
+==================
+*/
+class Strchr : public Function
+{
+public:
+    static ast::FuncDeclaration getSignature();
+    Strchr();
+    ast::ExpressionValue execute(vm::ExecutionContext *context,
+                                 FuncParams params,
+                                 vm::Variable*) const override;
+};
+
+
 
 }
 

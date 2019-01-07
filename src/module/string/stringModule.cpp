@@ -22,6 +22,7 @@ Module::Ptr buildModule()
     module->addFunction(std::make_shared<impl::Memset>());
     module->addFunction(std::make_shared<impl::Strcat>());
     module->addFunction(std::make_shared<impl::Strncat>());
+    module->addFunction(std::make_shared<impl::Strchr>());
     return module;
 }
 
@@ -342,6 +343,59 @@ ast::ExpressionValue Strncat::execute(vm::ExecutionContext *context,
     destView.write<uint8_t>(0, offset + i);
 
     return ExpressionValue(TypeDecl::getPointer(TypeDecl::CHAR), destAddr);
+}
+
+
+/*
+==================
+char *strchr(const char *str, int character)
+==================
+*/
+ast::FuncDeclaration Strchr::getSignature()
+{
+    return FuncDeclaration(
+        TypeDecl::getPointer(TypeDecl::getConst(TypeDecl::CHAR)),
+        "strchr",
+        {
+            {
+                TypeDecl::getPointer(TypeDecl::getConst(TypeDecl::CHAR)),
+                "str"
+            },
+            {
+                TypeDecl::INT,
+                "character"
+            }
+        }
+    );
+}
+
+Strchr::Strchr(): Function(getSignature()) { }
+
+ast::ExpressionValue Strchr::execute(vm::ExecutionContext *context,
+                                     FuncParams params,
+                                     vm::Variable*) const
+{
+    const uint32_t addr = params[0].get<uint32_t>();
+    const uint8_t needle = params[1].get<uint8_t>();
+
+    vm::MemoryView view = context->getMemory()->getView(addr);
+
+    uint32_t result = 0;
+    uint32_t offset = 0;
+    while (true) {
+        const uint8_t ch = view.read<uint8_t>(offset);
+        if (ch == needle) {
+            result = addr + offset;
+            break;
+        } else if (ch == 0) {
+            result = 0;
+            break;
+        }
+
+        offset++;
+    }
+
+    return ExpressionValue(TypeDecl::getPointer(TypeDecl::getConst(TypeDecl::CHAR)), result);
 }
 
 
