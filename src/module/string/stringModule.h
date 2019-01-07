@@ -65,6 +65,22 @@ public:
 };
 
 
+/*
+==================
+void *memset(void *str, int c, size_t n)
+==================
+*/
+class Memset : public Function
+{
+public:
+    static ast::FuncDeclaration getSignature();
+    Memset();
+    ast::ExpressionValue execute(vm::ExecutionContext *context,
+                                 FuncParams params,
+                                 vm::Variable*) const override;
+};
+
+
 
 
 }

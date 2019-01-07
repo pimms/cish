@@ -19,6 +19,7 @@ Module::Ptr buildModule()
     module->addFunction(std::make_shared<impl::Memchr>());
     module->addFunction(std::make_shared<impl::Memcmp>());
     module->addFunction(std::make_shared<impl::Memcpy>());
+    module->addFunction(std::make_shared<impl::Memset>());
     return module;
 }
 
@@ -180,6 +181,53 @@ ast::ExpressionValue Memcpy::execute(vm::ExecutionContext *context,
     }
 
     return ExpressionValue(TypeDecl::getPointer(TypeDecl::VOID), destAddr);
+}
+
+
+/*
+==================
+void *memset(void *str, int c, size_t n)
+==================
+*/
+ast::FuncDeclaration Memset::getSignature()
+{
+    return FuncDeclaration(
+        TypeDecl::getPointer(TypeDecl::VOID),
+        "memset",
+        {
+            {
+                TypeDecl::getPointer(TypeDecl::VOID),
+                "str"
+            },
+            {
+                TypeDecl::INT,
+                "c",
+            },
+            {
+                TypeDecl::INT,
+                "n"
+            }
+        }
+    );
+}
+
+Memset::Memset(): Function(getSignature()) { }
+
+ast::ExpressionValue Memset::execute(vm::ExecutionContext *context,
+                                     FuncParams params,
+                                     vm::Variable*) const
+{
+    const uint32_t addr = params[0].get<uint32_t>();
+    const uint8_t character = params[1].get<uint8_t>();
+    const int length = params[2].get<int>();
+
+    vm::MemoryView view = context->getMemory()->getView(addr);
+
+    for (int i=0; i<length; i++) {
+        view.write<uint8_t>(character, i);
+    }
+
+    return ExpressionValue(TypeDecl::getPointer(TypeDecl::VOID), addr);
 }
 
 
