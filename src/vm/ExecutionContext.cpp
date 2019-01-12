@@ -196,6 +196,13 @@ const Callable::Ptr ExecutionContext::getFunctionDefinition(const std::string &f
     return nullptr;
 }
 
+void ExecutionContext::setStdout(std::ostream *stream)
+{
+    if (!stream)
+        Throw(Exception, "stdout-stream must be non-NULL");
+    _stdout = stream;
+}
+
 std::ostream* ExecutionContext::getStdout()
 {
     return _stdout;

@@ -71,6 +71,7 @@ public:
     virtual void onStatementExit(const ast::Statement *statement);
     virtual const Callable::Ptr getFunctionDefinition(const std::string &funcName) const;
 
+    void setStdout(std::ostream *stream);
     std::ostream* getStdout();
 
 private:
