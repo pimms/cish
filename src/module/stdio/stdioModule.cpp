@@ -66,7 +66,8 @@ ast::ExpressionValue Puts::execute(vm::ExecutionContext *context,
     std::vector<char> str;
     utils::readString(view, str);
 
-    (*context->getStdout()) << str.data() << std::endl;
+    context->getStdout()->write(str.data());
+    context->getStdout()->write("\n");
 
     return ExpressionValue(TypeDecl::INT, str.size());
 }
@@ -172,7 +173,7 @@ ast::ExpressionValue Printf::execute(vm::ExecutionContext *context,
     }
 
     std::string result = ss.str();
-    (*context->getStdout()) << result;
+    context->getStdout()->write(result);
     return ExpressionValue(TypeDecl::INT, result.length());
 }
 

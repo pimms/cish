@@ -599,15 +599,18 @@ ast::ExpressionValue Strncpy::execute(vm::ExecutionContext *context,
 
     uint8_t ch = 0;
     uint32_t offset = 0;
+
     if (maxLen > 0) {
         do {
             ch = srcView.read<uint8_t>(offset);
             destView.write<uint8_t>(ch, offset);
             offset += 1;
         } while (ch != 0 && offset < maxLen);
-    }
 
-    destView.write<uint8_t>(0, offset);
+        while (offset < maxLen) {
+            destView.write<uint8_t>(0, offset++);
+        }
+    }
 
     return ExpressionValue(TypeDecl::getPointer(TypeDecl::CHAR), destAddr);
 }

@@ -1,4 +1,5 @@
 #include "ExecutionContext.h"
+#include "StdoutStream.h"
 #include "../ast/FunctionDefinition.h"
 #include "../ast/AstNodes.h"
 
@@ -15,7 +16,8 @@ const int MAX_STACK_FRAMES = 4096;
 
 ExecutionContext::ExecutionContext(Memory *memory):
     _memory(memory),
-    _stdout(&std::cout)
+    _customStdout(nullptr),
+    _defaultStdout(new StdoutStream())
 {
     _globalScope = new Scope();
 }
@@ -29,6 +31,7 @@ ExecutionContext::~ExecutionContext()
     }
 
     delete _globalScope;
+    delete _defaultStdout;
 }
 
 void ExecutionContext::copyStringTable(const ast::StringTable *stringTable)
@@ -196,16 +199,14 @@ const Callable::Ptr ExecutionContext::getFunctionDefinition(const std::string &f
     return nullptr;
 }
 
-void ExecutionContext::setStdout(std::ostream *stream)
+void ExecutionContext::setStdout(IStream *stream)
 {
-    if (!stream)
-        Throw(Exception, "stdout-stream must be non-NULL");
-    _stdout = stream;
+    _customStdout = stream;
 }
 
-std::ostream* ExecutionContext::getStdout()
+IStream* ExecutionContext::getStdout()
 {
-    return _stdout;
+    return _customStdout ? _customStdout : _defaultStdout;
 }
 
 

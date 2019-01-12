@@ -4,6 +4,7 @@
 #include "Memory.h"
 #include "ExecutionThread.h"
 #include "Callable.h"
+#include "IStream.h"
 
 #include "../Exception.h"
 
@@ -71,8 +72,8 @@ public:
     virtual void onStatementExit(const ast::Statement *statement);
     virtual const Callable::Ptr getFunctionDefinition(const std::string &funcName) const;
 
-    void setStdout(std::ostream *stream);
-    std::ostream* getStdout();
+    void setStdout(IStream *stream);
+    IStream* getStdout();
 
 private:
     struct FunctionFrame
@@ -91,7 +92,8 @@ private:
     Memory *_memory;
     std::map<ast::StringId, Allocation::Ptr> _stringMap;
 
-    std::ostream *_stdout;
+    IStream *_customStdout;
+    IStream *_defaultStdout;
 };
 
 
