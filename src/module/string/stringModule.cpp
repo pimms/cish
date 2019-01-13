@@ -587,8 +587,8 @@ ast::FuncDeclaration Strncpy::getSignature()
 Strncpy::Strncpy(): Function(getSignature()) { }
 
 ast::ExpressionValue Strncpy::execute(vm::ExecutionContext *context,
-                                     FuncParams params,
-                                     vm::Variable*) const
+                                      FuncParams params,
+                                      vm::Variable*) const
 {
     const uint32_t destAddr = params[0].get<uint32_t>();
     const uint32_t srcAddr = params[1].get<uint32_t>();

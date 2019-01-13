@@ -113,7 +113,8 @@ ast::ExpressionValue Printf::execute(vm::ExecutionContext *context,
     while (i < str.size()) {
         char &ch = str[i++];
         if (ch != '%') {
-            ss << ch;
+            if (ch)
+                ss << ch;
         } else {
             if (i == str.size() - 1) {
                 Throw(StdioException, "Bad format string: '%s'", str.data());

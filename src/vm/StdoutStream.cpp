@@ -11,7 +11,7 @@ namespace vm
 
 void StdoutStream::write(const std::string &str)
 {
-    std::cout << str;
+    printf("%s", str.c_str());
 }
 
 
