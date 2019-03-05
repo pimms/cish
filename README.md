@@ -74,6 +74,9 @@ verified that the program makes _logical_ and _functional_ sense. Referred
 variables must have been declared, expected parameters must be passed,
 dereferencing an `int` makes no sense, etc.
 
+Note that because I have no idea what I'm really doing, the "execution tree" I'm
+referring to is called `cish::AST` in the code :)
+
 ## Virtual Machine
 
 ### Memory Allocation
