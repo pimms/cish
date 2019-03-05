@@ -42,7 +42,7 @@ Consider the following program:
    `ExpressionValue` objects that are allocated in the VM memory before the
    function executes. When a function parameter is of type `STRUCT`, it copies
    the number of bytes that struct occupies from the address stored in the
-   `ExpressionValue` and stores it in a newly allocatd variable.
+   `ExpressionValue` and stores it in a newly allocated variable.
 
 
 ### Returning a struct by value
