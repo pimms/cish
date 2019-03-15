@@ -80,7 +80,7 @@ public:
 
 private:
     Type _type;
-    TypeDecl *_referencedType;
+    mutable std::shared_ptr<TypeDecl> _referencedType;
     bool _const;
     const StructLayout* _structLayout;
 };

@@ -104,7 +104,7 @@ TEST(TypeTest, referencedTypeIsCorrectlyCopied)
 
     ASSERT_NE(nullptr, ptr.getReferencedType());
     ASSERT_NE(nullptr, copy.getReferencedType());
-    ASSERT_NE(ptr.getReferencedType(), copy.getReferencedType());
+    ASSERT_EQ(ptr.getReferencedType(), copy.getReferencedType());
 }
 
 TEST(TypeTest, primitivesHasNoReferencedType)

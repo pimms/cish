@@ -79,7 +79,7 @@ TypeDecl TypeDecl::getPointer(Type referencedType)
 {
     TypeDecl type;
     type._type = Type::POINTER;
-    type._referencedType = new TypeDecl(referencedType);
+    type._referencedType = std::make_shared<TypeDecl>(referencedType);
     return type;
 }
 
@@ -87,7 +87,7 @@ TypeDecl TypeDecl::getPointer(const TypeDecl &referencedType)
 {
     TypeDecl type;
     type._type = Type::POINTER;
-    type._referencedType = new TypeDecl(referencedType);
+    type._referencedType = std::make_shared<TypeDecl>(referencedType);
     return type;
 }
 
@@ -135,8 +135,6 @@ TypeDecl::TypeDecl(Type t):
 
 TypeDecl::~TypeDecl()
 {
-    if (_referencedType)
-        delete _referencedType;
 }
 
 TypeDecl& TypeDecl::operator=(const TypeDecl &o)
@@ -147,9 +145,7 @@ TypeDecl& TypeDecl::operator=(const TypeDecl &o)
     if (o._referencedType != nullptr) {
         // NB! potentially recursive initialization
         assert(_type == POINTER);
-        if (_referencedType)
-            delete _referencedType;
-        _referencedType = new TypeDecl(*o._referencedType);
+        _referencedType = o._referencedType;
     } else {
         _referencedType = nullptr;
     }
@@ -242,7 +238,7 @@ const TypeDecl* TypeDecl::getReferencedType() const
         Throw(InvalidTypeException, "Cannot get referenced type of non-pointer TypeDecl");
     }
     assert(_referencedType != nullptr);
-    return _referencedType;
+    return _referencedType.get();
 }
 
 const StructLayout* TypeDecl::getStructLayout() const
