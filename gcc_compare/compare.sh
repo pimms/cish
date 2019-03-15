@@ -13,7 +13,8 @@ compare_file() {
     GCC_OUT=$($GCCDIR/a.out)
     GCC_CODE=$?
 
-    CISH_OUT=$(cish_cli $file)
+    CISH_ARGS=$(head -n 1 $file | grep -e "//\s*cish_cli" | sed -e "s/\/\/.*cish_cli//")
+    CISH_OUT=$(cish_cli $CISH_ARGS $file)
     CISH_CODE=$?
 
     EMSG=""

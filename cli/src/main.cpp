@@ -11,6 +11,13 @@
 
 #include <iostream>
 #include <functional>
+#include <unistd.h>
+
+struct CliArgs {
+    uint32_t memorySize;
+    uint32_t allocationSize;
+    std::string fileName;
+};
 
 bool doTry(std::function<void(void)> f) {
     try {
@@ -40,14 +47,9 @@ cish::module::ModuleContext::Ptr createModuleContext()
     return moduleContext;
 }
 
-int execute(int argc, char **argv)
+int execute(CliArgs args)
 {
-    if (argc != 2) {
-        fprintf(stderr, "usage: %s <file.c>\n", argv[0]);
-        return 1;
-    }
-
-    std::ifstream t(argv[1]);
+    std::ifstream t(args.fileName);
     std::string source((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
 
     cish::module::ModuleContext::Ptr moduleContext = createModuleContext();
@@ -62,7 +64,7 @@ int execute(int argc, char **argv)
     }
 
     cish::vm::VmOptions opts;
-    opts.heapSize = 1 << 10;
+    opts.heapSize = args.memorySize;
     opts.minAllocSize = 4;
 
     cish::vm::VirtualMachine vm(opts, std::move(ast));
@@ -74,20 +76,76 @@ int execute(int argc, char **argv)
         return 1;
     }
 
+    fflush(stdout);
+    fflush(stderr);
+
     return vm.getExitCode();
+}
+
+
+// -----
+
+int parseIntArg(char option, const char *str)
+{
+    int value = atoi(str);
+    if (value == 0) {
+        fprintf(stderr, "Argument '%s' is not valid for option '%c'", str, option);
+        exit(1);
+    }
+
+    return value;
 }
 
 int main(int argc, char **argv)
 {
-    int retval = execute(argc, argv);
+    bool haltAfterExec = false;
 
-    #ifdef DEBUG
-    // Sleep so MacOS Instruments is able to scrape through our
-    // memory space.
-    //
-    // TODO: Convert this into a command-line option
-    // getchar();
-    #endif
+    CliArgs args;
+    args.allocationSize = 4;
+    args.memorySize = 1 << 10;
+
+    int c;
+    while ((c = getopt (argc, argv, "ha:m:")) != -1) {
+        switch (c) {
+            case 'a':
+                args.allocationSize = parseIntArg(optopt, optarg);
+                fprintf(stderr, "[custom allocation size] %d\n", args.allocationSize);
+                break;
+            case 'm':
+                args.memorySize = parseIntArg(optopt, optarg);
+                fprintf(stderr, "[custom memory size] %d\n", args.memorySize);
+                break;
+            case 'h':
+                haltAfterExec = true;
+                break;
+            case '?':
+                if (isalpha(optopt))
+                    fprintf(stderr, "Option -%c requires an argument.\n", optopt);
+                else if (isprint (optopt))
+                    fprintf(stderr, "Unknown option `-%c'.\n", optopt);
+                else 
+                    fprintf(stderr, "Unknown option character `\\x%x'.\n", optopt);
+                return 1;
+            default:
+                abort();
+        }
+    }
+
+    if (optind == argc) {
+        fprintf(stderr, "Missing source file to execute\n");
+        exit(1);
+    } else if (argc > optind + 1) {
+        fprintf(stderr, "Too many parameters given\n");
+        exit(1);
+    }
+
+    args.fileName = argv[optind];
+
+    int retval = execute(args);
+
+    if (haltAfterExec) {
+        getchar();
+    }
 
     return retval;
 }
