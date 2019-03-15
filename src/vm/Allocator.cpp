@@ -88,6 +88,16 @@ void Allocator::deallocate(uint32_t offset, uint32_t size)
     }
 }
 
+uint32_t Allocator::getFreeSize() const
+{
+    uint32_t sum = 0;
+    for (const auto &block: _blocks) {
+        sum += block.length;
+    }
+
+    return sum;
+}
+
 const std::list<Allocator::Block>& Allocator::getBlocksByOffset() const
 {
     return _blocks;

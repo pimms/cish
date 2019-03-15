@@ -21,7 +21,8 @@ uint32_t Memory::firstUsableMemoryAddress()
 Memory::Memory(uint32_t heapSize, uint32_t minAllocSize):
     _heapSize(heapSize),
     _allocationSize(minAllocSize),
-    _numAllocationUnits(heapSize / minAllocSize)
+    _numAllocationUnits(heapSize / minAllocSize),
+    _allocator(_numAllocationUnits)
 {
     assert(_heapSize >= 0);
     assert(_allocationSize >= 0);
@@ -47,31 +48,19 @@ uint32_t Memory::getTotalSize() const
 
 uint32_t Memory::getFreeSize() const
 {
-    uint32_t free = 0;
-
-    for (int i=0; i<_numAllocationUnits; i++) {
-        const uint32_t byte = i / 8;
-        const uint32_t bit = i % 8;
-
-        if ((_allocationMap[byte] & (1 << bit)) == 0) {
-            free += _allocationSize;
-        }
-    }
-
-    return free;
+    return _allocator.getFreeSize() * _allocationSize;
 }
 
 Allocation::Ptr Memory::allocate(uint32_t size)
 {
     const uint32_t allocationUnits = byteCountToUnitCount(size);
-    const uint32_t unitIndex = findUnallocatedRun(allocationUnits);
-
+    const uint32_t unitIndex = _allocator.allocate(allocationUnits);
     markAsAllocated(unitIndex, allocationUnits);
 
     const uint32_t byteOffset = unitIndex * _allocationSize;
     const uint32_t byteSize = allocationUnits * _allocationSize;
 
-    MemoryAccess  *memAccess = this;
+    MemoryAccess *memAccess = this;
     Allocation::Ptr alloc = std::make_unique<Allocation>(memAccess, FIRST_USABLE_ADDRESS + byteOffset);
     _allocLen[alloc.get()] = byteSize;
     return std::move(alloc);
@@ -80,38 +69,6 @@ Allocation::Ptr Memory::allocate(uint32_t size)
 MemoryView Memory::getView(uint32_t address) noexcept
 {
     return MemoryView(this, address);
-}
-
-
-uint32_t Memory::findUnallocatedRun(uint32_t requiredUnits)
-{
-    // TODO: This can be optimized a boatload - there's no need to run through
-    // the whole memory space, lol
-
-    uint32_t cur = 0;
-    uint32_t runLength = 0;
-
-    // Find the first unoccupied run of 'length' bytes in the memory space.
-    for (int i=0; i<_numAllocationUnits; i++) {
-        const uint32_t byte = i / 8;
-        const uint32_t bit = i % 8;
-
-        if ((_allocationMap[byte] & (1 << bit)) == 0) {
-            if (!runLength) {
-                cur = i;
-            }
-
-            runLength++;
-
-            if (runLength >= requiredUnits) {
-                return cur;
-            }
-        } else {
-            runLength = 0;
-        }
-    }
-
-    Throw(OutOfMemoryException, "Allocation failed");
 }
 
 void Memory::markAsAllocated(uint32_t startUnit, uint32_t numUnits)
@@ -173,6 +130,7 @@ void Memory::onDeallocation(Allocation *allocation)
     const uint32_t allocatedBytes = _allocLen[allocation];
     const uint32_t numUnits = byteCountToUnitCount(allocatedBytes);
 
+    _allocator.deallocate(startUnit, numUnits);
     markAsFree(startUnit, numUnits);
     _allocLen.erase(allocation);
 }

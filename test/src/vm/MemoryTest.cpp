@@ -75,25 +75,26 @@ TEST(MemoryTest, AllocationFailureThrows)
     auto alloc1 = memory.allocate(4);
     auto alloc2 = memory.allocate(4);
 
-    ASSERT_THROW(memory.allocate(4), OutOfMemoryException);
+    ASSERT_THROW(memory.allocate(4), AllocationFailedException);
 }
 
 TEST(MemoryTest, TooLargeAllocationThrows)
 {
     Memory memory(100, 4);
-    ASSERT_THROW(memory.allocate(101), OutOfMemoryException);
+    ASSERT_THROW(memory.allocate(101), AllocationFailedException);
 }
 
 TEST(MemoryTest, UnalignedHeapSize)
 {
-    // Of the total 5, only 4 are available because of misalignment
     Memory memory(5, 4);
     ASSERT_EQ(4, memory.getFreeSize());
 
     auto alloc = memory.allocate(4);
     ASSERT_EQ(0, memory.getFreeSize());
 
-    ASSERT_THROW(memory.allocate(4), OutOfMemoryException);
+    // We cannot allocate the last byte because of misalignment with
+    // the allocation size
+    ASSERT_THROW(memory.allocate(1), AllocationFailedException);
 }
 
 TEST(MemoryTest, DeallocatingMakesMemoryAvailableAgain)
@@ -107,7 +108,7 @@ TEST(MemoryTest, DeallocatingMakesMemoryAvailableAgain)
     auto alloc2 = memory.allocate(4);
     ASSERT_EQ(0, memory.getFreeSize());
 
-    ASSERT_THROW(memory.allocate(4), OutOfMemoryException);
+    ASSERT_THROW(memory.allocate(4), AllocationFailedException);
     alloc1 = nullptr;
     ASSERT_EQ(4, memory.getFreeSize());
 

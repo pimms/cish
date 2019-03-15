@@ -27,6 +27,8 @@ public:
 	uint32_t allocate(uint32_t size);
     void deallocate(uint32_t offset, uint32_t size);
 
+    uint32_t getFreeSize() const;
+
     // !! Should only be used for test purposes !! //
     const std::list<Block>& getBlocksByOffset() const;
 

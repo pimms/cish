@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Allocation.h"
+#include "Allocator.h"
 #include "../Exception.h"
 
 #include <stdint.h>
@@ -15,7 +16,6 @@ namespace vm
 {
 
 
-DECLARE_EXCEPTION(OutOfMemoryException);
 DECLARE_EXCEPTION(InvalidReadException);
 DECLARE_EXCEPTION(InvalidFreeException);
 DECLARE_EXCEPTION(InvalidAccessException);
@@ -55,8 +55,8 @@ private:
     uint8_t *_heap;
     uint8_t *_allocationMap;
     std::map<Allocation*,uint32_t> _allocLen;
+    Allocator _allocator;
 
-    uint32_t findUnallocatedRun(uint32_t len);
     void markAsAllocated(uint32_t offset, uint32_t len);
     void markAsFree(uint32_t offset, uint32_t len);
     bool isUnitAllocated(uint32_t unitIndex) const;

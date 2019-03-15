@@ -197,7 +197,7 @@ ast::ExpressionValue Malloc::execute(vm::ExecutionContext *context,
         _mallocContext->onAllocation(std::move(alloc));
 
         return ExpressionValue(TypeDecl::getPointer(TypeDecl::VOID), addr);
-    } catch (const vm::OutOfMemoryException &e) {
+    } catch (const vm::AllocationFailedException &e) {
         return ExpressionValue(TypeDecl::getPointer(TypeDecl::VOID), 0);
     }
 }
