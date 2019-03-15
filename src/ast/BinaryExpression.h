@@ -14,6 +14,51 @@ namespace internal
 {
 
 template<typename T>
+T multiply(T a, T b)
+{
+    return a * b;
+}
+
+template<typename T>
+T safe_div(T a, T b)
+{
+    if (b == 0) {
+        Throw(DivisionByZeroException, "Division by zero");
+    }
+    return a / b;
+}
+
+template<typename T>
+T plus(T a, T b)
+{
+    return a + b;
+}
+
+template<typename T>
+T minus(T a, T b)
+{
+    return a - b;
+}
+
+template<typename T>
+T bitwiseAnd(T a, T b)
+{
+    return a & b;
+}
+
+template<typename T>
+T bitwiseXor(T a, T b)
+{
+    return a ^ b;
+}
+
+template<typename T>
+T bitwiseOr(T a, T b)
+{
+    return a | b;
+}
+
+template<typename T>
 T lshift(T a, T n)
 {
     return a << n;
@@ -26,12 +71,51 @@ T rshift(T a, T n)
 }
 
 template<typename T>
-T safe_div(T a, T b)
+T greater(T a, T b)
 {
-    if (b == 0) {
-        Throw(DivisionByZeroException, "Division by zero");
-    }
-    return a / b;
+    return a > b;
+}
+
+template<typename T>
+T less(T a, T b)
+{
+    return a < b;
+}
+
+template<typename T>
+T greaterEqual(T a, T b)
+{
+    return a >= b;
+}
+
+template<typename T>
+T lessEqual(T a, T b)
+{
+    return a <= b;
+}
+
+template<typename T>
+T equalTo(T a, T b)
+{
+    return a == b;
+}
+
+template<typename T>
+T notEqual(T a, T b)
+{
+    return a != b;
+}
+
+template<typename T>
+T logicalAnd(T a, T b)
+{
+    return a && b;
+}
+
+template<typename T>
+T logicalOr(T a, T b)
+{
+    return a || b;
 }
 
 template<typename T>
@@ -98,7 +182,7 @@ private:
     ExpressionValue evaluatePtrT(vm::ExecutionContext *ctx) const;
 
     template<typename T>
-    std::function<T(T,T)> getFunction() const;
+    T evalOperator(T a, T b) const;
 };
 
 template<typename T>
@@ -108,37 +192,35 @@ ExpressionValue BinaryExpression::evaluateT(vm::ExecutionContext *ctx) const
     ExpressionValue rval = _right->evaluate(ctx);
 
     if (_operator >= __BOOLEAN_BOUNDARY) {
-        std::function<bool(T,T)> func = getFunction<T>();
-        const bool value = func(lval.get<T>(), rval.get<T>());
+        const bool value = evalOperator(lval.get<T>(), rval.get<T>());
         return ExpressionValue(TypeDecl(TypeDecl::Type::BOOL), value);
     } else {
-        std::function<T(T,T)> func = getFunction<T>();
-        const T value = func(lval.get<T>(), rval.get<T>());
+        const T value = evalOperator(lval.get<T>(), rval.get<T>());
         return ExpressionValue(TypeDecl::getFromNative<T>(), value);
     }
 }
 
 template<typename T>
-std::function<T(T,T)> BinaryExpression::getFunction() const
+T BinaryExpression::evalOperator(T a, T b) const
 {
     switch (_operator) {
-        case MULTIPLY:      return std::multiplies<T>();
-        case DIVIDE:        return internal::safe_div<T>;
-        case PLUS:          return std::plus<T>();
-        case MINUS:         return std::minus<T>();
-        case BITWISE_AND:   return std::bit_and<int32_t>();
-        case BITWISE_XOR:   return std::bit_xor<int32_t>();
-        case BITWISE_OR:    return std::bit_or<int32_t>();
-        case BITWISE_LSHIFT:return internal::lshift<int32_t>;
-        case BITWISE_RSHIFT:return internal::rshift<int32_t>;
-        case GT:            return std::greater<T>();
-        case LT:            return std::less<T>();
-        case GTE:           return std::greater_equal<T>();
-        case LTE:           return std::less_equal<T>();
-        case EQ:            return std::equal_to<T>();
-        case NE:            return std::not_equal_to<T>();
-        case LOGICAL_AND:   return std::logical_and<T>();
-        case LOGICAL_OR:    return std::logical_or<T>();
+        case MULTIPLY:      return internal::multiply<T>(a, b);
+        case DIVIDE:        return internal::safe_div<T>(a, b);
+        case PLUS:          return internal::plus<T>(a, b);
+        case MINUS:         return internal::minus<T>(a, b);
+        case BITWISE_AND:   return internal::bitwiseAnd<int32_t>(a, b);
+        case BITWISE_XOR:   return internal::bitwiseXor<int32_t>(a, b);
+        case BITWISE_OR:    return internal::bitwiseOr<int32_t>(a, b);
+        case BITWISE_LSHIFT:return internal::lshift<int32_t>(a, b);
+        case BITWISE_RSHIFT:return internal::rshift<int32_t>(a, b);
+        case GT:            return internal::greater<T>(a, b);
+        case LT:            return internal::less<T>(a, b);
+        case GTE:           return internal::greaterEqual<T>(a, b);
+        case LTE:           return internal::lessEqual<T>(a, b);
+        case EQ:            return internal::equalTo<T>(a, b);
+        case NE:            return internal::notEqual<T>(a, b);
+        case LOGICAL_AND:   return internal::logicalAnd<T>(a, b);
+        case LOGICAL_OR:    return internal::logicalOr<T>(a, b);
 
         case MODULO: break; /* Explicitly handled below */
     }
@@ -148,7 +230,7 @@ std::function<T(T,T)> BinaryExpression::getFunction() const
             // TODO: Make this a VM runtime error
             throw std::runtime_error("Modulo attempted on floating point number");
         } else {
-            return internal::safe_mod<T>;
+            return internal::safe_mod<T>(a, b);
         }
     }
 

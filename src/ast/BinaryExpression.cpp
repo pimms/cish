@@ -134,8 +134,7 @@ ExpressionValue BinaryExpression::evaluatePtrT(vm::ExecutionContext *ctx) const
 
     // Perform the operation, generate a result with the same type
     // as the pointer-type.
-    auto func = getFunction<uint32_t>();
-    const uint32_t resultValue = func(ptrVal, otherVal);
+    const uint32_t resultValue = evalOperator<uint32_t>(ptrVal, otherVal);
 
     return ExpressionValue(ptr->getType(), resultValue);
 }
