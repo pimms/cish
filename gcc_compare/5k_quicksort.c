@@ -10,7 +10,7 @@ int prng();
 
 int main()
 {
-    const int SIZE = 5000;
+    const int SIZE = 50000;
     int *list = (int*)malloc(sizeof(int) * SIZE);
  
     int i = 0;
