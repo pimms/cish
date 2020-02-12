@@ -63,7 +63,7 @@ Allocation::Ptr Memory::allocate(uint32_t size)
     MemoryAccess *memAccess = this;
     Allocation::Ptr alloc = std::make_unique<Allocation>(memAccess, FIRST_USABLE_ADDRESS + byteOffset);
     _allocLen[alloc.get()] = byteSize;
-    return std::move(alloc);
+    return alloc;
 }
 
 MemoryView Memory::getView(uint32_t address) noexcept

@@ -42,7 +42,7 @@ Ast::Ptr AstBuilder::buildAst()
 
     internal::TreeConverter converter(std::move(_moduleContext));
     Ast::Ptr ast = converter.convertTree(_parseContext.get());
-    return std::move(ast);
+    return ast;
 }
 
 

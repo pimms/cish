@@ -37,8 +37,8 @@ Exception::Exception(std::string file, std::string func, int line, const char *f
 
 Exception::Exception(): _what("") { }
 Exception::Exception(const Exception &o):
-    _what(o._what),
     _type(o._type),
+    _what(o._what),
     _userMessage(o._userMessage)
 { }
 

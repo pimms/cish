@@ -15,7 +15,7 @@ Ast::Ptr buildAst(const std::string &source)
 {
     ParseContext::Ptr parseContext = ParseContext::parseSource(source);
     AstBuilder builder(parseContext, ModuleContext::create());
-    return std::move(builder.buildAst());
+    return builder.buildAst();
 }
 
 TEST(AstBuilderTest, simpleGlobalVariable)

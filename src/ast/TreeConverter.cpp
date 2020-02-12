@@ -557,8 +557,6 @@ antlrcpp::Any TreeConverter::visitAssignment(CMParser::AssignmentContext *ctx)
 
 antlrcpp::Any TreeConverter::visitVariableDeclaration(CMParser::VariableDeclarationContext *ctx)
 {
-    CMParser::TypeIdentifierContext *typeContext = ctx->typeIdentifier();
-
     const TypeDecl type = visitTypeIdentifier(ctx->typeIdentifier()).as<TypeDecl>();;
     const std::string varName = ctx->identifier()->getText();
 

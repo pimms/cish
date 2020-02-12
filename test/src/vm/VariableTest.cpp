@@ -19,9 +19,9 @@ TEST(VariableTest, getAllocationDoesNotThrow)
 {
     Memory memory(100, 1);
 
-    ASSERT_NO_THROW(Variable(TypeDecl::INT, std::move(memory.allocate(4))));
-    ASSERT_NO_THROW(Variable(TypeDecl::INT, std::move(memory.allocate(5))));
-    ASSERT_NO_THROW(Variable(TypeDecl::INT, std::move(memory.allocate(50))));
+    ASSERT_NO_THROW(Variable(TypeDecl::INT, memory.allocate(4)));
+    ASSERT_NO_THROW(Variable(TypeDecl::INT, memory.allocate(5)));
+    ASSERT_NO_THROW(Variable(TypeDecl::INT, memory.allocate(50)));
 }
 
 TEST(VariableTest, heapOffsetIsInherited)

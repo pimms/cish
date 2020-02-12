@@ -75,7 +75,6 @@ ExpressionValue Memchr::execute(vm::ExecutionContext *context, FuncParams params
     const TypeDecl type = TypeDecl::getPointer(TypeDecl::VOID);
 
     int index = 0;
-    bool found = false;
     while (index < maxLength) {
         if (buffer.read<uint8_t>(index) == needle) {
             return ExpressionValue(type, haystackAddress + index);

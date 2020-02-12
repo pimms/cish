@@ -89,7 +89,7 @@ ModuleContext::Ptr singletonModuleContext(std::string name, Callable::Ptr func)
     ModuleContext::Ptr moduleContext = ModuleContext::create();
     moduleContext->addModule(module);
 
-    return std::move(moduleContext);
+    return moduleContext;
 }
 
 
