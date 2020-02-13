@@ -1,4 +1,5 @@
 build/
+make/
 .vscode/
 .idea/
 src/ast/antlr

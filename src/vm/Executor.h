@@ -3,6 +3,8 @@
 #include "ExecutionContext.h"
 #include "../ast/Ast.h"
 
+#include <vector>
+#include <string>
 
 namespace cish
 {
@@ -15,7 +17,7 @@ class Memory;
 class Executor: public ExecutionContext, public ExecutionThread
 {
 public:
-    Executor(Memory *memory, ast::Ast::Ptr ast);
+    Executor(Memory *memory, ast::Ast::Ptr ast, std::vector<std::string> args);
     ~Executor();
 
     // From ExecutionContext
@@ -29,8 +31,11 @@ protected:
     virtual void execute() override;
 
 private:
+    std::vector<ast::ExpressionValue> prepareMainArguments(const Callable::Ptr main) const;
+
     ast::Ast::Ptr _ast;
     ast::ExpressionValue _exitStatus;
+    std::vector<std::string> _args;
     bool _hasTerminated;
 };
 

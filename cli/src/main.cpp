@@ -12,11 +12,15 @@
 #include <iostream>
 #include <functional>
 #include <unistd.h>
+#include <vector>
 
 struct CliArgs {
     uint32_t memorySize;
     uint32_t allocationSize;
     std::string fileName;
+
+    // Command line arguments to pass to the VM
+    std::vector<std::string> args;
 };
 
 bool doTry(std::function<void(void)> f) {
@@ -134,12 +138,14 @@ int main(int argc, char **argv)
     if (optind == argc) {
         fprintf(stderr, "Missing source file to execute\n");
         exit(1);
-    } else if (argc > optind + 1) {
-        fprintf(stderr, "Too many parameters given\n");
-        exit(1);
     }
 
     args.fileName = argv[optind];
+
+    for (int i=optind+1; i<argc; i++) {
+        fprintf(stderr, "argv: %s\n", argv[i]);
+        args.args.push_back(argv[i]);
+    }
 
     int retval = execute(args);
 

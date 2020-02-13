@@ -13,7 +13,7 @@ namespace vm
 
 VirtualMachine::VirtualMachine(const VmOptions &opts, Ast::Ptr ast):
     _memory(new Memory(opts.heapSize, opts.minAllocSize)),
-    _executor(new Executor(_memory, ast)),
+    _executor(new Executor(_memory, ast, opts.args)),
     _started(false)
 {
 }

@@ -27,6 +27,8 @@ struct VmOptions
     // attempt of a lower amount of bytes will result in al allocation
     // of 'minAllocSize' bytes.
     uint32_t minAllocSize;
+
+    std::vector<std::string> args;
 };
 
 
