@@ -41,7 +41,7 @@ public:
     virtual ~ExecutionContext();
 
     /**
-     * Copies all stirngs from the StringTable into the Memory-memoryspace
+     * Copies all strings from the StringTable into the Memory-memoryspace
      * and makes the strings resolvable. This method should be called exactly
      * once.
      */

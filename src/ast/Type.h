@@ -20,7 +20,7 @@ public:
     enum Type
     {
         // Note: the order here is vital, as expressions of different types
-        // must be casted to the type of the highest Type-value.
+        // must be cast to the type of the highest Type-value.
         VOID,
         BOOL,
         CHAR,
