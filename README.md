@@ -23,8 +23,9 @@ be a valid C source file.
 
 ### Building
 
-Antlr 4 must be installed on your system. Via Homebrew I've installed `antlr`
-and `antlr4-cpp-runtime`, I'm not sure if both are needed.
+Antlr and the Antlr Runtime must be installed on your system. 
+
+    brew install antlr antlr4-cpp-runtime
 
     mkdir build
     cd build
