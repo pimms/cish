@@ -24,6 +24,15 @@ const Module::Ptr ModuleContext::getModule(const std::string &name) const
     return _modules.at(name);
 }
 
+const std::vector<Module::Ptr> ModuleContext::getModules() const
+{
+    std::vector<Module::Ptr> modules;
+    for (auto pair: _modules) {
+        modules.push_back(pair.second);
+    }
+    return modules;
+}
+
 
 }
 }
