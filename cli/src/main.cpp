@@ -70,6 +70,10 @@ int execute(CliArgs args)
     cish::vm::VmOptions opts;
     opts.heapSize = args.memorySize;
     opts.minAllocSize = 4;
+    opts.args.push_back(args.fileName);
+    for (auto a: args.args) {
+        opts.args.push_back(a);
+    }
 
     cish::vm::VirtualMachine vm(opts, std::move(ast));
     vm.executeBlocking();
@@ -127,7 +131,7 @@ int main(int argc, char **argv)
                     fprintf(stderr, "Option -%c requires an argument.\n", optopt);
                 else if (isprint (optopt))
                     fprintf(stderr, "Unknown option `-%c'.\n", optopt);
-                else 
+                else
                     fprintf(stderr, "Unknown option character `\\x%x'.\n", optopt);
                 return 1;
             default:
@@ -143,7 +147,6 @@ int main(int argc, char **argv)
     args.fileName = argv[optind];
 
     for (int i=optind+1; i<argc; i++) {
-        fprintf(stderr, "argv: %s\n", argv[i]);
         args.args.push_back(argv[i]);
     }
 

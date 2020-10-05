@@ -17,8 +17,10 @@ class Memory;
 class Executor: public ExecutionContext, public ExecutionThread
 {
 public:
-    Executor(Memory *memory, ast::Ast::Ptr ast, std::vector<std::string> args);
+    Executor(Memory *memory, ast::Ast::Ptr ast);
     ~Executor();
+
+    void setCliArgs(const std::vector<ast::ExpressionValue> &args);
 
     // From ExecutionContext
     virtual void onStatementEnter(const ast::Statement *statement) override;
@@ -35,7 +37,7 @@ private:
 
     ast::Ast::Ptr _ast;
     ast::ExpressionValue _exitStatus;
-    std::vector<std::string> _args;
+    std::vector<ast::ExpressionValue> _cliArgs;
     bool _hasTerminated;
 };
 

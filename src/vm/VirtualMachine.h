@@ -68,6 +68,12 @@ private:
     Memory *_memory;
     Executor *_executor;
     bool _started;
+
+    // We need to hold a reference to the allocated CLI parameters.
+    Allocation::Ptr _argvBuffer;
+    std::vector<Allocation::Ptr> _argvElements;
+
+    std::vector<ast::ExpressionValue> prepareCliArguments(std::vector<std::string> args);
 };
 
 

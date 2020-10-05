@@ -1,7 +1,7 @@
 // cish_cli -m 1000000
 #include <stdio.h>
 #include <stdlib.h>
- 
+
 void swap(int *x,int *y);
 int choose_pivot(int i,int j );
 void quicksort(int *list,int m,int n);
@@ -10,24 +10,24 @@ int prng();
 
 int main()
 {
-    const int SIZE = 50000;
+    const int SIZE = 5000;
     int *list = (int*)malloc(sizeof(int) * SIZE);
- 
+
     int i = 0;
- 
+
     for(i = 0; i < SIZE; i++ )
         list[i] = prng();
- 
+
     printf("The list before sorting is:\n");
     display(list, SIZE);
- 
+
     quicksort(list, 0, SIZE-1);
- 
+
     printf("\n\nThe list after sorting:\n");
     display(list, SIZE);
     return 0;
 }
- 
+
 void swap(int *x, int *y)
 {
     int temp;
@@ -35,12 +35,12 @@ void swap(int *x, int *y)
     *x = *y;
     *y = temp;
 }
- 
+
 int choose_pivot(int i,int j )
 {
     return ((i+j) / 2);
 }
- 
+
 void quicksort(int *list,int m,int n)
 {
     if (m < n) {
@@ -59,7 +59,7 @@ void quicksort(int *list,int m,int n)
         }
 
         swap(&list[m], &list[j]);
- 
+
         quicksort(list,m,j-1);
         quicksort(list,j+1,n);
     }
@@ -79,4 +79,4 @@ int prng()
     g_next %= 3173;
     return g_next;
 }
- 
+
