@@ -59,7 +59,6 @@ comparison tests. Note that `cish_cli` must be on the system path for the
 - Literal arrays
 - Break & continue
 - Enums
-- Main does not support command-line arguments
 
 # Technical Details
 
