@@ -49,7 +49,8 @@ ever break something, no matter how trivial, it breaks at least one of the many
 tests.
 
 `make check` runs the unit-tests, and `gcc_compare/compare.sh` runs the gcc
-comparison tests.
+comparison tests. Note that `cish_cli` must be on the system path for the
+`compare.sh` script to run properly. Most easily achieved by `make install`.
 
 ### Major missing features:
 
