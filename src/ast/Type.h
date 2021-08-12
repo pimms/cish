@@ -20,7 +20,11 @@ public:
     enum Type
     {
         // Note: the order here is vital, as expressions of different types
-        // must be cast to the type of the highest Type-value.
+        // must be cast to the type of the highest Type-value when binary
+        // operations/operands are applied.
+        //
+        // A comparison between a bool and a float requires that the
+        // boolean expression is cast to float, for instance.
         VOID,
         BOOL,
         CHAR,
