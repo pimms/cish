@@ -8,15 +8,30 @@ term() {
 }
 
 compare_file() {
+    file=$1
+    time=$2
+
+    if [ $time == true ]; then
+        timecmd="time"
+    fi
+
     gcc -w "$file" -o $GCCDIR/a.out || term "failed to compile '$file'"
 
+    # -- GCC
     CLI_ARGS=$(cat $file | grep -e "//\s*args" | sed -e "s/\/\/.*args//")
 
-    GCC_OUT=$($GCCDIR/a.out $CLI_ARGS)
+    if [ $time == true ]; then
+        echo -n "gcc: "
+    fi
+    GCC_OUT=$($timecmd $GCCDIR/a.out $CLI_ARGS)
     GCC_CODE=$?
 
+    # -- CISH
     CISH_ARGS=$(cat $file | grep -e "//\s*cish_cli" | sed -e "s/\/\/.*cish_cli//")
-    CISH_OUT=$(cish_cli $CISH_ARGS $file $CLI_ARGS)
+    if [ $time == true ]; then
+        echo -n "cish:"
+    fi
+    CISH_OUT=$($timecmd cish_cli $CISH_ARGS $file $CLI_ARGS)
     CISH_CODE=$?
 
     EMSG=""
@@ -51,11 +66,11 @@ mkdir -p $GCCDIR
 if [ "$#" -eq 0 ]; then
     while read file
     do
-        compare_file $file
+        compare_file $file false
     done < <(ls $DIR/*.c)
 else
     for file in "$@"
     do
-        compare_file $file
+        compare_file $file true
     done
 fi
