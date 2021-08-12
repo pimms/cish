@@ -117,11 +117,9 @@ int main(int argc, char **argv)
         switch (c) {
             case 'a':
                 args.allocationSize = parseIntArg(optopt, optarg);
-                fprintf(stderr, "[custom allocation size] %d\n", args.allocationSize);
                 break;
             case 'm':
                 args.memorySize = parseIntArg(optopt, optarg);
-                fprintf(stderr, "[custom memory size] %d\n", args.memorySize);
                 break;
             case 'h':
                 haltAfterExec = true;

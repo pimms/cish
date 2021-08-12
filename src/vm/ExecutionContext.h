@@ -42,7 +42,7 @@ public:
 
     /**
      * Copies all strings from the StringTable into the Memory-memoryspace
-     * and makes the strings resolvable. This method should be called exactly
+     * and makes the strings resolvable. This method must be called exactly
      * once.
      */
     void copyStringTable(const ast::StringTable *stringTable);
