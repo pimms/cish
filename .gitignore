@@ -8,3 +8,5 @@ grammar/tmp/
 .DS_Store
 gcc_compare/.tmp/
 a.out
+.cache/
+compile_commands.json
