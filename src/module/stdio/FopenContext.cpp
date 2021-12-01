@@ -39,6 +39,16 @@ int FopenContext::fclose(int32_t handle)
     return res;
 }
 
+int FopenContext::fgetc(int32_t handle)
+{
+    if (_files.count(handle) == 0) {
+        return EOF;
+    }
+
+    FILE *file = _files[handle];
+    return ::fgetc(file);
+}
+
 
 }
 }

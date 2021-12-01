@@ -26,6 +26,7 @@ Module::Ptr buildModule()
     module->addFunction(Function::Ptr(new impl::Printf()));
     module->addFunction(Function::Ptr(new impl::Fopen(fopenContext)));
     module->addFunction(Function::Ptr(new impl::Fclose(fopenContext)));
+    module->addFunction(Function::Ptr(new impl::Fgetc(fopenContext)));
     return module;
 }
 
@@ -269,6 +270,39 @@ ast::ExpressionValue Fclose::execute(vm::ExecutionContext *context, FuncParams p
 {
     const int32_t handle = params[0].get<int32_t>();
     const int result = _fopenContext->fclose(handle);
+    return ast::ExpressionValue(TypeDecl::INT, result);
+}
+
+
+/*
+==================
+int fgetc(FILE *file)
+==================
+*/
+ast::FuncDeclaration Fgetc::getSignature()
+{
+    return ast::FuncDeclaration(
+        TypeDecl::INT,
+        "fgetc",
+        {
+            VarDeclaration {
+                TypeDecl::getPointer(TypeDecl::INT),
+                "file"
+            }
+        }
+    );
+}
+
+Fgetc::Fgetc(FopenContext::Ptr fopenContext):
+    Function(getSignature()),
+    _fopenContext(fopenContext)
+{
+}
+
+ast::ExpressionValue Fgetc::execute(vm::ExecutionContext *context, FuncParams params, vm::Variable*) const
+{
+    const int32_t handle = params[0].get<int32_t>();
+    const int result = _fopenContext->fgetc(handle);
     return ast::ExpressionValue(TypeDecl::INT, result);
 }
 
