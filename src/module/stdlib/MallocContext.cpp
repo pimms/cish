@@ -1,6 +1,4 @@
 #include "MallocContext.h"
-#include "stdlibModule.h"
-
 
 namespace cish
 {
@@ -10,12 +8,11 @@ namespace stdlib
 {
 
 
-
 void MallocContext::onAllocation(vm::Allocation::Ptr alloc)
 {
     const uint32_t addr = alloc->getAddress();
     if (_allocations.count(addr) != 0) {
-        Throw(StdlibException, "address %x already allocated", addr);
+        Throw(MallocContextException, "address %x already allocated", addr);
     }
 
     _allocations[addr] = std::move(alloc);

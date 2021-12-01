@@ -1,5 +1,6 @@
 build/
 make/
+xcode/
 .vscode/
 .idea/
 src/ast/antlr

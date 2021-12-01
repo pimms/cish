@@ -13,6 +13,7 @@ namespace module
 namespace stdlib
 {
 
+DECLARE_EXCEPTION(MallocContextException);
 
 class MallocContext
 {

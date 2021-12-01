@@ -14,12 +14,18 @@ namespace stdio
 {
 
 
+using ast::TypeDecl;
+
 
 Module::Ptr buildModule()
 {
+    FopenContext::Ptr fopenContext = FopenContext::Ptr(new FopenContext());
+
     Module::Ptr module = Module::create("stdio.h");
     module->addFunction(Function::Ptr(new impl::Puts()));
     module->addFunction(Function::Ptr(new impl::Printf()));
+    module->addFunction(Function::Ptr(new impl::Fopen(fopenContext)));
+    module->addFunction(Function::Ptr(new impl::Fclose(fopenContext)));
     return module;
 }
 
@@ -29,7 +35,6 @@ namespace impl
 
 
 using ast::FuncDeclaration;
-using ast::TypeDecl;
 using ast::VarDeclaration;
 using ast::ExpressionValue;
 using vm::MemoryView;
@@ -179,7 +184,97 @@ ast::ExpressionValue Printf::execute(vm::ExecutionContext *context,
 }
 
 
+/*
+==================
+FILE* fopen(const char *path, const char *mode)
+==================
+*/
+ast::FuncDeclaration Fopen::getSignature()
+{
+    return FuncDeclaration(
+        TypeDecl::getPointer(TypeDecl::INT),
+        "fopen",
+        {
+            VarDeclaration{
+                TypeDecl::getPointer(TypeDecl::getConst(TypeDecl::CHAR)),
+                "path"
+            },
+            VarDeclaration{
+                TypeDecl::getPointer(TypeDecl::getConst(TypeDecl::CHAR)),
+                "mode"
+            },
+        }
+    );
 }
+
+Fopen::Fopen(FopenContext::Ptr fopenContext):
+    Function(getSignature()),
+    _fopenContext(fopenContext)
+{
+
+}
+
+ast::ExpressionValue Fopen::execute(vm::ExecutionContext *context, FuncParams params, vm::Variable*) const
+{
+    // Read path
+    uint32_t addr = params[0].get<uint32_t>();
+    MemoryView view = context->getMemory()->getView(addr);
+    std::vector<char> path;
+    utils::readString(view, path);
+
+    // Read mode
+    addr = params[1].get<uint32_t>();
+    view = context->getMemory()->getView(addr);
+    std::vector<char> mode;
+    utils::readString(view, mode);
+
+    int32_t handle = _fopenContext->fopen(path.data(), mode.data());
+
+    TypeDecl returnType = TypeDecl::getPointer(TypeDecl::INT);
+
+    if (handle) {
+        return ast::ExpressionValue(returnType, handle);
+    } else {
+        return ast::ExpressionValue(returnType, 0);
+    }
+}
+
+
+/*
+==================
+int fclose(FILE *file)
+==================
+*/
+ast::FuncDeclaration Fclose::getSignature()
+{
+    return ast::FuncDeclaration(
+        TypeDecl::INT,
+        "fclose",
+        {
+            VarDeclaration {
+                TypeDecl::getPointer(TypeDecl::INT),
+                "file"
+            }
+        }
+    );
+}
+
+Fclose::Fclose(FopenContext::Ptr fopenContext):
+    Function(getSignature()),
+    _fopenContext(fopenContext)
+{
+}
+
+ast::ExpressionValue Fclose::execute(vm::ExecutionContext *context, FuncParams params, vm::Variable*) const
+{
+    const int32_t handle = params[0].get<int32_t>();
+    const int result = _fopenContext->fclose(handle);
+    return ast::ExpressionValue(TypeDecl::INT, result);
+}
+
+
+}
+
 }
 }
 }
