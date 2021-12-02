@@ -5,7 +5,7 @@ Yet another (mostly) functional C interpreter.
 I wrote this to use as the central component of a game centered around
 programming low-level devices, similar to "Shenzen I/O" and "TIS-100", but
 realized after beginning on the actual "game part" of the game that I
-**really** don't like Unity or C#.
+don't really like Unity or C#.
 
 Now I don't know what to do with it.
 
@@ -58,7 +58,12 @@ comparison tests. Note that `cish_cli` must be on the system path for the
 - Switch-statements
 - Literal arrays
 - Break & continue
-- Enums
+- `enum`
+- `typedef`
+- Preprocessor macro
+- Library-defined global variables _(`EOF`, `stdout`, `errno`, etc)_
+- Ternary expressions
+- Performance :turtle:
 
 # Technical Details
 
