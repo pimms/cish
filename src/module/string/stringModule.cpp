@@ -360,7 +360,7 @@ char *strchr(const char *str, int character)
 ast::FuncDeclaration Strchr::getSignature()
 {
     return FuncDeclaration(
-        TypeDecl::getPointer(TypeDecl::getConst(TypeDecl::CHAR)),
+        TypeDecl::getPointer(TypeDecl::CHAR),
         "strchr",
         {
             {
@@ -413,7 +413,7 @@ char *strstr(const char *haystack, const char *needle)
 ast::FuncDeclaration Strstr::getSignature()
 {
     return FuncDeclaration(
-        TypeDecl::getPointer(TypeDecl::getConst(TypeDecl::CHAR)),
+        TypeDecl::getPointer(TypeDecl::CHAR),
         "strstr",
         {
             {
