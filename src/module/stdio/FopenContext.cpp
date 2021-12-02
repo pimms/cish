@@ -49,6 +49,24 @@ int FopenContext::fgetc(int32_t handle)
     return ::fgetc(file);
 }
 
+bool FopenContext::fgets(std::string *result, int32_t size, uint32_t handle)
+{
+    if (_files.count(handle) == 0) {
+        return false;
+    }
+
+    FILE *file = _files[handle];
+
+    std::vector<char> buffer;
+    buffer.resize(size);
+
+    if (::fgets(buffer.data(), size, file) == NULL) {
+        return false;
+    }
+
+    *result = std::string(buffer.data());
+    return true;
+}
 
 }
 }

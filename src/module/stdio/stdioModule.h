@@ -97,6 +97,21 @@ private:
     FopenContext::Ptr _fopenContext;
 };
 
+class Fgets: public Function
+{
+public:
+    static ast::FuncDeclaration getSignature();
+
+    Fgets(FopenContext::Ptr fopenContext);
+
+    ast::ExpressionValue execute(vm::ExecutionContext *context,
+                                 FuncParams params,
+                                 vm::Variable*) const override;
+
+private:
+    FopenContext::Ptr _fopenContext;
+};
+
 
 }
 }

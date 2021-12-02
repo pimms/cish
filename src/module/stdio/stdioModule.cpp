@@ -27,6 +27,7 @@ Module::Ptr buildModule()
     module->addFunction(Function::Ptr(new impl::Fopen(fopenContext)));
     module->addFunction(Function::Ptr(new impl::Fclose(fopenContext)));
     module->addFunction(Function::Ptr(new impl::Fgetc(fopenContext)));
+    module->addFunction(Function::Ptr(new impl::Fgets(fopenContext)));
     return module;
 }
 
@@ -304,6 +305,58 @@ ast::ExpressionValue Fgetc::execute(vm::ExecutionContext *context, FuncParams pa
     const int32_t handle = params[0].get<int32_t>();
     const int result = _fopenContext->fgetc(handle);
     return ast::ExpressionValue(TypeDecl::INT, result);
+}
+
+
+/*
+==================
+char* fgets(char *str, int size, FILE *file)
+==================
+*/
+ast::FuncDeclaration Fgets::getSignature()
+{
+    return ast::FuncDeclaration(
+        TypeDecl::getPointer(TypeDecl::CHAR),
+        "fgets",
+        {
+            VarDeclaration {
+                TypeDecl::getPointer(TypeDecl::CHAR),
+                "str"
+            },
+            VarDeclaration {
+                TypeDecl::INT,
+                "size"
+            },
+            VarDeclaration {
+                TypeDecl::getPointer(TypeDecl::INT),
+                "file"
+            }
+        }
+    );
+}
+
+Fgets::Fgets(FopenContext::Ptr fopenContext):
+    Function(getSignature()),
+    _fopenContext(fopenContext)
+{
+}
+
+ast::ExpressionValue Fgets::execute(vm::ExecutionContext *context, FuncParams params, vm::Variable*) const
+{
+    const uint32_t strAddr = params[0].get<uint32_t>();
+    const int32_t strSize = params[1].get<int32_t>();
+    const int32_t fileHandle = params[2].get<int32_t>();
+
+    std::string result;
+    if (!_fopenContext->fgets(&result, strSize, fileHandle)) {
+        return ast::ExpressionValue(TypeDecl::getPointer(TypeDecl::CHAR), 0);
+    }
+
+    // TODO: Write the result string to 'strAddr'
+    vm::MemoryView strView = context->getMemory()->getView(strAddr);
+    strView.writeBuf(result.data(), result.size() + 1);
+
+    return ast::ExpressionValue(TypeDecl::getPointer(TypeDecl::CHAR), strAddr);
 }
 
 

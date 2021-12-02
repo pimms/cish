@@ -22,6 +22,7 @@ public:
     FopenContext();
     int32_t fopen(const char *path, const  char *mode);
     int fgetc(int32_t handle);
+    bool fgets(std::string *result, int32_t size, uint32_t handle);
 
     int fclose(int32_t handle);
 
