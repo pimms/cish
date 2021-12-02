@@ -1,5 +1,6 @@
 #include "stringModule.h"
 #include "../../vm/ExecutionContext.h"
+#include "../Utils.h"
 
 
 namespace cish
@@ -23,6 +24,7 @@ Module::Ptr buildModule()
     module->addFunction(std::make_shared<impl::Strcat>());
     module->addFunction(std::make_shared<impl::Strncat>());
     module->addFunction(std::make_shared<impl::Strchr>());
+    module->addFunction(std::make_shared<impl::Strstr>());
     module->addFunction(std::make_shared<impl::Strcmp>());
     module->addFunction(std::make_shared<impl::Strncmp>());
     module->addFunction(std::make_shared<impl::Strcpy>());
@@ -400,6 +402,55 @@ ast::ExpressionValue Strchr::execute(vm::ExecutionContext *context,
     }
 
     return ExpressionValue(TypeDecl::getPointer(TypeDecl::getConst(TypeDecl::CHAR)), result);
+}
+
+
+/*
+==================
+char *strstr(const char *haystack, const char *needle)
+==================
+*/
+ast::FuncDeclaration Strstr::getSignature()
+{
+    return FuncDeclaration(
+        TypeDecl::getPointer(TypeDecl::getConst(TypeDecl::CHAR)),
+        "strstr",
+        {
+            {
+                TypeDecl::getPointer(TypeDecl::getConst(TypeDecl::CHAR)),
+                "haystack"
+            },
+            {
+                TypeDecl::getPointer(TypeDecl::getConst(TypeDecl::CHAR)),
+                "needle"
+            }
+        }
+    );
+}
+
+Strstr::Strstr(): Function(getSignature()) { }
+
+ast::ExpressionValue Strstr::execute(vm::ExecutionContext *context,
+                                     FuncParams params,
+                                     vm::Variable*) const
+{
+    const uint32_t haddr = params[0].get<uint32_t>();
+    const uint32_t naddr = params[1].get<uint32_t>();
+
+    vm::MemoryView hview = context->getMemory()->getView(haddr);
+    vm::MemoryView nview = context->getMemory()->getView(naddr);
+
+    std::vector<char> haystack, needle;
+    utils::readString(hview, haystack);
+    utils::readString(nview, needle);
+
+    char *result = strstr(haystack.data(), needle.data());
+    if (result == nullptr) {
+        return ast::ExpressionValue(TypeDecl::getPointer(TypeDecl::CHAR), 0);
+    }
+
+    const uint32_t offset = (uint32_t)(result - haystack.data());
+    return ast::ExpressionValue(TypeDecl::getPointer(TypeDecl::CHAR), haddr + offset);
 }
 
 

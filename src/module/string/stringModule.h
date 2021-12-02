@@ -16,7 +16,6 @@ namespace string
  *  - strpbrk
  *  - strrchr
  *  - strspn
- *  - strstr
  *  - strtok
  *
  *  Functions that won't be implemented:
@@ -142,6 +141,21 @@ public:
                                  vm::Variable*) const override;
 };
 
+
+/*
+==================
+char *strstr(const char *haystack, const char *needle)
+==================
+*/
+class Strstr: public Function
+{
+public:
+    static ast::FuncDeclaration getSignature();
+    Strstr();
+    ast::ExpressionValue execute(vm::ExecutionContext *context,
+                                 FuncParams params,
+                                 vm::Variable*) const override;
+};
 
 /*
 ==================
