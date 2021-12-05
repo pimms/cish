@@ -129,7 +129,6 @@ T safe_mod(T a, T b)
 
 }
 
-
 class BinaryExpression: public Expression
 {
 public:
@@ -176,51 +175,69 @@ private:
     void pointerSpecificChecks();
     void floatSpecificChecks();
 
+    uint32_t evalPointerOperator(uint32_t left, uint32_t right) const;
+
     template<typename T>
     ExpressionValue evaluateT(vm::ExecutionContext *ctx) const;
 
     ExpressionValue evaluatePtrT(vm::ExecutionContext *ctx) const;
 
     template<typename T>
-    T evalOperator(T a, T b) const;
+    T evalWithContext(vm::ExecutionContext *ctx) const;
+
+    template<typename T> T op_multiply(vm::ExecutionContext *ctx) const;
+    template<typename T> T op_safe_div(vm::ExecutionContext *ctx) const;
+    template<typename T> T op_plus(vm::ExecutionContext *ctx) const;
+    template<typename T> T op_minus(vm::ExecutionContext *ctx) const;
+    template<typename T> T op_bitwiseAnd(vm::ExecutionContext *ctx) const;
+    template<typename T> T op_bitwiseXor(vm::ExecutionContext *ctx) const;
+    template<typename T> T op_bitwiseOr(vm::ExecutionContext *ctx) const;
+    template<typename T> T op_lshift(vm::ExecutionContext *ctx) const;
+    template<typename T> T op_rshift(vm::ExecutionContext *ctx) const;
+    template<typename T> T op_greater(vm::ExecutionContext *ctx) const;
+    template<typename T> T op_less(vm::ExecutionContext *ctx) const;
+    template<typename T> T op_greaterEqual(vm::ExecutionContext *ctx) const;
+    template<typename T> T op_lessEqual(vm::ExecutionContext *ctx) const;
+    template<typename T> T op_equalTo(vm::ExecutionContext *ctx) const;
+    template<typename T> T op_notEqual(vm::ExecutionContext *ctx) const;
+    template<typename T> T op_logicalAnd(vm::ExecutionContext *ctx) const;
+    template<typename T> T op_logicalOr(vm::ExecutionContext *ctx) const;
+    template<typename T> T op_safe_mod(vm::ExecutionContext *ctx) const;
 };
 
 template<typename T>
 ExpressionValue BinaryExpression::evaluateT(vm::ExecutionContext *ctx) const
 {
-    ExpressionValue lval = _left->evaluate(ctx);
-    ExpressionValue rval = _right->evaluate(ctx);
-
     if (_operator >= __BOOLEAN_BOUNDARY) {
-        const bool value = evalOperator(lval.get<T>(), rval.get<T>());
+        const bool value = evalWithContext<T>(ctx);
         return ExpressionValue(TypeDecl(TypeDecl::Type::BOOL), value);
     } else {
-        const T value = evalOperator(lval.get<T>(), rval.get<T>());
+        const T value = evalWithContext<T>(ctx);
         return ExpressionValue(TypeDecl::getFromNative<T>(), value);
     }
 }
 
 template<typename T>
-T BinaryExpression::evalOperator(T a, T b) const
+T BinaryExpression::evalWithContext(vm::ExecutionContext *ctx) const
 {
     switch (_operator) {
-        case MULTIPLY:      return internal::multiply<T>(a, b);
-        case DIVIDE:        return internal::safe_div<T>(a, b);
-        case PLUS:          return internal::plus<T>(a, b);
-        case MINUS:         return internal::minus<T>(a, b);
-        case BITWISE_AND:   return internal::bitwiseAnd<int32_t>(a, b);
-        case BITWISE_XOR:   return internal::bitwiseXor<int32_t>(a, b);
-        case BITWISE_OR:    return internal::bitwiseOr<int32_t>(a, b);
-        case BITWISE_LSHIFT:return internal::lshift<int32_t>(a, b);
-        case BITWISE_RSHIFT:return internal::rshift<int32_t>(a, b);
-        case GT:            return internal::greater<T>(a, b);
-        case LT:            return internal::less<T>(a, b);
-        case GTE:           return internal::greaterEqual<T>(a, b);
-        case LTE:           return internal::lessEqual<T>(a, b);
-        case EQ:            return internal::equalTo<T>(a, b);
-        case NE:            return internal::notEqual<T>(a, b);
-        case LOGICAL_AND:   return internal::logicalAnd<T>(a, b);
-        case LOGICAL_OR:    return internal::logicalOr<T>(a, b);
+        case MULTIPLY:      return op_multiply<T>(ctx);
+        case DIVIDE:        return op_safe_div<T>(ctx);
+        case PLUS:          return op_plus<T>(ctx);
+        case MINUS:         return op_minus<T>(ctx);
+        case BITWISE_AND:   return op_bitwiseAnd<int32_t>(ctx);
+        case BITWISE_XOR:   return op_bitwiseXor<int32_t>(ctx);
+        case BITWISE_OR:    return op_bitwiseOr<int32_t>(ctx);
+        case BITWISE_LSHIFT:return op_lshift<int32_t>(ctx);
+        case BITWISE_RSHIFT:return op_rshift<int32_t>(ctx);
+        case GT:            return op_greater<T>(ctx);
+        case LT:            return op_less<T>(ctx);
+        case GTE:           return op_greaterEqual<T>(ctx);
+        case LTE:           return op_lessEqual<T>(ctx);
+        case EQ:            return op_equalTo<T>(ctx);
+        case NE:            return op_notEqual<T>(ctx);
+        case LOGICAL_AND:   return op_logicalAnd<T>(ctx);
+        case LOGICAL_OR:    return op_logicalOr<T>(ctx);
 
         case MODULO: break; /* Explicitly handled below */
     }
@@ -230,11 +247,170 @@ T BinaryExpression::evalOperator(T a, T b) const
             // TODO: Make this a VM runtime error
             throw std::runtime_error("Modulo attempted on floating point number");
         } else {
-            return internal::safe_mod<T>(a, b);
+            return op_safe_mod<T>(ctx);
         }
     }
 
     throw std::runtime_error("Operator unhandled: " + std::to_string(_operator));
+}
+
+
+template<typename T>
+T BinaryExpression::op_multiply(vm::ExecutionContext *ctx) const
+{
+    T a = _left->evaluate(ctx).get<T>();
+    T b = _right->evaluate(ctx).get<T>();
+    return a * b;
+}
+
+template<typename T>
+T BinaryExpression::op_safe_div(vm::ExecutionContext *ctx) const
+{
+    T a = _left->evaluate(ctx).get<T>();
+    T b = _right->evaluate(ctx).get<T>();
+    if (b == 0) {
+        Throw(DivisionByZeroException, "Division by zero");
+    }
+    return a / b;
+}
+
+template<typename T>
+T BinaryExpression::op_plus(vm::ExecutionContext *ctx) const
+{
+    T a = _left->evaluate(ctx).get<T>();
+    T b = _right->evaluate(ctx).get<T>();
+    return a + b;
+}
+
+template<typename T>
+T BinaryExpression::op_minus(vm::ExecutionContext *ctx) const
+{
+    T a = _left->evaluate(ctx).get<T>();
+    T b = _right->evaluate(ctx).get<T>();
+    return a - b;
+}
+
+template<typename T>
+T BinaryExpression::op_bitwiseAnd(vm::ExecutionContext *ctx) const
+{
+    T a = _left->evaluate(ctx).get<T>();
+    T b = _right->evaluate(ctx).get<T>();
+    return a & b;
+}
+
+template<typename T>
+T BinaryExpression::op_bitwiseXor(vm::ExecutionContext *ctx) const
+{
+    T a = _left->evaluate(ctx).get<T>();
+    T b = _right->evaluate(ctx).get<T>();
+    return a ^ b;
+}
+
+template<typename T>
+T BinaryExpression::op_bitwiseOr(vm::ExecutionContext *ctx) const
+{
+    T a = _left->evaluate(ctx).get<T>();
+    T b = _right->evaluate(ctx).get<T>();
+    return a | b;
+}
+
+template<typename T>
+T BinaryExpression::op_lshift(vm::ExecutionContext *ctx) const
+{
+    T a = _left->evaluate(ctx).get<T>();
+    T b = _right->evaluate(ctx).get<T>();
+    return a << b;
+}
+
+template<typename T>
+T BinaryExpression::op_rshift(vm::ExecutionContext *ctx) const
+{
+    T a = _left->evaluate(ctx).get<T>();
+    T b = _right->evaluate(ctx).get<T>();
+    return a >> b;
+}
+
+template<typename T>
+T BinaryExpression::op_greater(vm::ExecutionContext *ctx) const
+{
+    T a = _left->evaluate(ctx).get<T>();
+    T b = _right->evaluate(ctx).get<T>();
+    return a > b;
+}
+
+template<typename T>
+T BinaryExpression::op_less(vm::ExecutionContext *ctx) const
+{
+    T a = _left->evaluate(ctx).get<T>();
+    T b = _right->evaluate(ctx).get<T>();
+    return a < b;
+}
+
+template<typename T>
+T BinaryExpression::op_greaterEqual(vm::ExecutionContext *ctx) const
+{
+    T a = _left->evaluate(ctx).get<T>();
+    T b = _right->evaluate(ctx).get<T>();
+    return a >= b;
+}
+
+template<typename T>
+T BinaryExpression::op_lessEqual(vm::ExecutionContext *ctx) const
+{
+    T a = _left->evaluate(ctx).get<T>();
+    T b = _right->evaluate(ctx).get<T>();
+    return a <= b;
+}
+
+template<typename T>
+T BinaryExpression::op_equalTo(vm::ExecutionContext *ctx) const
+{
+    T a = _left->evaluate(ctx).get<T>();
+    T b = _right->evaluate(ctx).get<T>();
+    return a == b;
+}
+
+template<typename T>
+T BinaryExpression::op_notEqual(vm::ExecutionContext *ctx) const
+{
+    T a = _left->evaluate(ctx).get<T>();
+    T b = _right->evaluate(ctx).get<T>();
+    return a != b;
+}
+
+template<typename T>
+T BinaryExpression::op_logicalAnd(vm::ExecutionContext *ctx) const
+{
+    T a = _left->evaluate(ctx).get<T>();
+    if (a) {
+        T b = _right->evaluate(ctx).get<T>();
+        return b;
+    }
+
+    return T(0);
+}
+
+template<typename T>
+T BinaryExpression::op_logicalOr(vm::ExecutionContext *ctx) const
+{
+    T a = _left->evaluate(ctx).get<T>();
+    if (a) {
+        return T(1);
+    }
+
+    T b = _right->evaluate(ctx).get<T>();
+    return b;
+}
+
+template<typename T>
+T BinaryExpression::op_safe_mod(vm::ExecutionContext *ctx) const
+{
+    T a = _left->evaluate(ctx).get<T>();
+    T b = _right->evaluate(ctx).get<T>();
+    if (b == 0) {
+        Throw(DivisionByZeroException, "Division by zero");
+    }
+    return a % b;
 }
 
 

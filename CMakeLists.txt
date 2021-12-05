@@ -47,14 +47,18 @@ endforeach()
 
 
 # -- Find ANTLR4 runtime -- #
-find_library(ANTLR_LIBRARY NAMES "libantlr4-runtime.a" "antlr4-runtime")
+find_library(ANTLR_LIBRARY
+    HINTS "/opt/homebrew/lib"
+    NAMES "libantlr4-runtime.a" "antlr4-runtime")
 if ("${ANTLR_LIBRARY}" STREQUAL "ANTLR_LIBRARY-NOTFOUND")
     message(SEND_ERROR "Failed to find antlr4-runtime library")
 endif()
 
 # The generated antlr-sources include "antlr4-runtime.h", so we need to find
 # the parent directory and make sure that the root header actually exists.
-find_path(ANTLR_INCLUDE_ROOT_DIR NAMES "antlr4-runtime")
+find_path(ANTLR_INCLUDE_ROOT_DIR
+    HINTS "/opt/homebrew/include"
+    NAMES "antlr4-runtime")
 if ("${ANTLR_INCLUDE_ROOT_DIR}" STREQUAL "ANTLR_INCLUDE_ROOT_DIR-NOTFOUND")
     message(SEND_ERROR "Failed to find antlr4-runtime header directory")
 endif()

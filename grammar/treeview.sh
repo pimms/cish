@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ANTLR_PATH="/usr/local/Cellar/antlr/4.8_1/antlr-4.8-complete.jar"
+ANTLR_PATH="/opt/homebrew/Cellar/antlr/4.9.2/antlr-4.9.2-complete.jar"
 
 if [ ! -f $ANTLR_PATH ]; then
     echo "This script is hard-coded to work on my machine, you need to update it to make it work... :)"

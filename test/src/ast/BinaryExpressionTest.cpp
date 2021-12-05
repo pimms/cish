@@ -29,7 +29,6 @@ static void testTypeFolding()
     ASSERT_EQ(TypeDecl::getFromNative<ResT>(), expr.getType());
 }
 
-
 TEST(BinaryExpressionTest, type_folding)
 {
     // Could probably be shortened quite a bit, but this way
@@ -98,8 +97,6 @@ TEST(BinaryExpressionTest, type_folding)
 }
 
 
-
-
 template<typename LHST, typename RHST, typename ResT>
 static void testBinaryExpr(BinaryExpression::Operator op, LHST lval, RHST rval, ResT expected)
 {
@@ -119,7 +116,6 @@ static void testBinaryExpr(BinaryExpression::Operator op, LHST lval, RHST rval, 
         ASSERT_EQ(expected, result.get<ResT>());
     }
 }
-
 
 template<typename LHST, typename RHST, typename ResT>
 static void testArithmeticOperators()
@@ -524,4 +520,49 @@ TEST(BinaryExpressionTest, invalidFloatOperations)
 
     EXPECT_THROW(BinaryExpression expr(BinaryExpression::MODULO, floating, integer), InvalidOperationException);
     EXPECT_THROW(BinaryExpression expr(BinaryExpression::MODULO, integer, floating), InvalidOperationException);
+}
+
+
+class TestExpression: public Expression
+{
+public:
+    TestExpression() { wasEvaluated = false; }
+
+    TypeDecl getType() const override { return TypeDecl::INT; }
+
+    ExpressionValue evaluate(cish::vm::ExecutionContext *) const override
+    {
+        wasEvaluated = true;
+        return ExpressionValue(TypeDecl::INT, 0);
+    }
+
+    mutable bool wasEvaluated;
+};
+
+TEST(BinaryExpressionTest, logicalAndShortCircuit)
+{
+    cish::vm::Memory memory(100, 1);
+    cish::vm::ExecutionContext econtext(&memory);
+
+    auto falseExpr = std::make_shared<LiteralExpression>(ExpressionValue(TypeDecl::INT, 0));
+    auto secondExpr = std::make_shared<TestExpression>();
+
+    BinaryExpression exp(BinaryExpression::LOGICAL_AND, falseExpr, secondExpr);
+    exp.evaluate(&econtext);
+
+    ASSERT_FALSE(secondExpr->wasEvaluated);
+}
+
+TEST(BinaryExpressionTest, logicalOrShortCircuit)
+{
+    cish::vm::Memory memory(100, 1);
+    cish::vm::ExecutionContext econtext(&memory);
+
+    auto trueExpr = std::make_shared<LiteralExpression>(ExpressionValue(TypeDecl::INT, 1));
+    auto secondExpr = std::make_shared<TestExpression>();
+
+    BinaryExpression exp(BinaryExpression::LOGICAL_OR, trueExpr, secondExpr);
+    exp.evaluate(&econtext);
+
+    ASSERT_FALSE(secondExpr->wasEvaluated);
 }

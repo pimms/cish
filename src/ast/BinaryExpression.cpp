@@ -28,6 +28,13 @@ BinaryExpression::BinaryExpression(Operator op, Expression::Ptr left, Expression
 
 	if (op >= __BOOLEAN_BOUNDARY) {
 		_returnType = TypeDecl(TypeDecl::BOOL);
+
+        // EDGECASE: When dealing with logical OR/AND, we need
+        // to work with both terms of the expression as bool.
+        // This will allow us to short-circuit properly.
+        if (op == LOGICAL_OR || op == LOGICAL_AND) {
+            _workingType = TypeDecl(TypeDecl::BOOL);
+        }
     } else if (op >= __BITWISE_START && op <= __BITWISE_END) {
         // We will always promote the intrinsic type of the ecpression to int,
         // but we first need to make sure that the terms are not floaty.
@@ -134,7 +141,7 @@ ExpressionValue BinaryExpression::evaluatePtrT(vm::ExecutionContext *ctx) const
 
     // Perform the operation, generate a result with the same type
     // as the pointer-type.
-    const uint32_t resultValue = evalOperator<uint32_t>(ptrVal, otherVal);
+    const uint32_t resultValue = evalPointerOperator(ptrVal, otherVal);
 
     return ExpressionValue(ptr->getType(), resultValue);
 }
@@ -184,6 +191,37 @@ void BinaryExpression::floatSpecificChecks()
     if (_operator == MODULO) {
         Throw(InvalidOperationException, "Invalid operation performed on floating-point type");
     }
+}
+
+uint32_t BinaryExpression::evalPointerOperator(uint32_t a, uint32_t b) const
+{
+    switch (_operator) {
+        case MULTIPLY:      return internal::multiply<uint32_t>(a, b);
+        case DIVIDE:        return internal::safe_div<uint32_t>(a, b);
+        case PLUS:          return internal::plus<uint32_t>(a, b);
+        case MINUS:         return internal::minus<uint32_t>(a, b);
+        case BITWISE_AND:   return internal::bitwiseAnd<int32_t>(a, b);
+        case BITWISE_XOR:   return internal::bitwiseXor<int32_t>(a, b);
+        case BITWISE_OR:    return internal::bitwiseOr<int32_t>(a, b);
+        case BITWISE_LSHIFT:return internal::lshift<int32_t>(a, b);
+        case BITWISE_RSHIFT:return internal::rshift<int32_t>(a, b);
+        case GT:            return internal::greater<uint32_t>(a, b);
+        case LT:            return internal::less<uint32_t>(a, b);
+        case GTE:           return internal::greaterEqual<uint32_t>(a, b);
+        case LTE:           return internal::lessEqual<uint32_t>(a, b);
+        case EQ:            return internal::equalTo<uint32_t>(a, b);
+        case NE:            return internal::notEqual<uint32_t>(a, b);
+        case LOGICAL_AND:   return internal::logicalAnd<uint32_t>(a, b);
+        case LOGICAL_OR:    return internal::logicalOr<uint32_t>(a, b);
+
+        case MODULO: break; /* Explicitly handled below */
+    }
+
+    if (_operator == MODULO) {
+        return internal::safe_mod<uint32_t>(a, b);
+    }
+
+    throw std::runtime_error("Operator unhandled: " + std::to_string(_operator));
 }
 
 
