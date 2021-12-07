@@ -30,6 +30,7 @@ public:
         CHAR,
         SHORT,
         INT,
+        LONG,
 
         FLOAT,
         DOUBLE,

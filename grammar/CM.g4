@@ -158,6 +158,7 @@ typeName
     : 'bool'
     | 'char'
     | 'int'
+    | 'long'
     | 'short'
     | 'float'
     | 'double'

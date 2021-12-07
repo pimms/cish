@@ -70,6 +70,8 @@ ExpressionValue ArithmeticAssignmentStatement::getLeftValue(vm::MemoryView &memo
             return ExpressionValue(intrinsicType, memoryView.read<int16_t>());
         case TypeDecl::INT:
             return ExpressionValue(intrinsicType, memoryView.read<int32_t>());
+        case TypeDecl::LONG:
+            return ExpressionValue(intrinsicType, memoryView.read<int64_t>());
         case TypeDecl::FLOAT:
             return ExpressionValue(intrinsicType, memoryView.read<float>());
         case TypeDecl::DOUBLE:
@@ -99,6 +101,9 @@ void ArithmeticAssignmentStatement::writeResult(vm::MemoryView &memView,
             break;
         case TypeDecl::INT:
             memView.write<int32_t>(value.get<int32_t>());
+            break;
+        case TypeDecl::LONG:
+            memView.write<int64_t>(value.get<int64_t>());
             break;
         case TypeDecl::FLOAT:
             memView.write<float>(value.get<float>());

@@ -67,6 +67,7 @@ ExpressionValue IncDecExpression::evaluate(vm::ExecutionContext *context) const
         case TypeDecl::SHORT:
             return internal::evaluate<uint16_t>(_operation, _type, &view, delta);
         case TypeDecl::INT:
+        case TypeDecl::LONG:
         case TypeDecl::POINTER:
             return internal::evaluate<uint32_t>(_operation, _type, &view, delta);
         default:

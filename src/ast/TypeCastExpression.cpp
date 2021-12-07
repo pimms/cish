@@ -43,6 +43,9 @@ ExpressionValue TypeCastExpression::evaluate(vm::ExecutionContext *ctx) const
         case TypeDecl::INT:
             casted = ExpressionValue(_type, uncasted.get<int32_t>());
             break;
+        case TypeDecl::LONG:
+            casted = ExpressionValue(_type, uncasted.get<int64_t>());
+            break;
         case TypeDecl::FLOAT:
             casted = ExpressionValue(_type, uncasted.get<float>());
             break;

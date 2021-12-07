@@ -30,6 +30,7 @@ TypeDecl TypeDecl::getFromString(const std::string &str)
         {"char", CHAR},
         {"short", SHORT},
         {"int", INT},
+        {"long", LONG},
         {"float", FLOAT},
         {"double", DOUBLE},
     };
@@ -170,6 +171,8 @@ uint32_t TypeDecl::getSize() const
             return 2;
         case INT:
             return 4;
+        case LONG:
+            return 8;
         case FLOAT:
             return 4;
         case DOUBLE:
@@ -201,6 +204,8 @@ const char* TypeDecl::getName() const
                 return "short";
             case INT:
                 return "int";
+            case LONG:
+                return "long";
             case FLOAT:
                 return "float";
             case DOUBLE:
@@ -220,6 +225,8 @@ const char* TypeDecl::getName() const
                 return "const short";
             case INT:
                 return "const int";
+            case LONG:
+                return "const long";
             case FLOAT:
                 return "const float";
             case DOUBLE:
@@ -315,7 +322,7 @@ bool TypeDecl::castableTo(const TypeDecl &o) const
                 return true;
         }
     } else if (_type == STRUCT) {
-        return o._type == STRUCT 
+        return o._type == STRUCT
             && _structLayout->getName() == o._structLayout->getName();
     }
 
@@ -328,6 +335,7 @@ bool TypeDecl::isIntegral() const
             _type == CHAR ||
             _type == SHORT ||
             _type == INT ||
+            _type == LONG ||
             _type == POINTER;
 }
 
@@ -353,10 +361,9 @@ template<> TypeDecl TypeDecl::getFromNative<bool>() { return TypeDecl(TypeDecl::
 template<> TypeDecl TypeDecl::getFromNative<char>() { return TypeDecl(TypeDecl::CHAR); }
 template<> TypeDecl TypeDecl::getFromNative<short>() { return TypeDecl(TypeDecl::SHORT); }
 template<> TypeDecl TypeDecl::getFromNative<int>() { return TypeDecl(TypeDecl::INT); }
+template<> TypeDecl TypeDecl::getFromNative<long>() { return TypeDecl(TypeDecl::LONG); }
 template<> TypeDecl TypeDecl::getFromNative<float>() { return TypeDecl(TypeDecl::FLOAT); }
 template<> TypeDecl TypeDecl::getFromNative<double>() { return TypeDecl(TypeDecl::DOUBLE); }
-
-
 
 
 static const char* getPointerName(const TypeDecl *type)

@@ -139,6 +139,20 @@ ast::ExpressionValue Printf::execute(vm::ExecutionContext *context,
 
                 ExpressionValue value = params[paramIndex++];
                 switch (next) {
+                    case 'l':
+                        // FIXME
+                        // dirty, dirty hack - 'ld' is the correct format, but 'lld'
+                        // is often mistaken for it. The current impl does not take
+                        // into account multi-width format specifiers.
+                        if (i < str.size() && str[i] == 'd') {
+                            i += 1;
+                        } else if (i+1 < str.size()+1 && str[i] == 'l' && str[i+1] == 'd') {
+                            i += 2;
+                        } else {
+                            Throw(StdioException, "Bad format string: '%s'", str.data());
+                        }
+                        ss << value.get<long>();
+                        break;
                     case 'd':
                         ss << value.get<int>();
                         break;

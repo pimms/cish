@@ -39,6 +39,8 @@ ast::ExpressionValue MemoryView::evaluateAs(const ast::TypeDecl &type) const
             return ast::ExpressionValue(type, read<int16_t>());
         case ast::TypeDecl::INT:
             return ast::ExpressionValue(type, read<int32_t>());
+        case ast::TypeDecl::LONG:
+            return ast::ExpressionValue(type, read<int64_t>());
         case ast::TypeDecl::FLOAT:
             return ast::ExpressionValue(type, read<float>());
         case ast::TypeDecl::DOUBLE:

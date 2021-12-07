@@ -975,6 +975,27 @@ TEST(SimpleProgramsTest, functionDefCanOmitVarNames)
     );
 }
 
+TEST(SimpleProgramsTest, longVariable)
+{
+    try {
+        assertExitCode(
+            "int main() { long a = 100; long b = 200; return 0; }",
+            0
+        );
+    } catch (cish::Exception e) {
+        printf("what: %s\n", e.what());
+        printf("msg: %s\n", e.userMessage());
+    }
+}
+
+TEST(SimpleProgramsTest, longLiterals)
+{
+    assertExitCode(
+        "int main() { return (0x3333333333333333 | 0xCCCCCCCCCCCCCCCC) == 0xFFFFFFFFFFFFFFFF; }",
+        1
+    );
+}
+
 
 /* COMPILATION FAILURES */
 

@@ -96,6 +96,7 @@ ExpressionValue BinaryExpression::evaluate(vm::ExecutionContext *ctx) const
         case TypeDecl::CHAR:    return evaluateT<char>(ctx);
         case TypeDecl::SHORT:   return evaluateT<short>(ctx);
         case TypeDecl::INT:     return evaluateT<int>(ctx);
+        case TypeDecl::LONG:    return evaluateT<long>(ctx);
         case TypeDecl::FLOAT:   return evaluateT<float>(ctx);
         case TypeDecl::DOUBLE:  return evaluateT<double>(ctx);
         case TypeDecl::POINTER: return evaluatePtrT(ctx);

@@ -54,6 +54,9 @@ void VariableAssignmentStatement::executeAssignment(vm::ExecutionContext *contex
         case TypeDecl::INT:
             view.write<int32_t>(value.get<int32_t>());
             break;
+        case TypeDecl::LONG:
+            view.write<int64_t>(value.get<int64_t>());
+            break;
         case TypeDecl::FLOAT:
             view.write<float>(value.get<float>());
             break;
