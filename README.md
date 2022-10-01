@@ -15,15 +15,12 @@ Now I don't know what to do with it.
 
 Cish only works with one file at a time. Like with an actual C program, there
 must be a `main` function defined. The standard library can be included and
-used, although it's mostly unimplemented. The most useful functions from
-`<string.h>` and `<stdlib.h>` _(and a few from `<stdio.h>`)_ are implemented.
-
-The command line client `cish_cli` only supports a single argument, which must
-be a valid C source file.
+used, although it's mostly unimplemented.
 
 ### Building
 
-Antlr and the Antlr Runtime must be installed on your system.
+Antlr and the Antlr Runtime must be installed on your system. Cish is currently
+only tested using Antlr v 4.11.1.
 
     brew install antlr antlr4-cpp-runtime
 

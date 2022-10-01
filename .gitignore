@@ -11,3 +11,5 @@ gcc_compare/.tmp/
 a.out
 .cache/
 compile_commands.json
+cmake-build-debug
+cmake-build-release

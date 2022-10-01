@@ -46,7 +46,7 @@ TreeConverter::TreeConverter(ModuleContext::Ptr moduleContext):
 Ast::Ptr TreeConverter::convertTree(const ParseContext *parseContext)
 {
     antlr4::tree::ParseTree *tree = parseContext->getParseTree();
-    Ast::Ptr ast = visit(tree).as<Ast::Ptr>();
+    Ast::Ptr ast = std::any_cast<Ast::Ptr>(visit(tree));
 
     verifyAllFunctionsDefined(ast.get());
     ast->setStringTable(std::move(_stringTable));
@@ -64,9 +64,8 @@ antlrcpp::Any TreeConverter::visitChildren(antlr4::tree::ParseTree *node)
         }
 
         antlrcpp::Any childResult = child->accept(this);
-        if (childResult.isNotNull() && childResult.is<Result>()) {
-            Result childResultNodes = childResult.as<Result>();
-            result.insert(result.end(), childResultNodes.begin(), childResultNodes.end());
+        if (Result *childResultPtr = std::any_cast<Result>(&childResult)) {
+            result.insert(result.end(), childResultPtr->begin(), childResultPtr->end());
         }
     }
 
@@ -97,26 +96,26 @@ antlrcpp::Any TreeConverter::visitRootBlock(CMParser::RootBlockContext *ctx)
         assert(varDecl || funcDef || funcDecl || systemInclude || structDecl);
 
         if (varDecl != nullptr) {
-            Result res = visitVariableDeclaration(varDecl).as<Result>();
+            Result res = std::any_cast<Result>(visitVariableDeclaration(varDecl));
             assert(res.size() == 1);
             ast->addRootStatement(castToStatement(res[0]));
         } else if (funcDef != nullptr) {
-            Result res = visitFunctionDefinition(funcDef).as<Result>();
+            Result res = std::any_cast<Result>(visitFunctionDefinition(funcDef));
             assert(res.size() == 1);
             vm::Callable::Ptr callable = std::dynamic_pointer_cast<vm::Callable>(res[0]);
             assert(callable != nullptr);
             ast->addFunctionDefinition(callable);
         } else if (funcDecl != nullptr) {
-            Result res = visitFunctionDeclaration(funcDecl);
+            Result res = std::any_cast<Result>(visitFunctionDeclaration(funcDecl));
             assert(res.size() == 1);
             assert(dynamic_cast<FunctionDeclarationStatement*>(res[0].get()) != nullptr);
             Statement::Ptr funcDeclStmt = castToStatement(res[0]);
             ast->addRootStatement(funcDeclStmt);
         } else if (systemInclude != nullptr) {
-            std::string moduleName = visitSystemInclude(systemInclude).as<std::string>();
+            std::string moduleName = std::any_cast<std::string>(visitSystemInclude(systemInclude));
             includeModule(ast.get(), moduleName);
         } else if (structDecl != nullptr) {
-            auto structLayout = visitStructDeclaration(structDecl).as<StructLayout::Ptr>();
+            StructLayout::Ptr structLayout = std::any_cast<StructLayout::Ptr>(visitStructDeclaration(structDecl));
             ast->addStructLayout(structLayout);
         }
     }
@@ -144,7 +143,7 @@ antlrcpp::Any TreeConverter::visitExpression(CMParser::ExpressionContext *ctx)
 
 antlrcpp::Any TreeConverter::visitSTRUCT_ACCESS_EXPR(CMParser::STRUCT_ACCESS_EXPRContext *ctx)
 {
-    Result res = visitChildren(ctx);
+    Result res = std::any_cast<Result>(visitChildren(ctx));
     assert(res.size() == 1);
     Expression::Ptr expr = castToExpression(res[0]);
 
@@ -166,7 +165,7 @@ antlrcpp::Any TreeConverter::visitSTRUCT_ACCESS_EXPR(CMParser::STRUCT_ACCESS_EXP
 antlrcpp::Any TreeConverter::visitPOSTFIX_INC_EXPR(CMParser::POSTFIX_INC_EXPRContext *ctx)
 {
     IncDecExpression::Operation op = IncDecExpression::POSTFIX_INCREMENT;
-    Result res = visitChildren(ctx).as<Result>();
+    Result res = std::any_cast<Result>(visitChildren(ctx));
     assert(res.size() == 1);
     Lvalue::Ptr lvalue = castToLvalue(res[0]);
     return createResult(std::make_shared<IncDecExpression>(op, lvalue));
@@ -175,7 +174,7 @@ antlrcpp::Any TreeConverter::visitPOSTFIX_INC_EXPR(CMParser::POSTFIX_INC_EXPRCon
 antlrcpp::Any TreeConverter::visitPREFIX_INC_EXPR(CMParser::PREFIX_INC_EXPRContext *ctx)
 {
     IncDecExpression::Operation op = IncDecExpression::PREFIX_INCREMENT;
-    Result res = visitChildren(ctx).as<Result>();
+    Result res = std::any_cast<Result>(visitChildren(ctx));
     assert(res.size() == 1);
     Lvalue::Ptr lvalue = castToLvalue(res[0]);
     return createResult(std::make_shared<IncDecExpression>(op, lvalue));
@@ -184,7 +183,7 @@ antlrcpp::Any TreeConverter::visitPREFIX_INC_EXPR(CMParser::PREFIX_INC_EXPRConte
 antlrcpp::Any TreeConverter::visitPOSTFIX_DEC_EXPR(CMParser::POSTFIX_DEC_EXPRContext *ctx)
 {
     IncDecExpression::Operation op = IncDecExpression::POSTFIX_DECREMENT;
-    Result res = visitChildren(ctx).as<Result>();
+    auto res = std::any_cast<Result>(visitChildren(ctx));
     assert(res.size() == 1);
     Lvalue::Ptr lvalue = castToLvalue(res[0]);
     return createResult(std::make_shared<IncDecExpression>(op, lvalue));
@@ -193,7 +192,7 @@ antlrcpp::Any TreeConverter::visitPOSTFIX_DEC_EXPR(CMParser::POSTFIX_DEC_EXPRCon
 antlrcpp::Any TreeConverter::visitPREFIX_DEC_EXPR(CMParser::PREFIX_DEC_EXPRContext *ctx)
 {
     IncDecExpression::Operation op = IncDecExpression::PREFIX_DECREMENT;
-    Result res = visitChildren(ctx).as<Result>();
+    auto res = std::any_cast<Result>(visitChildren(ctx));
     assert(res.size() == 1);
     Lvalue::Ptr lvalue = castToLvalue(res[0]);
     return createResult(std::make_shared<IncDecExpression>(op, lvalue));
@@ -201,9 +200,9 @@ antlrcpp::Any TreeConverter::visitPREFIX_DEC_EXPR(CMParser::PREFIX_DEC_EXPRConte
 
 antlrcpp::Any TreeConverter::visitTYPE_CAST_EXPR(CMParser::TYPE_CAST_EXPRContext *ctx)
 {
-    TypeDecl type = visitTypeIdentifier(ctx->typeIdentifier()).as<TypeDecl>();
+    TypeDecl type = std::any_cast<TypeDecl>(visitTypeIdentifier(ctx->typeIdentifier()));
 
-    Result exprResult = visitChildren(ctx).as<Result>();
+    Result exprResult = std::any_cast<Result>(visitChildren(ctx));
     assert(exprResult.size() == 1);
     Expression::Ptr expression = castToExpression(exprResult[0]);
 
@@ -213,7 +212,7 @@ antlrcpp::Any TreeConverter::visitTYPE_CAST_EXPR(CMParser::TYPE_CAST_EXPRContext
 
 antlrcpp::Any TreeConverter::visitDEREF_EXPR(CMParser::DEREF_EXPRContext *ctx)
 {
-    Result result = visitChildren(ctx).as<Result>();
+    Result result = std::any_cast<Result>(visitChildren(ctx));
     assert(result.size() == 1);
     Expression::Ptr expr = castToExpression(result[0]);
     return createResult(std::make_shared<DereferenceExpression>(expr));
@@ -221,7 +220,7 @@ antlrcpp::Any TreeConverter::visitDEREF_EXPR(CMParser::DEREF_EXPRContext *ctx)
 
 antlrcpp::Any TreeConverter::visitADDROF_EXPR(CMParser::ADDROF_EXPRContext *ctx)
 {
-    Result result = visitChildren(ctx).as<Result>();
+    Result result = std::any_cast<Result>(visitChildren(ctx));
     assert(result.size() == 1);
     Lvalue::Ptr lvalue = castToLvalue(result[0]);
     return createResult(std::make_shared<AddrofExpression>(lvalue));
@@ -231,13 +230,12 @@ antlrcpp::Any TreeConverter::visitSIZEOF_EXPR(CMParser::SIZEOF_EXPRContext *ctx)
 {
     SizeofExpression::Ptr sizeofExpr = nullptr;
     antlrcpp::Any evaluated = visitSizeofTerm(ctx->sizeofTerm());
-    if (evaluated.is<Result>()) {
-        Result result = evaluated.as<Result>();
-        assert(result.size() == 1);
-        Expression::Ptr expr = castToExpression(result[0]);
+    if (Result *result = std::any_cast<Result>(&evaluated)) {
+        assert(result->size() == 1);
+        Expression::Ptr expr = castToExpression((*result)[0]);
         sizeofExpr = std::make_shared<SizeofExpression>(expr);
-    } else if (evaluated.is<TypeDecl>()) {
-        sizeofExpr = std::make_shared<SizeofExpression>(evaluated.as<TypeDecl>());
+    } else if (TypeDecl *typeDecl = std::any_cast<TypeDecl>(&evaluated)) {
+        sizeofExpr = std::make_shared<SizeofExpression>(*typeDecl);
     } else {
         Throw(AstConversionException, "Unexpected type in sizeofTerm");
     }
@@ -250,11 +248,11 @@ antlrcpp::Any TreeConverter::visitSizeofTerm(CMParser::SizeofTermContext *ctx)
     if (ctx->sizeofTerm()) {
         return visitSizeofTerm(ctx->sizeofTerm());
     } else if (ctx->typeIdentifier()) {
-        TypeDecl type = visitTypeIdentifier(ctx->typeIdentifier()).as<TypeDecl>();
+        TypeDecl type = std::any_cast<TypeDecl>(visitTypeIdentifier(ctx->typeIdentifier()));
         return type;
     } else {
         antlrcpp::Any evaluated = visitChildren(ctx);
-        Result result = evaluated.as<Result>();
+        Result result = std::any_cast<Result>(evaluated);
         assert(result.size() == 1);
         Expression::Ptr expr = castToExpression(result[0]);
         return createResult(expr);
@@ -263,7 +261,7 @@ antlrcpp::Any TreeConverter::visitSizeofTerm(CMParser::SizeofTermContext *ctx)
 
 antlrcpp::Any TreeConverter::visitMINUS_EXPR(CMParser::MINUS_EXPRContext *ctx)
 {
-    Result result = visitChildren(ctx).as<Result>();
+    Result result = std::any_cast<Result>(visitChildren(ctx));
     assert(result.size() == 1);
     Expression::Ptr expr = castToExpression(result[0]);
     return createResult(std::make_shared<MinusExpression>(expr));
@@ -271,7 +269,7 @@ antlrcpp::Any TreeConverter::visitMINUS_EXPR(CMParser::MINUS_EXPRContext *ctx)
 
 antlrcpp::Any TreeConverter::visitNEGATION_EXPR(CMParser::NEGATION_EXPRContext *ctx)
 {
-    Result result = visitChildren(ctx).as<Result>();
+    Result result = std::any_cast<Result>(visitChildren(ctx));
     assert(result.size() == 1);
     Expression::Ptr expr = castToExpression(result[0]);
     return createResult(std::make_shared<NegationExpression>(expr));
@@ -279,7 +277,7 @@ antlrcpp::Any TreeConverter::visitNEGATION_EXPR(CMParser::NEGATION_EXPRContext *
 
 antlrcpp::Any TreeConverter::visitSUBSCRIPT_EXPR(CMParser::SUBSCRIPT_EXPRContext *ctx)
 {
-    Result res = visitChildren(ctx);
+    Result res = std::any_cast<Result>(visitChildren(ctx));
     assert(res.size() == 2);
 
     Expression::Ptr ptrExpr = castToExpression(res[0]);
@@ -291,7 +289,7 @@ antlrcpp::Any TreeConverter::visitSUBSCRIPT_EXPR(CMParser::SUBSCRIPT_EXPRContext
 
 antlrcpp::Any TreeConverter::visitONES_COMPLEMENT_EXPR(CMParser::ONES_COMPLEMENT_EXPRContext *ctx)
 {
-    Result result = visitChildren(ctx).as<Result>();
+    Result result = std::any_cast<Result>(visitChildren(ctx));
     assert(result.size() == 1);
     Expression::Ptr expr = castToExpression(result[0]);
     return createResult(std::make_shared<OnesComplementExpression>(expr));
@@ -422,7 +420,7 @@ antlrcpp::Any TreeConverter::visitCOMPARE_EXPR(CMParser::COMPARE_EXPRContext *ct
 
 antlrcpp::Any TreeConverter::visitStatement(CMParser::StatementContext *ctx)
 {
-    return visitChildren(ctx).as<Result>();
+    return std::any_cast<Result>(visitChildren(ctx));
 }
 
 antlrcpp::Any TreeConverter::visitReturnStatement(CMParser::ReturnStatementContext *ctx)
@@ -440,7 +438,7 @@ antlrcpp::Any TreeConverter::visitIfStatement(CMParser::IfStatementContext *ctx)
 {
     ElseStatement::Ptr elseStatement = nullptr;
     if (ctx->elseStatement() != nullptr) {
-        Result res = visitElseStatement(ctx->elseStatement()).as<Result>();
+        Result res = std::any_cast<Result>(visitElseStatement(ctx->elseStatement()));
         assert(res.size() == 1);
 
         elseStatement = std::dynamic_pointer_cast<ElseStatement>(castToStatement(res[0]));
@@ -543,7 +541,7 @@ antlrcpp::Any TreeConverter::visitExpressionStatement(CMParser::ExpressionStatem
 
 antlrcpp::Any TreeConverter::visitAssignment(CMParser::AssignmentContext *ctx)
 {
-    Result res = visitChildren(ctx).as<Result>();
+    Result res = std::any_cast<Result>(visitChildren(ctx));
     if (res.size() != 2) {
         Throw(AstConversionException, "Expected 2 expressions in assignment, found %d", (int)res.size());
     }
@@ -557,7 +555,7 @@ antlrcpp::Any TreeConverter::visitAssignment(CMParser::AssignmentContext *ctx)
 
 antlrcpp::Any TreeConverter::visitVariableDeclaration(CMParser::VariableDeclarationContext *ctx)
 {
-    const TypeDecl type = visitTypeIdentifier(ctx->typeIdentifier()).as<TypeDecl>();;
+    const TypeDecl type = std::any_cast<TypeDecl>(visitTypeIdentifier(ctx->typeIdentifier()));
     const std::string varName = ctx->identifier()->getText();
 
     Expression::Ptr expression = nullptr;
@@ -580,7 +578,7 @@ antlrcpp::Any TreeConverter::visitStructDeclaration(CMParser::StructDeclarationC
 
     std::vector<std::pair<TypeDecl,std::string>> fields;
     for (auto fieldDecl: ctx->structFieldDeclaration()) {
-        const TypeDecl type = visitTypeIdentifier(fieldDecl->typeIdentifier()).as<TypeDecl>();;
+        const TypeDecl type = std::any_cast<TypeDecl>(visitTypeIdentifier(fieldDecl->typeIdentifier()));
         const std::string varName = fieldDecl->identifier()->getText();
         fields.push_back(std::make_pair(type, varName));
     }
@@ -613,7 +611,7 @@ antlrcpp::Any TreeConverter::visitArithmeticAssignment(CMParser::ArithmeticAssig
         { "|=",     BinaryExpression::Operator::BITWISE_OR },
     };
 
-    Result res = visitChildren(ctx).as<Result>();
+    Result res = std::any_cast<Result>(visitChildren(ctx));
     if (res.size() != 2) {
         Throw(AstConversionException, "Expected 2 expressions in arithmetic assignment, found %d", (int)res.size());
     }
@@ -636,7 +634,7 @@ antlrcpp::Any TreeConverter::visitFunctionDeclaration(CMParser::FunctionDeclarat
     std::vector<VarDeclaration> params = manuallyVisitIdentifierList(ctx->identifierList());
 
     FuncDeclaration funcDecl;
-    funcDecl.returnType = visitTypeIdentifier(ctx->typeIdentifier());
+    funcDecl.returnType = std::any_cast<TypeDecl>(visitTypeIdentifier(ctx->typeIdentifier()));
     funcDecl.name = funcName;
     funcDecl.params = params;
 
@@ -652,7 +650,7 @@ antlrcpp::Any TreeConverter::visitFunctionDefinition(CMParser::FunctionDefinitio
     std::vector<VarDeclaration> params = manuallyVisitIdentifierList(ctx->identifierList());
 
     FuncDeclaration funcDecl;
-    funcDecl.returnType = visitTypeIdentifier(ctx->typeIdentifier());
+    funcDecl.returnType = std::any_cast<TypeDecl>(visitTypeIdentifier(ctx->typeIdentifier()));
     funcDecl.name = funcName;
     funcDecl.params = params;
 
@@ -662,7 +660,7 @@ antlrcpp::Any TreeConverter::visitFunctionDefinition(CMParser::FunctionDefinitio
     FunctionDefinition::Ptr funcDef = std::make_shared<FunctionDefinition>(&_declContext, funcDecl);
     _declContext.enterFunction(funcDef);
     for (const VarDeclaration &varDecl: params) {
-        if (varDecl.name != "") {
+        if (!varDecl.name.empty()) {
             _declContext.declareVariable(varDecl.type, varDecl.name);
         }
     }
@@ -678,11 +676,11 @@ antlrcpp::Any TreeConverter::visitFunctionDefinition(CMParser::FunctionDefinitio
 
 antlrcpp::Any TreeConverter::visitFunctionCall(CMParser::FunctionCallContext *ctx)
 {
-    Result paramsResult = visitExpressionList(ctx->expressionList());
+    Result paramsResult = std::any_cast<Result>(visitExpressionList(ctx->expressionList()));
     const std::string funcName = ctx->identifier()->getText();
 
     std::vector<Expression::Ptr> params;
-    for (AstNode::Ptr node: paramsResult) {
+    for (const AstNode::Ptr& node: paramsResult) {
         Expression::Ptr expr = castToExpression(node);
         params.push_back(expr);
     }
@@ -747,7 +745,7 @@ TreeConverter::Result TreeConverter::createResult(AstNode::Ptr node)
 
 TreeConverter::Result TreeConverter::buildBinaryExpression(BinaryExpression::Operator op, antlr4::tree::ParseTree *tree)
 {
-    Result result = visitChildren(tree).as<Result>();
+    Result result = std::any_cast<Result>(visitChildren(tree));
     assert(result.size() == 2);
 
     auto leftExpr = castToExpression(result[0]);
@@ -788,7 +786,7 @@ Statement::Ptr TreeConverter::castToStatement(AstNode::Ptr node)
 
 Expression::Ptr TreeConverter::manuallyVisitExpression(CMParser::ExpressionContext *ctx)
 {
-    Result result = visitExpression(ctx).as<Result>();
+    Result result = std::any_cast<Result>(visitExpression(ctx));
     assert(result.size() == 1);
     return castToExpression(result[0]);
 }
@@ -799,9 +797,7 @@ Statement::Ptr TreeConverter::manuallyVisitStatement(CMParser::StatementContext 
         return std::make_shared<NoOpStatement>();
 
     antlrcpp::Any any = visitStatement(ctx);
-    assert(any.isNotNull());
-
-    Result result = any.as<Result>();
+    Result result = std::any_cast<Result>(any);
     assert(result.size() == 1);
 
     Statement::Ptr statement = std::dynamic_pointer_cast<Statement>(result[0]);
@@ -821,7 +817,7 @@ std::vector<VarDeclaration> TreeConverter::manuallyVisitIdentifierList(CMParser:
 
 VarDeclaration TreeConverter::manuallyVisitFunctionParameter(CMParser::FunctionParameterContext *ctx)
 {
-    TypeDecl type = visitTypeIdentifier(ctx->typeIdentifier()).as<TypeDecl>();
+    TypeDecl type = std::any_cast<TypeDecl>(visitTypeIdentifier(ctx->typeIdentifier()));
     const std::string varName = (ctx->identifier() ? ctx->identifier()->getText() : "");
 
     VarDeclaration decl;
@@ -843,9 +839,9 @@ Statement::Ptr TreeConverter::manuallyVisitForInitializer(CMParser::ForInitializ
 {
     Result res;
     if (ctx->assignment()) {
-        res = visitAssignment(ctx->assignment()).as<Result>();
+        res = std::any_cast<Result>(visitAssignment(ctx->assignment()));
     } else if (ctx->variableDeclaration()) {
-        res = visitVariableDeclaration(ctx->variableDeclaration()).as<Result>();
+        res = std::any_cast<Result>(visitVariableDeclaration(ctx->variableDeclaration()));
     } else {
         Throw(Exception, "Unsupported initialization in for-loop");
     }
@@ -858,11 +854,11 @@ Statement::Ptr TreeConverter::manuallyVisitForIterator(CMParser::ForIteratorCont
 {
     Result res;
     if (ctx->assignment()) {
-        res = visitAssignment(ctx->assignment()).as<Result>();
+        res = std::any_cast<Result>(visitAssignment(ctx->assignment()));
         assert(res.size() == 1);
         return castToStatement(res[0]);
     } else if (ctx->arithmeticAssignment()) {
-        res = visitArithmeticAssignment(ctx->arithmeticAssignment()).as<Result>();
+        res = std::any_cast<Result>(visitArithmeticAssignment(ctx->arithmeticAssignment()));
         assert(res.size() == 1);
         return castToStatement(res[0]);
     } else if (ctx->expression()) {
@@ -875,7 +871,7 @@ Statement::Ptr TreeConverter::manuallyVisitForIterator(CMParser::ForIteratorCont
 
 void TreeConverter::verifyAllFunctionsDefined(Ast *ast)
 {
-    for (FuncDeclaration decl: _funcDecls) {
+    for (const FuncDeclaration& decl: _funcDecls) {
         if (ast->getFunctionDefinition(decl.name) == nullptr) {
             Throw(FunctionNotDefinedException, "Function '%s' was declared but never defined",
                     decl.name.c_str());
@@ -894,7 +890,7 @@ void TreeConverter::includeModule(Ast *ast, std::string moduleName)
         Throw(ModuleNotFoundException, "Could not include module '%s'", moduleName.c_str());
     }
 
-    for (const auto depName: module->getDependencies()) {
+    for (const auto& depName: module->getDependencies()) {
         includeModule(ast, depName);
     }
 
