@@ -1,12 +1,7 @@
 #include "Allocator.h"
 
 
-namespace cish
-{
-namespace vm
-{
-
-namespace internal
+namespace cish::vm::internal
 {
 
 typedef std::list<Allocator::Block>::iterator BlockIterator;
@@ -38,6 +33,8 @@ BlockIterator lowerBoundOffset(BlockIterator first, BlockIterator last, const ui
 
 }
 
+namespace cish::vm
+{
 
 Allocator::Allocator(uint32_t size):
     _size(size)
@@ -105,5 +102,3 @@ const std::list<Allocator::Block>& Allocator::getBlocksByOffset() const
 
 
 }
-}
-

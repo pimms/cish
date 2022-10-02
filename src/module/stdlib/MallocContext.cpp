@@ -1,10 +1,6 @@
 #include "MallocContext.h"
 
-namespace cish
-{
-namespace module
-{
-namespace stdlib
+namespace cish::module::stdlib
 {
 
 
@@ -29,6 +25,4 @@ bool MallocContext::attemptDeallocation(uint32_t addr)
 }
 
 
-}
-}
 }

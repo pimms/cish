@@ -1,11 +1,9 @@
 #pragma once
 
-#include "AstNodes.h" 
-namespace cish
-{
-namespace ast
-{
+#include "AstNodes.h"
 
+namespace cish::ast
+{
 
 class TypeCastExpression : public Expression
 {
@@ -20,6 +18,4 @@ private:
     Expression::Ptr _expression;
 };
 
-
-}
 }

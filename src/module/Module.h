@@ -8,11 +8,8 @@
 #include <memory>
 
 
-namespace cish
+namespace cish::module
 {
-namespace module
-{
-
 
 class Module
 {
@@ -40,6 +37,4 @@ private:
     std::vector<ast::StructLayout::Ptr> _structs;
 };
 
-
-}
 }

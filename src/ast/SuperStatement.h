@@ -5,9 +5,7 @@
 #include <vector>
 #include <memory>
 
-namespace cish
-{
-namespace ast
+namespace cish::ast
 {
 
 typedef std::vector<Statement::Ptr> StatementList;
@@ -29,6 +27,4 @@ private:
     StatementList _statements;
 };
 
-
-}
 }

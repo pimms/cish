@@ -8,13 +8,13 @@
 #include "Type.h"
 #include "../Exception.h"
 
-
-namespace cish
+namespace cish::vm
 {
-namespace vm { class Variable; }
-namespace ast
-{
+class Variable;
+}
 
+namespace cish::ast
+{
 
 DECLARE_EXCEPTION(ExpressionTypeException);
 
@@ -102,7 +102,4 @@ ExpressionValue ExpressionValue::cast() const
     return exprVal;
 }
 
-
-
-}
 }

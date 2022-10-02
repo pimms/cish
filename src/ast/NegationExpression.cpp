@@ -1,11 +1,7 @@
 #include "NegationExpression.h"
 
-
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 
 NegationExpression::NegationExpression(Expression::Ptr expression):
     _expression(expression)
@@ -22,7 +18,4 @@ TypeDecl NegationExpression::getType() const
     return TypeDecl::BOOL;
 }
 
-
-
-}
 }

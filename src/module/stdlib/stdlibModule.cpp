@@ -7,32 +7,26 @@
 #include "../../vm/Memory.h"
 
 
-namespace cish
-{
-namespace module
-{
-namespace stdlib
+namespace cish::module::stdlib
 {
 
+Module::Ptr buildModule() {
+                      MallocContext::Ptr mallocContext = MallocContext::Ptr(new MallocContext());
 
-Module::Ptr buildModule()
-{
-    MallocContext::Ptr mallocContext = MallocContext::Ptr(new MallocContext());
+                      Module::Ptr module = Module::create("stdlib.h");
+                      module->addFunction(Function::Ptr(new impl::Atof()));
+                      module->addFunction(Function::Ptr(new impl::Atoi()));
+                      module->addFunction(Function::Ptr(new impl::Rand()));
+                      module->addFunction(Function::Ptr(new impl::Srand()));
+                      module->addFunction(Function::Ptr(new impl::Malloc(mallocContext)));
+                      module->addFunction(Function::Ptr(new impl::Free(mallocContext)));
 
-    Module::Ptr module = Module::create("stdlib.h");
-    module->addFunction(Function::Ptr(new impl::Atof()));
-    module->addFunction(Function::Ptr(new impl::Atoi()));
-    module->addFunction(Function::Ptr(new impl::Rand()));
-    module->addFunction(Function::Ptr(new impl::Srand()));
-    module->addFunction(Function::Ptr(new impl::Malloc(mallocContext)));
-    module->addFunction(Function::Ptr(new impl::Free(mallocContext)));
+                      return module;
+                      }
 
-    return module;
 }
 
-
-
-namespace impl
+namespace cish::module::stdlib::impl
 {
 
 using ast::TypeDecl;
@@ -237,7 +231,4 @@ ast::ExpressionValue Free::execute(vm::ExecutionContext *context,
 }
 
 
-}
-}
-}
 }

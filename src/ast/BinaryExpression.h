@@ -2,15 +2,12 @@
 
 #include "AstNodes.h"
 
-
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 DECLARE_EXCEPTION(DivisionByZeroException);
+}
 
-namespace internal
+namespace cish::ast::internal
 {
 
 template<typename T>
@@ -126,8 +123,10 @@ T safe_mod(T a, T b)
     }
     return a % b;
 }
-
 }
+
+namespace cish::ast
+{
 
 class BinaryExpression: public Expression
 {
@@ -413,6 +412,4 @@ T BinaryExpression::op_safe_mod(vm::ExecutionContext *ctx) const
     return a % b;
 }
 
-
-}
 }

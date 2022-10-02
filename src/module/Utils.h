@@ -6,13 +6,8 @@
 #include <string>
 
 
-namespace cish
+namespace cish::module::utils
 {
-namespace module
-{
-namespace utils
-{
-
 
 /**
  * Reads a strings from the MemoryView into the output-vector.
@@ -23,7 +18,4 @@ void readString(const vm::MemoryView &src, std::vector<char>& out);
 
 std::string hexstr(uint32_t num, bool fill);
 
-
-}
-}
 }

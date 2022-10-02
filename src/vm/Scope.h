@@ -6,9 +6,7 @@
 #include "Variable.h"
 
 
-namespace cish
-{
-namespace vm
+namespace cish::vm
 {
 
 class Scope
@@ -26,5 +24,4 @@ private:
     std::map<std::string, Variable*> _vars;
 };
 
-}
 }

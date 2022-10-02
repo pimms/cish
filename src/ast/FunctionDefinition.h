@@ -5,13 +5,15 @@
 #include "../vm/Callable.h"
 
 
-namespace cish
+namespace cish::vm
 {
-namespace vm { class Memory; class Variable; class Allocation; }
-namespace ast
+class Memory;
+class Variable;
+class Allocation;
+}
+
+namespace cish::ast
 {
-
-
 class DeclarationContext;
 
 class FunctionDefinition: public SuperStatement, public vm::Callable
@@ -38,6 +40,4 @@ private:
     FuncDeclaration _decl;
 };
 
-
-}
 }

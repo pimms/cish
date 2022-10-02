@@ -5,9 +5,7 @@
 #include <cassert>
 
 
-namespace cish
-{
-namespace vm
+namespace cish::vm
 {
 
 static const uint32_t FIRST_USABLE_ADDRESS = 0x00400000;
@@ -173,6 +171,4 @@ void Memory::write(const uint8_t *buffer, uint32_t address, uint32_t len)
     memcpy(_heap + byteOffset, buffer, len);
 }
 
-
-}
 }

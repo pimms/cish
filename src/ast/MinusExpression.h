@@ -2,12 +2,8 @@
 
 #include "AstNodes.h"
 
-
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 
 class MinusExpression: public Expression
 {
@@ -21,6 +17,4 @@ private:
     Expression::Ptr _expr;
 };
 
-
-}
 }

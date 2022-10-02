@@ -4,11 +4,8 @@
 #include "SuperStatement.h"
 
 
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 
 class ForLoopStatement: public SuperStatement
 {
@@ -30,6 +27,4 @@ private:
     Statement::Ptr _iterator;
 };
 
-
-}
 }

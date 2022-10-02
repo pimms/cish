@@ -4,11 +4,8 @@
 #include "SuperStatement.h"
 
 
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 
 class WhileStatement: public SuperStatement
 {
@@ -34,6 +31,4 @@ protected:
 	virtual void virtualExecute(vm::ExecutionContext *context) const override;
 };
 
-
-}
 }

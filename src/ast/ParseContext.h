@@ -3,19 +3,13 @@
 #include <string>
 
 
-namespace antlr4
-{
-namespace tree
+namespace antlr4::tree
 {
 class ParseTree;
 }
-}
 
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 
 struct CompilationError
 {
@@ -40,6 +34,4 @@ public:
     virtual antlr4::tree::ParseTree* getParseTree() const = 0;
 };
 
-
-}
 }

@@ -5,36 +5,28 @@
 #include "../../vm/Allocation.h"
 #include "../../vm/ExecutionContext.h"
 
-
-namespace cish
+namespace cish::module::stdio
 {
-namespace module
-{
-namespace stdio
-{
-
 
 using ast::TypeDecl;
 
+Module::Ptr buildModule() {
+                      FopenContext::Ptr fopenContext = FopenContext::Ptr(new FopenContext());
 
-Module::Ptr buildModule()
-{
-    FopenContext::Ptr fopenContext = FopenContext::Ptr(new FopenContext());
+                      Module::Ptr module = Module::create("stdio.h");
+                      module->addFunction(Function::Ptr(new impl::Puts()));
+                      module->addFunction(Function::Ptr(new impl::Printf()));
+                      module->addFunction(Function::Ptr(new impl::Fopen(fopenContext)));
+                      module->addFunction(Function::Ptr(new impl::Fclose(fopenContext)));
+                      module->addFunction(Function::Ptr(new impl::Fgetc(fopenContext)));
+                      module->addFunction(Function::Ptr(new impl::Fgets(fopenContext)));
+                      return module;
+                      }
 
-    Module::Ptr module = Module::create("stdio.h");
-    module->addFunction(Function::Ptr(new impl::Puts()));
-    module->addFunction(Function::Ptr(new impl::Printf()));
-    module->addFunction(Function::Ptr(new impl::Fopen(fopenContext)));
-    module->addFunction(Function::Ptr(new impl::Fclose(fopenContext)));
-    module->addFunction(Function::Ptr(new impl::Fgetc(fopenContext)));
-    module->addFunction(Function::Ptr(new impl::Fgets(fopenContext)));
-    return module;
 }
 
-
-namespace impl
+namespace cish::module::stdio::impl
 {
-
 
 using ast::FuncDeclaration;
 using ast::VarDeclaration;
@@ -373,9 +365,4 @@ ast::ExpressionValue Fgets::execute(vm::ExecutionContext *context, FuncParams pa
     return ast::ExpressionValue(TypeDecl::getPointer(TypeDecl::CHAR), strAddr);
 }
 
-
-}
-
-}
-}
 }

@@ -7,23 +7,14 @@
 #include "../../ast/FuncDeclaration.h"
 #include "../../Exception.h"
 
-namespace cish
+namespace cish::module::stdlib
 {
-namespace module
-{
-namespace stdlib
-{
-
 DECLARE_EXCEPTION(StdlibException);
-
-
 Module::Ptr buildModule();
+}
 
-
-namespace impl
+namespace cish::module::stdlib::impl
 {
-
-
 
 class Atof: public Function
 {
@@ -95,8 +86,4 @@ private:
     MallocContext::Ptr _mallocContext;
 };
 
-
-}
-}
-}
 }

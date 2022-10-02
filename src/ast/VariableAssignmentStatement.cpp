@@ -5,11 +5,8 @@
 #include "../vm/ExecutionContext.h"
 
 
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 
 /*
 ==============
@@ -95,6 +92,4 @@ void VariableAssignmentStatement::handleStructAssignment(vm::ExecutionContext *e
     dest.writeBuf(sourceBuf, structSize);
 }
 
-
-}
 }

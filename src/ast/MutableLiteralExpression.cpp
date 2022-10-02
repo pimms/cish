@@ -1,11 +1,7 @@
 #include "MutableLiteralExpression.h"
 
-
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 
 MutableLiteralExpression::MutableLiteralExpression(const std::string &literal): _value(literal) {}
 
@@ -32,6 +28,4 @@ void MutableLiteralExpression::setValue(const ExpressionValue &newValue)
     _value = newValue;
 }
 
-
-}
 }

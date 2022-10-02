@@ -4,9 +4,7 @@
 #include "FunctionDeclarationStatement.h"
 
 
-namespace cish
-{
-namespace ast
+namespace cish::ast
 {
 
 Ast::Ast()
@@ -83,8 +81,4 @@ void Ast::addStructLayout(StructLayout::Ptr structLayout)
     _structLayouts.push_back(structLayout);
 }
 
-
-
 }
-}
-

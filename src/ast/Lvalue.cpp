@@ -1,12 +1,8 @@
 #include "Lvalue.h"
 #include "../vm/ExecutionContext.h"
 
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
-
 
 /*
 ==================
@@ -123,8 +119,4 @@ vm::MemoryView SubscriptExpression::getMemoryView(vm::ExecutionContext *context)
     return context->getMemory()->getView(addr);
 }
 
-
-
-
-}
 }

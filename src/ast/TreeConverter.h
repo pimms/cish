@@ -16,9 +16,7 @@
 #include "../module/ModuleContext.h"
 
 
-namespace cish
-{
-namespace ast
+namespace cish::ast
 {
 
 using module::Module;
@@ -29,9 +27,10 @@ DECLARE_EXCEPTION(AstConversionException);
 DECLARE_EXCEPTION(FunctionNotDefinedException);
 DECLARE_EXCEPTION(ModuleNotFoundException);
 
-namespace internal
-{
+}
 
+namespace cish::ast::internal
+{
 
 class TreeConverter: public CMBaseVisitor
 {
@@ -121,7 +120,4 @@ private:
     std::vector<std::string> tokenizeTree(antlr4::tree::ParseTree *tree);
 };
 
-
-}
-}
 }

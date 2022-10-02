@@ -5,9 +5,7 @@
 #include <vector>
 #include <memory>
 
-namespace cish
-{
-namespace vm
+namespace cish::vm
 {
 
 class ExecutionContext;
@@ -24,6 +22,4 @@ public:
                                          vm::Variable *returnBuffer) const = 0;
 };
 
-
-}
 }

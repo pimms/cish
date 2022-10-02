@@ -2,15 +2,10 @@
 #include "MurmurHash2.h"
 #include "../Exception.h"
 
-
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 
 static const uint32_t g_hseed = 0x8BADF00D;
-
 
 StringTable::Ptr StringTable::create()
 {
@@ -58,6 +53,4 @@ const std::map<StringId,std::string>& StringTable::getMap() const
     return _map;
 }
 
-
-}
 }

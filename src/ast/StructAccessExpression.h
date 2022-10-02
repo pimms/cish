@@ -3,15 +3,10 @@
 #include "Lvalue.h"
 #include "StructLayout.h"
 
-
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 
 DECLARE_EXCEPTION(InvalidAccessException);
-
 
 class StructAccessExpression : public Lvalue
 {
@@ -36,7 +31,4 @@ private:
     const StructField *_field;
 };
 
-
-
-}
 }

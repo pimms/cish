@@ -1,12 +1,8 @@
 #include "StringLiteralExpression.h"
 #include "../vm//ExecutionContext.h"
 
-
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 
 StringLiteralExpression::StringLiteralExpression(StringId stringId):
     _stringId(stringId)
@@ -27,6 +23,4 @@ TypeDecl StringLiteralExpression::getType() const
     return _type;
 }
 
-
-}
 }

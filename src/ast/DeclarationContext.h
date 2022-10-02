@@ -12,9 +12,7 @@
 #include "StructLayout.h"
 
 
-namespace cish
-{
-namespace ast
+namespace cish::ast
 {
 
 DECLARE_EXCEPTION(VariableAlreadyDeclaredException);
@@ -70,6 +68,4 @@ private:
     void checkIdentifierLength(const std::string &identifier) const;
 };
 
-
-}
 }

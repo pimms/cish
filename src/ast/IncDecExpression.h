@@ -5,11 +5,8 @@
 #include "Lvalue.h"
 
 
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 
 class IncDecExpression: public Expression
 {
@@ -34,6 +31,4 @@ private:
     Lvalue::Ptr _lvalue;
 };
 
-
-}
 }

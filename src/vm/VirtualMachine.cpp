@@ -3,10 +3,9 @@
 #include "Memory.h"
 #include "../Exception.h"
 
-namespace cish
-{ using ast::Ast;
+using cish::ast::Ast;
 
-namespace vm
+namespace cish::vm
 {
 
 DECLARE_EXCEPTION(CommandLineArgumentException)
@@ -154,6 +153,4 @@ std::vector<ast::ExpressionValue> VirtualMachine::prepareCliArguments(std::vecto
     return result;
 }
 
-
-}
 }

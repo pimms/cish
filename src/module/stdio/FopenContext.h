@@ -5,11 +5,7 @@
 
 #include "../../vm/Allocation.h"
 
-namespace cish
-{
-namespace module
-{
-namespace stdio
+namespace cish::module::stdio
 {
 
 DECLARE_EXCEPTION(FopenContextException);
@@ -31,7 +27,4 @@ private:
     std::map<int32_t, FILE*> _files;
 };
 
-
-}
-}
 }

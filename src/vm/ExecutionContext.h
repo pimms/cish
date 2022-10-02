@@ -16,18 +16,13 @@
 #include <stack>
 
 
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 class Statement;
-
 }
 
-namespace vm
+namespace cish::vm
 {
-
 
 DECLARE_EXCEPTION(StackUnderflowException);
 DECLARE_EXCEPTION(StackOverflowException);
@@ -96,6 +91,4 @@ private:
     IStream *_defaultStdout;
 };
 
-
-}
 }

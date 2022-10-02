@@ -3,17 +3,12 @@
 #include "../vm/ExecutionContext.h"
 
 
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 
 void ElseStatement::virtualExecute(vm::ExecutionContext *context) const
 {
 	executeChildStatements(context);
 }
 
-
-}
 }

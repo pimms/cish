@@ -5,11 +5,8 @@
 #include <map>
 
 
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 
 ExpressionValue::ExpressionValue(const std::string& rawValue)
 {
@@ -68,6 +65,4 @@ const TypeDecl& ExpressionValue::getIntrinsicType() const
     return _type;
 }
 
-
-}
 }

@@ -3,11 +3,8 @@
 #include "AstNodes.h"
 
 
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 
 class LiteralExpression: public Expression
 {
@@ -22,6 +19,4 @@ private:
     ExpressionValue _value;
 };
 
-
-}
 }

@@ -6,12 +6,8 @@
 #include <set>
 #include <memory>
 
-
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 
 typedef uint32_t StringId;
 
@@ -35,6 +31,4 @@ private:
     StringId _nextStringId;
 };
 
-
-}
 }

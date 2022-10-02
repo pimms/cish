@@ -7,11 +7,8 @@
 #include <memory>
 
 
-namespace cish
+namespace cish::module
 {
-namespace module
-{
-
 
 typedef const std::vector<ast::ExpressionValue>& FuncParams;
 
@@ -29,6 +26,4 @@ private:
     ast::FuncDeclaration _declaration;
 };
 
-
-}
 }

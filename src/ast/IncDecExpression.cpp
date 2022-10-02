@@ -4,12 +4,7 @@
 #include "../vm/ExecutionContext.h"
 #include "../vm/Variable.h"
 
-
-namespace cish
-{
-namespace ast
-{
-namespace internal
+namespace cish::ast::internal
 {
 
 template<typename T>
@@ -32,6 +27,9 @@ static ExpressionValue evaluate(IncDecExpression::Operation op,
 
 }
 
+
+namespace cish::ast
+{
 
 IncDecExpression::IncDecExpression(IncDecExpression::Operation operation,
                                    Lvalue::Ptr lvalue):
@@ -93,6 +91,4 @@ int IncDecExpression::getMutationValue() const
     return delta;
 }
 
-
-}
 }

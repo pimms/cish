@@ -3,12 +3,8 @@
 #include "AstNodes.h"
 #include "StringTable.h"
 
-
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 
 class StringLiteralExpression: public Expression
 {
@@ -23,6 +19,4 @@ private:
     TypeDecl _type;
 };
 
-
-}
 }

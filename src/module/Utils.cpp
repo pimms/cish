@@ -5,13 +5,8 @@
 #include <iomanip>
 
 
-namespace cish
+namespace cish::module::utils
 {
-namespace module
-{
-namespace utils
-{
-
 
 void readString(const vm::MemoryView &src, std::vector<char>& out)
 {
@@ -38,7 +33,4 @@ std::string hexstr(uint32_t num, bool fill)
     return res;
 }
 
-
-}
-}
 }

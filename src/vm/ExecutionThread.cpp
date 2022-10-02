@@ -5,12 +5,7 @@
 #include <stdexcept>
 
 
-namespace cish
-{
-namespace vm
-{
-
-namespace internal
+namespace cish::vm::internal
 {
 
 // #define ENABLE_DBGLOG
@@ -41,12 +36,12 @@ void Signal::signal(std::function<void()> prenotif)
 
 }
 
-
+namespace cish::vm
+{
 
 struct TerminateSignal {
     std::string reason;
 };
-
 
 ExecutionThread::ExecutionThread():
     _isRunning(false),
@@ -279,6 +274,4 @@ void ExecutionThread::backgroundMain()
     });
 }
 
-
-}
 }

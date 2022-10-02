@@ -2,12 +2,8 @@
 
 #include "AstNodes.h"
 
-
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 
 class FunctionDefinition;
 class DeclarationContext;
@@ -26,6 +22,4 @@ private:
     Expression::Ptr _expression;
 };
 
-
-}
 }

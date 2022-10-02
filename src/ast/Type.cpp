@@ -8,14 +8,10 @@
 #include <map>
 
 
-namespace cish
-{
-namespace ast
+namespace cish::ast
 {
 
 static const char* getComplexName(const TypeDecl *td);
-
-
 
 TypeDecl TypeDecl::getFromString(const std::string &str)
 {
@@ -428,6 +424,4 @@ static const char* getComplexName(const TypeDecl *type)
     }
 }
 
-
-}
 }

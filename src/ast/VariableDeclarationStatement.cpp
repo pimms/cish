@@ -5,10 +5,7 @@
 #include "../vm/ExecutionContext.h"
 #include "../vm/Variable.h"
 
-
-namespace cish
-{
-namespace ast
+namespace cish::ast
 {
 
 VariableDeclarationStatement::VariableDeclarationStatement(
@@ -46,7 +43,4 @@ void VariableDeclarationStatement::virtualExecute(vm::ExecutionContext *context)
     }
 }
 
-
 }
-}
-

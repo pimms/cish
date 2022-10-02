@@ -4,12 +4,8 @@
 
 #include "../vm/ExecutionContext.h"
 
-
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 
 /*
 ==============
@@ -41,6 +37,4 @@ void SuperStatement::executeChildStatements(vm::ExecutionContext *context) const
     }
 }
 
-
-}
 }

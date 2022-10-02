@@ -5,12 +5,7 @@
 #include <map>
 #include <memory>
 
-
-namespace cish
-{
-namespace module
-{
-namespace stdlib
+namespace cish::module::stdlib
 {
 
 DECLARE_EXCEPTION(MallocContextException);
@@ -27,7 +22,4 @@ private:
     std::map<uint32_t, vm::Allocation::Ptr> _allocations;
 };
 
-
-}
-}
 }

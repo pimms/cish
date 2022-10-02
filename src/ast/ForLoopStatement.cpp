@@ -3,11 +3,8 @@
 #include "../vm/ExecutionContext.h"
 
 
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 
 ForLoopStatement::ForLoopStatement(Statement::Ptr init, Expression::Ptr cond, Statement::Ptr iter):
     _initialization(init),
@@ -46,6 +43,4 @@ bool ForLoopStatement::evaluateCondition(vm::ExecutionContext *context) const
     return _condition->evaluate(context).get<bool>();
 }
 
-
-}
 }

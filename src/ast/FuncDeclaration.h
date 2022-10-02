@@ -6,10 +6,7 @@
 #include <string>
 #include <vector>
 
-
-namespace cish
-{
-namespace ast
+namespace cish::ast
 {
 
 struct FuncDeclaration
@@ -46,6 +43,4 @@ struct FuncDeclaration
     bool varargs;
 };
 
-
-}
 }

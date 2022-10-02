@@ -5,12 +5,8 @@
 
 #include "../vm/ExecutionContext.h"
 
-
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 
 ReturnStatement::ReturnStatement(DeclarationContext *context, Expression::Ptr expr):
     _expression(expr)
@@ -77,6 +73,4 @@ ExpressionValue ReturnStatement::getReturnValue(vm::ExecutionContext *context) c
     return ExpressionValue(type, returnBuffer->getHeapAddress());
 }
 
-
-}
 }

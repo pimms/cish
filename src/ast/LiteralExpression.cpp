@@ -1,11 +1,8 @@
 #include "LiteralExpression.h"
 
 
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 
 LiteralExpression::LiteralExpression(const std::string &literal): _value(literal) {}
 
@@ -21,6 +18,4 @@ ExpressionValue LiteralExpression::evaluate(vm::ExecutionContext*) const
     return _value;
 }
 
-
-}
 }

@@ -1,11 +1,8 @@
 #include "ModuleContext.h"
 
 
-namespace cish
+namespace cish::module
 {
-namespace module
-{
-
 
 ModuleContext::Ptr ModuleContext::create()
 {
@@ -33,6 +30,4 @@ const std::vector<Module::Ptr> ModuleContext::getModules() const
     return modules;
 }
 
-
-}
 }

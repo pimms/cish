@@ -23,13 +23,13 @@ struct CliArgs {
     std::vector<std::string> args;
 };
 
-bool doTry(std::function<void(void)> f) {
+bool doTry(const std::function<void(void)>& f) {
     try {
         f();
         return true;
-    } catch (cish::Exception e) {
+    } catch (cish::Exception &e) {
         std::cerr << e.userMessage() << std::endl;
-    } catch (std::exception e) {
+    } catch (std::exception &e) {
         std::cerr << e.what() << std::endl;
     } catch (...) {
         std::cerr << "unknown failure" << std::endl;
@@ -51,7 +51,7 @@ cish::module::ModuleContext::Ptr createModuleContext()
     return moduleContext;
 }
 
-int execute(CliArgs args)
+int execute(const CliArgs& args)
 {
     std::ifstream t(args.fileName);
     std::string source((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
@@ -71,7 +71,7 @@ int execute(CliArgs args)
     opts.heapSize = args.memorySize;
     opts.minAllocSize = 4;
     opts.args.push_back(args.fileName);
-    for (auto a: args.args) {
+    for (const auto& a: args.args) {
         opts.args.push_back(a);
     }
 

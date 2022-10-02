@@ -3,11 +3,8 @@
 #include "AstNodes.h"
 
 
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 
 class ExpressionStatement: public Statement
 {
@@ -21,6 +18,4 @@ private:
     Expression::Ptr _expression;
 };
 
-
-}
 }

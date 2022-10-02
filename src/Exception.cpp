@@ -3,7 +3,6 @@
 namespace cish
 {
 
-
 Exception::Exception(std::string file, std::string func, int line, const char *format, ...)
 {
     char buffer[4096];
@@ -53,6 +52,5 @@ const char* Exception::type() const noexcept
 {
     return _type.c_str();
 }
-
 
 };

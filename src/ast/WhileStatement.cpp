@@ -2,12 +2,8 @@
 #include "../vm/ExecutionContext.h"
 
 
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
-
 
 /*
 ==============
@@ -63,6 +59,4 @@ void DoWhileStatement::virtualExecute(vm::ExecutionContext *context) const
 	context->popScope();
 }
 
-
-}
 }

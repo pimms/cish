@@ -6,13 +6,10 @@
 #include <vector>
 #include <string>
 
-namespace cish
-{
-namespace vm
+namespace cish::vm
 {
 
 class Memory;
-
 
 class Executor: public ExecutionContext, public ExecutionThread
 {
@@ -41,6 +38,4 @@ private:
     bool _hasTerminated;
 };
 
-
-}
 }

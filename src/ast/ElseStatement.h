@@ -3,11 +3,8 @@
 #include "SuperStatement.h"
 
 
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 
 class ElseStatement: public SuperStatement
 {
@@ -18,6 +15,4 @@ protected:
 	void virtualExecute(vm::ExecutionContext *context) const override;
 };
 
-
-}
 }

@@ -6,11 +6,8 @@
 #include "MutableLiteralExpression.h"
 
 
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 
 class ArithmeticAssignmentStatement : public Statement
 {
@@ -36,8 +33,5 @@ private:
     void writeResult(vm::MemoryView &memView, const ExpressionValue &value) const;
 };
 
-
-
-}
 }
 

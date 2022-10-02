@@ -3,9 +3,7 @@
 #include "Type.h"
 #include <string>
 
-namespace cish
-{
-namespace ast
+namespace cish::ast
 {
 
 struct VarDeclaration
@@ -14,6 +12,4 @@ struct VarDeclaration
     std::string name;
 };
 
-
-}
 }

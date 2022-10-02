@@ -1,11 +1,8 @@
 #include "FunctionDeclarationStatement.h"
 #include "../vm/ExecutionContext.h"
 
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 
 FunctionDeclarationStatement::FunctionDeclarationStatement(DeclarationContext *context,
                                                            FuncDeclaration decl):
@@ -18,6 +15,4 @@ void FunctionDeclarationStatement::virtualExecute(vm::ExecutionContext *context)
 {
 }
 
-
-}
 }

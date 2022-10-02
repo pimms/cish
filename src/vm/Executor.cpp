@@ -3,11 +3,8 @@
 #include "../ast/SuperStatement.h"
 #include "../Exception.h"
 
-namespace cish
+namespace cish::vm
 {
-namespace vm
-{
-
 
 Executor::Executor(Memory *memory, ast::Ast::Ptr ast):
     ExecutionContext(memory),
@@ -70,6 +67,4 @@ void Executor::execute()
     _hasTerminated = true;
 }
 
-
-}
 }

@@ -3,14 +3,15 @@
 #include "AstNodes.h"
 #include "Lvalue.h"
 
-namespace cish
+namespace cish::vm
 {
-namespace vm { class ExecutionContext; };
-namespace ast
+class ExecutionContext;
+}
+
+namespace cish::ast
 {
 
 class DeclarationContext;
-
 
 class VariableAssignmentStatement: public Statement
 {
@@ -47,6 +48,4 @@ private:
                                 const ExpressionValue &source) const;
 };
 
-
-}
 }

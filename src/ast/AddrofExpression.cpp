@@ -3,11 +3,8 @@
 #include "../vm/ExecutionContext.h"
 
 
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 
 AddrofExpression::AddrofExpression(Lvalue::Ptr lvalue):
     _lvalue(lvalue),
@@ -25,6 +22,4 @@ TypeDecl AddrofExpression::getType() const
     return _type;
 }
 
-
-}
 }

@@ -5,11 +5,8 @@
 
 #include "Type.h"
 
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 
 class StructField
 {
@@ -28,7 +25,5 @@ private:
     uint32_t _offset;
 };
 
-
-}
 }
 

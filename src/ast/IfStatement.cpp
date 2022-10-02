@@ -2,12 +2,8 @@
 
 #include "../vm/ExecutionContext.h"
 
-
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 
 IfStatement::IfStatement(Expression::Ptr expression, ElseStatement::Ptr elseStatement):
     _expression(expression),
@@ -31,6 +27,4 @@ void IfStatement::virtualExecute(vm::ExecutionContext *context) const
     context->popScope();
 }
 
-
-}
 }

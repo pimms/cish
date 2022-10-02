@@ -12,11 +12,8 @@
 #include <map>
 
 
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 
 class Ast
 {
@@ -48,6 +45,4 @@ private:
     std::vector<StructLayout::Ptr> _structLayouts;
 };
 
-
-}
 }

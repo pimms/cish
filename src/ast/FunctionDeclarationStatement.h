@@ -3,9 +3,7 @@
 #include "AstNodes.h"
 #include "DeclarationContext.h"
 
-namespace cish
-{
-namespace ast
+namespace cish::ast
 {
 
 class FunctionDeclarationStatement: public Statement
@@ -20,5 +18,4 @@ private:
     FuncDeclaration _decl;
 };
 
-}
 }

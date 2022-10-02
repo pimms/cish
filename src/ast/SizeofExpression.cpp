@@ -1,10 +1,7 @@
 #include "SizeofExpression.h"
 
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 
 SizeofExpression::SizeofExpression(Expression::Ptr expression)
 {
@@ -26,7 +23,5 @@ ExpressionValue SizeofExpression::evaluate(vm::ExecutionContext *context) const
     return ExpressionValue(TypeDecl::INT, _size);
 }
 
-
-}
 }
 

@@ -10,11 +10,8 @@
 #include <string>
 
 
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 
 DECLARE_EXCEPTION(SyntaxErrorException);
 
@@ -68,6 +65,4 @@ private:
                                           antlr4::atn::ATNConfigSet *configs) override;
 };
 
-
-}
 }

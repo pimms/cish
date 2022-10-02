@@ -4,11 +4,8 @@
 #include "Lvalue.h"
 
 
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 
 class AddrofExpression: public Expression
 {
@@ -23,6 +20,4 @@ private:
     TypeDecl _type;
 };
 
-
-}
 }

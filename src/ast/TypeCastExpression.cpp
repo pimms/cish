@@ -1,11 +1,8 @@
 #include "TypeCastExpression.h"
 
 
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 
 TypeCastExpression::TypeCastExpression(TypeDecl type, Expression::Ptr expr):
     _type(type),
@@ -63,7 +60,4 @@ ExpressionValue TypeCastExpression::evaluate(vm::ExecutionContext *ctx) const
     return casted;
 }
 
-
-
-}
 }

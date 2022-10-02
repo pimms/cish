@@ -2,12 +2,8 @@
 
 #include "AstNodes.h"
 
-
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 
 /**
  * Holds a literal value that can be changed to any other literal
@@ -31,6 +27,4 @@ private:
     ExpressionValue _value;
 };
 
-
-}
 }

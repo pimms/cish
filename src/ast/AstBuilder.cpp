@@ -7,12 +7,8 @@
 
 #include <cassert>
 
-
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 
 AstBuilder::AstBuilder(const ParseContext::Ptr parseContext, ModuleContext::Ptr moduleContext):
     _parseContext(parseContext),
@@ -45,6 +41,4 @@ Ast::Ptr AstBuilder::buildAst()
     return ast;
 }
 
-
-}
 }

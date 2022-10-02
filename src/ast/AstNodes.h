@@ -11,12 +11,13 @@
 #include "../vm/Variable.h"
 
 
-namespace cish
+namespace cish::vm
 {
-namespace vm { class ExecutionContext; }
-namespace ast
-{
+class ExecutionContext;
+}
 
+namespace cish::ast
+{
 
 DECLARE_EXCEPTION(VariableNotDeclaredException);
 DECLARE_EXCEPTION(VariableNotDefinedException);
@@ -32,7 +33,6 @@ public:
 
     virtual ~AstNode() {};
 };
-
 
 
 class Statement: public AstNode
@@ -81,13 +81,10 @@ public:
 };
 
 
-
 class NoOpStatement: public Statement
 {
 public:
     virtual void virtualExecute(vm::ExecutionContext*) const override;
 };
 
-
-}
 }

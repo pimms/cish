@@ -1,11 +1,8 @@
 #include "StructField.h"
 #include "StructLayout.h"
 
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 
 StructField::StructField(const TypeDecl &type, const std::string &name):
     _name(name),
@@ -37,6 +34,4 @@ const uint32_t StructField::getOffset() const
     return _offset;
 }
 
-
-}
 }

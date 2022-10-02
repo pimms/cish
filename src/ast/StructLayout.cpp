@@ -1,11 +1,8 @@
 #include "StructLayout.h"
 #include "StructField.h"
 
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 
 StructLayout::StructLayout(const std::string &name):
     _name(name),
@@ -92,6 +89,4 @@ uint32_t StructLayout::getSize() const
     return _size;
 }
 
-
-}
 }

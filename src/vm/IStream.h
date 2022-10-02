@@ -3,11 +3,8 @@
 #include <string>
 
 
-namespace cish
+namespace cish::vm
 {
-namespace vm
-{
-
 
 class IStream
 {
@@ -16,6 +13,4 @@ public:
     virtual void write(const std::string &str) = 0;
 };
 
-
-}
 }

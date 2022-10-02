@@ -8,9 +8,7 @@
 #include "../Exception.h"
 
 
-namespace cish
-{
-namespace ast
+namespace cish::ast
 {
 
 class StructField;
@@ -58,6 +56,4 @@ private:
     bool _finalized;
 };
 
-
-}
 }

@@ -1,11 +1,7 @@
 #include "MinusExpression.h"
 
-
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 
 MinusExpression::MinusExpression(Expression::Ptr expr):
     _expr(expr)
@@ -43,6 +39,4 @@ ExpressionValue MinusExpression::evaluate(vm::ExecutionContext *ctx) const
     }
 }
 
-
-}
 }

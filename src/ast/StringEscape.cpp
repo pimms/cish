@@ -3,14 +3,8 @@
 #include <map>
 #include <sstream>
 
-
-namespace cish
+namespace cish::ast::string
 {
-namespace ast
-{
-namespace string
-{
-
 
 static const ::std::map<char,char> g_charEscapeMap = {
     {'\\', '\\'},
@@ -72,7 +66,4 @@ int8_t unescapeChar(const std::string &rawCharLiteral)
     return g_charEscapeMap.at(ch);
 }
 
-
-}
-}
 }

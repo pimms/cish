@@ -29,13 +29,8 @@
 #include "StructField.h"
 
 
-namespace cish
+namespace cish::ast::internal
 {
-namespace ast
-{
-namespace internal
-{
-
 
 TreeConverter::TreeConverter(ModuleContext::Ptr moduleContext):
     _moduleContext(std::move(moduleContext))
@@ -928,8 +923,4 @@ static void treeTokenizerHelper(std::vector<std::string> &res, antlr4::tree::Par
     }
 }
 
-
-
-}
-}
 }

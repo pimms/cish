@@ -2,11 +2,8 @@
 #include "FunctionDefinition.h"
 #include "../vm/ExecutionContext.h"
 
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 
 FunctionCallExpression::FunctionCallExpression(DeclarationContext *context,
                                                const std::string &funName,
@@ -75,6 +72,4 @@ void FunctionCallExpression::verifyParameterTypes()
     }
 }
 
-
-}
 }

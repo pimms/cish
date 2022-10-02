@@ -4,13 +4,9 @@
 #include <sstream>
 #include <stdarg.h>
 
-
-
 #if defined(__APPLE__) || defined(__GNUC__)
     #define vsprintf_s vsprintf
 #endif
-
-
 
 
 #ifdef DEBUG
@@ -20,7 +16,6 @@
 #else
     #define __DBGPRINT_EXCEPTION(_name)
 #endif
-
 
 #define DECLARE_EXCEPTION(name)                     \
     class name : public ::cish::Exception           \

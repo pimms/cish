@@ -2,11 +2,8 @@
 
 #include "AstNodes.h"
 
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 
 class SizeofExpression : public Expression
 {
@@ -21,6 +18,4 @@ private:
     uint32_t _size;
 };
 
-
-}
 }

@@ -4,10 +4,12 @@
 #include "VariableAssignmentStatement.h"
 
 
-namespace cish
+namespace cish::vm
 {
-namespace vm { class ExecutionContext; }
-namespace ast
+class ExecutionContext;
+}
+
+namespace cish::ast
 {
 
 class DeclarationContext;
@@ -35,6 +37,4 @@ private:
     VariableAssignmentStatement::Ptr _assignment;
 };
 
-
-}
 }

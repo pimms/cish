@@ -5,10 +5,7 @@
 
 #include "../Exception.h"
 
-
-namespace cish
-{
-namespace ast
+namespace cish::ast
 {
 
 DECLARE_EXCEPTION(FunctionNotDeclaredException);
@@ -30,6 +27,4 @@ private:
     std::vector<Expression::Ptr> _params;
 };
 
-
-}
 }

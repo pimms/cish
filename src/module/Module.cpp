@@ -1,11 +1,8 @@
 #include "Module.h"
 
 
-namespace cish
+namespace cish::module
 {
-namespace module
-{
-
 
 Module::Ptr Module::create(const std::string &name)
 {
@@ -56,6 +53,4 @@ std::vector<ast::StructLayout::Ptr> Module::getStructs() const
     return _structs;
 }
 
-
-}
 }

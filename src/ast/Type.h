@@ -7,9 +7,7 @@
 #include "StructLayout.h"
 
 
-namespace cish
-{
-namespace ast
+namespace cish::ast
 {
 
 class DeclarationContext;
@@ -99,6 +97,4 @@ template<> TypeDecl TypeDecl::getFromNative<int>();
 template<> TypeDecl TypeDecl::getFromNative<float>();
 template<> TypeDecl TypeDecl::getFromNative<double>();
 
-
-}
 }

@@ -1,11 +1,8 @@
 #include "AntlrContext.h"
 
 
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 
 AntlrContext::AntlrContext(const std::string &source):
     _inputStream(nullptr),
@@ -107,6 +104,4 @@ void AntlrContext::reportContextSensitivity(antlr4::Parser *recognizer,
     // fprintf(stderr, "ANTLR4 Context sensitivity (?)\n");
 }
 
-
-}
 }

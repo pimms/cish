@@ -4,11 +4,8 @@
 #include <set>
 
 
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 
 DeclarationContext::DeclarationContext():
     _currentFunction(nullptr)
@@ -190,6 +187,4 @@ void DeclarationContext::checkIdentifierLength(const std::string &identifier) co
     }
 }
 
-
-}
 }

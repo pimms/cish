@@ -3,11 +3,8 @@
 #include "../vm/Allocation.h"
 
 
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 
 ArithmeticAssignmentStatement::ArithmeticAssignmentStatement(Lvalue::Ptr lvalue,
                                                              BinaryExpression::Operator op,
@@ -120,7 +117,4 @@ void ArithmeticAssignmentStatement::writeResult(vm::MemoryView &memView,
     }
 }
 
-
 }
-}
-

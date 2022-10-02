@@ -7,20 +7,14 @@
 #include "../Exception.h"
 
 
-namespace cish
-{
-
-namespace vm
-{
+namespace cish::vm {
 
 DECLARE_EXCEPTION(InvalidAllocationException);
 
 
-class Variable
-{
+class Variable {
 public:
     Variable(ast::TypeDecl type, Allocation::Ptr allocation);
-
     cish::ast::TypeDecl getType() const;
     Allocation* getAllocation() const;
     uint32_t getHeapAddress() const;
@@ -30,6 +24,4 @@ private:
     Allocation::Ptr _allocation;
 };
 
-
-}
 }

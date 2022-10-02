@@ -1,9 +1,7 @@
 #include "Scope.h"
 
 
-namespace cish
-{
-namespace vm
+namespace cish::vm
 {
 
 Scope::Scope(): Scope(nullptr) { }
@@ -41,7 +39,4 @@ Variable* Scope::getVariable(const std::string &name) const
     return nullptr;
 }
 
-
-
-}
 }

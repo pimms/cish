@@ -1,12 +1,7 @@
 #include "FopenContext.h"
 
-namespace cish
+namespace cish::module::stdio
 {
-namespace module
-{
-namespace stdio
-{
-
 
 FopenContext::FopenContext():
     _counter(0x4533345)
@@ -68,6 +63,4 @@ bool FopenContext::fgets(std::string *result, int32_t size, uint32_t handle)
     return true;
 }
 
-}
-}
 }

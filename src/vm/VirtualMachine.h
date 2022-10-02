@@ -4,9 +4,7 @@
 #include "../ast/Ast.h"
 #include "../Exception.h"
 
-namespace cish
-{
-namespace vm
+namespace cish::vm
 {
 
 class Memory;
@@ -76,6 +74,4 @@ private:
     std::vector<ast::ExpressionValue> prepareCliArguments(std::vector<std::string> args);
 };
 
-
-}
 }

@@ -5,9 +5,7 @@
 
 #include "../Exception.h"
 
-namespace cish
-{
-namespace vm
+namespace cish::vm
 {
 
 DECLARE_EXCEPTION(AllocationFailedException);
@@ -38,7 +36,4 @@ private:
     uint32_t _size;
 };
 
-
 }
-}
-

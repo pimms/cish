@@ -1,10 +1,7 @@
 #include "BinaryExpression.h"
 
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 
 /*
 ==============
@@ -225,6 +222,4 @@ uint32_t BinaryExpression::evalPointerOperator(uint32_t a, uint32_t b) const
     throw std::runtime_error("Operator unhandled: " + std::to_string(_operator));
 }
 
-
-}
 }

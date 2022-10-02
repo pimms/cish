@@ -6,11 +6,8 @@
 #include <string>
 
 
-namespace cish
+namespace cish::module
 {
-namespace module
-{
-
 
 class ModuleContext
 {
@@ -26,6 +23,4 @@ private:
     std::map<std::string, Module::Ptr> _modules;
 };
 
-
-}
 }

@@ -4,14 +4,8 @@
 
 #include <string>
 
-
-namespace cish
+namespace cish::ast::string
 {
-namespace ast
-{
-namespace string
-{
-
 
 DECLARE_EXCEPTION(StringEscapeException);
 
@@ -26,7 +20,4 @@ std::string unescapeString(const std::string &string);
  */
 int8_t unescapeChar(const std::string &rawCharLiteral);
 
-
-}
-}
 }

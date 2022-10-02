@@ -1,9 +1,7 @@
 #include "Variable.h"
 
 
-namespace cish
-{
-namespace vm
+namespace cish::vm
 {
 
 using cish::ast::TypeDecl;
@@ -29,6 +27,4 @@ uint32_t Variable::getHeapAddress() const
     return _allocation->getAddress();
 }
 
-
-}
 }

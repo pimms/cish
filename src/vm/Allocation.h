@@ -5,11 +5,8 @@
 
 #include "../ast/ExpressionValue.h"
 
-namespace cish
+namespace cish::vm
 {
-namespace vm
-{
-
 
 /*
 ==================
@@ -95,7 +92,4 @@ public:
     ~Allocation();
 };
 
-
 }
-}
-

@@ -9,17 +9,12 @@
 #include <vector>
 #include <map>
 
-
-namespace cish
+namespace cish::vm
 {
-namespace vm
-{
-
 
 DECLARE_EXCEPTION(InvalidReadException);
 DECLARE_EXCEPTION(InvalidFreeException);
 DECLARE_EXCEPTION(InvalidAccessException);
-
 
 class Memory : private MemoryAccess
 {
@@ -69,5 +64,4 @@ private:
     void write(const uint8_t *buffer, uint32_t address, uint32_t len) override;
 };
 
-}
 }

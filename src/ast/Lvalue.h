@@ -5,12 +5,13 @@
 
 #include <memory>
 
-namespace cish
+namespace cish::vm
 {
-namespace vm { class ExecutionContext; }
-namespace ast
-{
+class ExecutionContext;
+}
 
+namespace cish::ast
+{
 
 /*
 ==================
@@ -92,6 +93,4 @@ private:
     TypeDecl _intrinsicType;
 };
 
-
-}
 }

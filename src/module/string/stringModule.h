@@ -2,32 +2,26 @@
 
 #include "../Module.h"
 
-namespace cish
-{
-namespace module
-{
-namespace string
-{
-
-
+namespace cish::module::string {
 /**
- * Functions not yet implemented:
- *  - strcspn
- *  - strpbrk
- *  - strrchr
- *  - strspn
- *  - strtok
- *
- *  Functions that won't be implemented:
- *  - strcoll
- *  - strerror
- *  - strxfrm
- */
+* Functions not yet implemented:
+*  - strcspn
+*  - strpbrk
+*  - strrchr
+*  - strspn
+*  - strtok
+*
+*  Functions that won't be implemented:
+*  - strcoll
+*  - strerror
+*  - strxfrm
+*/
 Module::Ptr buildModule();
 
-namespace impl
-{
+}
 
+namespace cish::module::string::impl
+{
 
 /*
 ==================
@@ -236,10 +230,4 @@ public:
                                  vm::Variable*) const override;
 };
 
-
-
-}
-
-}
-}
 }

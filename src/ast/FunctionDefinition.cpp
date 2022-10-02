@@ -5,12 +5,8 @@
 
 #include "../vm/ExecutionContext.h"
 
-
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 
 FunctionDefinition::FunctionDefinition(DeclarationContext *context,
                                        FuncDeclaration decl):
@@ -127,6 +123,4 @@ void FunctionDefinition::copyStruct(vm::Memory *memory,
     target->writeBuf(sourceBuf, size);
 }
 
-
-}
 }

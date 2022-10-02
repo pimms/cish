@@ -8,12 +8,7 @@
 
 #include "../Exception.h"
 
-namespace cish
-{
-namespace vm
-{
-
-namespace internal
+namespace cish::vm::internal
 {
 
 class Signal
@@ -31,6 +26,8 @@ private:
 
 }
 
+namespace cish::vm
+{
 
 class ExecutionThread
 {
@@ -111,6 +108,4 @@ private:
     std::shared_ptr<Exception> _runtimeError;
 };
 
-
-}
 }

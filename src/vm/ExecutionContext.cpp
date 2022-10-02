@@ -4,15 +4,11 @@
 #include "../ast/AstNodes.h"
 
 
-namespace cish
-{
-namespace vm
+namespace cish::vm
 {
 
 // If this ever occurs, something fucky is definitely going on
 const int MAX_STACK_FRAMES = 4096;
-
-
 
 ExecutionContext::ExecutionContext(Memory *memory):
     _memory(memory),
@@ -209,6 +205,4 @@ IStream* ExecutionContext::getStdout()
     return _customStdout ? _customStdout : _defaultStdout;
 }
 
-
-}
 }

@@ -2,11 +2,8 @@
 #include "StructField.h"
 #include "../vm/ExecutionContext.h"
 
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 
 StructAccessExpression::StructAccessExpression(Expression::Ptr structExpr,
                                                const std::string &memberName,
@@ -47,6 +44,4 @@ vm::MemoryView StructAccessExpression::getMemoryView(vm::ExecutionContext *conte
     return context->getMemory()->getView(addr);
 }
 
-
-}
 }

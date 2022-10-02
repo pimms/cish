@@ -8,27 +8,21 @@
 #include "../../ast/StructLayout.h"
 #include "../../Exception.h"
 
-namespace cish
-{
-namespace ast
+namespace cish::ast
 {
 class StructLayout;
 }
 
-namespace module
-{
-namespace stdio
-{
-
+namespace cish::module::stdio {
 
 DECLARE_EXCEPTION(StdioException);
 
 Module::Ptr buildModule();
 
+}
 
-namespace impl
+namespace cish::module::stdio::impl
 {
-
 
 class Puts: public Function
 {
@@ -112,8 +106,4 @@ private:
     FopenContext::Ptr _fopenContext;
 };
 
-
-}
-}
-}
 }

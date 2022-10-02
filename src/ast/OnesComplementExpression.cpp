@@ -1,10 +1,7 @@
 #include "OnesComplementExpression.h"
 
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 
 OnesComplementExpression::OnesComplementExpression(Expression::Ptr expression):
     _expression(expression)
@@ -39,7 +36,4 @@ TypeDecl OnesComplementExpression::getType() const
     return TypeDecl::INT;
 }
 
-
-
-}
 }

@@ -6,11 +6,8 @@
 #include "../module/ModuleContext.h"
 
 
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 
 class AntlrContext;
 
@@ -27,6 +24,4 @@ private:
     module::ModuleContext::Ptr _moduleContext;
 };
 
-
-}
 }

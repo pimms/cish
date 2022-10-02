@@ -1,10 +1,7 @@
 #include "Allocation.h"
 
-namespace cish
+namespace cish::vm
 {
-namespace vm
-{
-
 
 /*
 ==================
@@ -75,6 +72,4 @@ Allocation::~Allocation()
     _memoryAccess->onDeallocation(this);
 }
 
-
-}
 }

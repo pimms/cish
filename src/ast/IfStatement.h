@@ -4,12 +4,8 @@
 #include "SuperStatement.h"
 #include "ElseStatement.h"
 
-
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 
 class IfStatement: public SuperStatement
 {
@@ -26,6 +22,4 @@ private:
     ElseStatement::Ptr _elseStatement;
 };
 
-
-}
 }

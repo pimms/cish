@@ -3,11 +3,8 @@
 #include "../vm/ExecutionContext.h"
 
 
-namespace cish
+namespace cish::ast
 {
-namespace ast
-{
-
 
 Statement::~Statement()
 {
@@ -52,6 +49,4 @@ void NoOpStatement::virtualExecute(vm::ExecutionContext *context) const
 	Statement::execute(context);
 }
 
-
-}
 }

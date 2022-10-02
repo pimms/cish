@@ -1,9 +1,7 @@
 #include "Function.h"
 
 
-namespace cish
-{
-namespace module
+namespace cish::module
 {
 
 
@@ -18,6 +16,4 @@ const ast::FuncDeclaration* Function::getDeclaration() const
     return &_declaration;
 }
 
-
-}
 }
