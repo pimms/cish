@@ -26,7 +26,7 @@ file(GLOB_RECURSE CISH_SRCS src/**.cpp)
 file(GLOB_RECURSE CISH_HDRS src/**.h)
 
 add_library(cish ${CISH_SRCS} ${CISH_HDRS})
-set_property(TARGET cish PROPERTY CXX_STANDARD 17)
+set_property(TARGET cish PROPERTY CXX_STANDARD 20)
 set_property(TARGET cish PROPERTY CXX_STANDARD_REQUIRED ON)
 
 set(CISH_LIBRARY "cish")
