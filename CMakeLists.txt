@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.5)
 project(cish CXX)
 
 option(build_cish_test "Build all tests" ON)

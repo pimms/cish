@@ -9,7 +9,7 @@ Exception::Exception(std::string file, std::string func, int line, const char *f
 
     va_list va;
     va_start(va, format);
-    vsprintf_s(buffer, format, va);
+    vsnprintf(buffer, 4096, format, va);
     va_end(va);
 
     std::stringstream ss;

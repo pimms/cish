@@ -1,14 +1,9 @@
 #pragma once
 
+#include <cstdio>
 #include <stdexcept>
 #include <sstream>
-#include <stdarg.h>
 #include <cassert>
-
-#if defined(__APPLE__) || defined(__GNUC__)
-    #define vsprintf_s vsprintf
-#endif
-
 
 #ifdef DEBUG
     #define __DBGPRINT_EXCEPTION(_name) \
@@ -29,7 +24,7 @@
                                                     \
             va_list va;                             \
             va_start(va, format);                   \
-            vsprintf_s(buffer, format, va);         \
+            vsnprintf(buffer, 4096, format, va);    \
             va_end(va);                             \
                                                     \
             std::stringstream ss;                   \
