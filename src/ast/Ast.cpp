@@ -40,9 +40,9 @@ const vm::Callable::Ptr Ast::getFunctionDefinition(const std::string &funcName)
     return _funcDefs[funcName];
 }
 
-std::vector<const vm::Callable::Ptr> Ast::getFunctionDefinitions() const
+std::vector<vm::Callable::Ptr> Ast::getFunctionDefinitions() const
 {
-    std::vector<const vm::Callable::Ptr> funcs;
+    std::vector<vm::Callable::Ptr> funcs;
     for (auto pair: _funcDefs) {
         funcs.push_back(pair.second);
     }
@@ -56,9 +56,9 @@ void Ast::addRootStatement(Statement::Ptr statement)
     _rootStatements.push_back(statement);
 }
 
-std::vector<const Statement::Ptr> Ast::getRootStatements() const
+std::vector<Statement::Ptr> Ast::getRootStatements() const
 {
-    std::vector<const Statement::Ptr> copy;
+    std::vector<Statement::Ptr> copy;
     for (Statement::Ptr s: _rootStatements)
         copy.push_back(s);
     return copy;

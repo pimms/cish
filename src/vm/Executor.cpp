@@ -59,7 +59,7 @@ void Executor::execute()
     }
 
     // Execute global statements
-    for (const ast::Statement::Ptr statement: _ast->getRootStatements()) {
+    for (ast::Statement::Ptr statement: _ast->getRootStatements()) {
         statement->execute(this);
     }
 

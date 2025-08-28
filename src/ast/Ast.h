@@ -25,10 +25,10 @@ public:
     void addFunctionDefinition(vm::Callable::Ptr funcDef);
     void addModule(const module::Module::Ptr module);
     const vm::Callable::Ptr getFunctionDefinition(const std::string &funcName);
-    std::vector<const vm::Callable::Ptr> getFunctionDefinitions() const;
+    std::vector<vm::Callable::Ptr> getFunctionDefinitions() const;
 
     void addRootStatement(Statement::Ptr statement);
-    std::vector<const Statement::Ptr> getRootStatements() const;
+    std::vector<Statement::Ptr> getRootStatements() const;
 
     void setStringTable(StringTable::Ptr stringTable);
     const StringTable* getStringTable() const;
