@@ -48,7 +48,7 @@ endforeach()
 
 # -- Find ANTLR4 runtime -- #
 find_library(ANTLR_LIBRARY
-    HINTS "/opt/homebrew/lib"
+    HINTS "/usr/local/lib"
     NAMES "libantlr4-runtime.a" "antlr4-runtime")
 if ("${ANTLR_LIBRARY}" STREQUAL "ANTLR_LIBRARY-NOTFOUND")
     message(SEND_ERROR "Failed to find antlr4-runtime library")
