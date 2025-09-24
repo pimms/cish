@@ -8,22 +8,22 @@ using namespace cish::ast;
 namespace cish::module::string {
 
 Module::Ptr buildModule() {
-                      Module::Ptr module = Module::create("string.h");
-                      module->addFunction(std::make_shared<impl::Memchr>());
-                      module->addFunction(std::make_shared<impl::Memcmp>());
-                      module->addFunction(std::make_shared<impl::Memcpy>());
-                      module->addFunction(std::make_shared<impl::Memset>());
-                      module->addFunction(std::make_shared<impl::Strcat>());
-                      module->addFunction(std::make_shared<impl::Strncat>());
-                      module->addFunction(std::make_shared<impl::Strchr>());
-                      module->addFunction(std::make_shared<impl::Strstr>());
-                      module->addFunction(std::make_shared<impl::Strcmp>());
-                      module->addFunction(std::make_shared<impl::Strncmp>());
-                      module->addFunction(std::make_shared<impl::Strcpy>());
-                      module->addFunction(std::make_shared<impl::Strncpy>());
-                      module->addFunction(std::make_shared<impl::Strlen>());
-                      return module;
-                      }
+    Module::Ptr module = Module::create("string.h");
+    module->addFunction(std::make_shared<impl::Memchr>());
+    module->addFunction(std::make_shared<impl::Memcmp>());
+    module->addFunction(std::make_shared<impl::Memcpy>());
+    module->addFunction(std::make_shared<impl::Memset>());
+    module->addFunction(std::make_shared<impl::Strcat>());
+    module->addFunction(std::make_shared<impl::Strncat>());
+    module->addFunction(std::make_shared<impl::Strchr>());
+    module->addFunction(std::make_shared<impl::Strstr>());
+    module->addFunction(std::make_shared<impl::Strcmp>());
+    module->addFunction(std::make_shared<impl::Strncmp>());
+    module->addFunction(std::make_shared<impl::Strcpy>());
+    module->addFunction(std::make_shared<impl::Strncpy>());
+    module->addFunction(std::make_shared<impl::Strlen>());
+    return module;
+}
 
 }
 
