@@ -1,5 +1,6 @@
 #include "ExpressionValue.h"
 #include "StringEscape.h"
+#include "Type.h"
 
 #include <regex>
 #include <map>
@@ -27,11 +28,25 @@ ExpressionValue::ExpressionValue(const std::string& rawValue)
         _type = TypeDecl::INT;
         _value.ival = 0;
     } else if (std::regex_match(rawValue, exprInt)) {
-        _type = TypeDecl(TypeDecl::INT);
-        _value.ival = std::atoi(rawValue.c_str());
+        const int64_t longval = std::atol(rawValue.c_str());
+        const int32_t val = static_cast<int32_t>(longval);
+        if (static_cast<int64_t>(val) == longval) {
+            _type = TypeDecl(TypeDecl::INT);
+            _value.ival = val;
+        } else {
+            _type = TypeDecl(TypeDecl::LONG);
+            _value.ival = longval;
+        }
     } else if (std::regex_match(rawValue, exprHex)) {
-        _type = TypeDecl(TypeDecl::INT);
-        _value.ival = std::strtol(rawValue.c_str()+2, nullptr, 16);
+        const int64_t longval = std::strtol(rawValue.c_str()+2, nullptr, 16);
+        const int32_t val = static_cast<int32_t>(longval);
+        if (static_cast<int64_t>(val) == longval) {
+            _type = TypeDecl(TypeDecl::INT);
+            _value.ival = val;
+        } else {
+            _type = TypeDecl(TypeDecl::LONG);
+            _value.ival = longval;
+        }
     } else if (std::regex_match(rawValue, exprFloat)) {
         _type = TypeDecl(TypeDecl::FLOAT);
         _value.fval = std::atof(rawValue.c_str());

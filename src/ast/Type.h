@@ -94,6 +94,7 @@ template<> TypeDecl TypeDecl::getFromNative<bool>();
 template<> TypeDecl TypeDecl::getFromNative<char>();
 template<> TypeDecl TypeDecl::getFromNative<short>();
 template<> TypeDecl TypeDecl::getFromNative<int>();
+template<> TypeDecl TypeDecl::getFromNative<long>();
 template<> TypeDecl TypeDecl::getFromNative<float>();
 template<> TypeDecl TypeDecl::getFromNative<double>();
 

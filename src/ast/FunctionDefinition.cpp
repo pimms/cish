@@ -89,6 +89,9 @@ vm::Variable* FunctionDefinition::convertToVariable(vm::Memory *memory,
         case TypeDecl::INT:
             alloc->write<int>(sourceValue.get<int>());
             break;
+        case TypeDecl::LONG:
+            alloc->write<long>(sourceValue.get<long>());
+            break;
         case TypeDecl::FLOAT:
             alloc->write<float>(sourceValue.get<float>());
             break;
@@ -116,7 +119,7 @@ void FunctionDefinition::copyStruct(vm::Memory *memory,
 {
     const uint32_t sourceBaseAddr = sourceValue.get<uint32_t>();
     const uint32_t size = targetType.getSize();
-    
+
     const vm::MemoryView sourceView = memory->getView(sourceBaseAddr);
     const uint8_t *sourceBuf = sourceView.readBuf(size);
 

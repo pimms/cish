@@ -1,3 +1,4 @@
+#include <exception>
 #include <gtest/gtest.h>
 
 #include "ast/BinaryExpression.h"
@@ -157,8 +158,8 @@ static void testArithmeticOperators()
         {-0.5, -1},
     };
 
-    for (auto op: operators) {
-        for (auto pair: testData) {
+    for (const auto& op: operators) {
+        for (const auto& pair: testData) {
             ResT expected = op.second((LHST)pair.first, (RHST)pair.second);
             testBinaryExpr<LHST,RHST,ResT>(op.first, (LHST)pair.first, (RHST)pair.second, expected);
         }
@@ -178,6 +179,9 @@ TEST(BinaryExpressionTest, testAllArithmeticOperatorPermutations)
     testArithmeticOperators<int,bool,int>();
     testArithmeticOperators<bool,int,int>();
 
+    testArithmeticOperators<bool, long, long>();
+    testArithmeticOperators<long, bool, long>();
+
     testArithmeticOperators<float,bool,float>();
     testArithmeticOperators<bool,float,float>();
 
@@ -193,6 +197,9 @@ TEST(BinaryExpressionTest, testAllArithmeticOperatorPermutations)
     testArithmeticOperators<int,char,int>();
     testArithmeticOperators<char,int,int>();
 
+    testArithmeticOperators<char, long, long>();
+    testArithmeticOperators<long, char, long>();
+
     testArithmeticOperators<float,char,float>();
     testArithmeticOperators<char,float,float>();
 
@@ -204,6 +211,9 @@ TEST(BinaryExpressionTest, testAllArithmeticOperatorPermutations)
 
     testArithmeticOperators<int,short,int>();
     testArithmeticOperators<short,int,int>();
+
+    testArithmeticOperators<short, long, long>();
+    testArithmeticOperators<long, short, long>();
 
     testArithmeticOperators<float,short,float>();
     testArithmeticOperators<short,float,float>();
@@ -217,9 +227,20 @@ TEST(BinaryExpressionTest, testAllArithmeticOperatorPermutations)
     testArithmeticOperators<float,int,float>();
     testArithmeticOperators<int,float,float>();
 
+    testArithmeticOperators<long,int,long>();
+    testArithmeticOperators<int,long,long>();
+
     testArithmeticOperators<double,int,double>();
     testArithmeticOperators<int,double,double>();
 
+    // Base long
+    testArithmeticOperators<long,long,long>();
+
+    testArithmeticOperators<float,long,float>();
+    testArithmeticOperators<long,float,float>();
+
+    testArithmeticOperators<double,long,double>();
+    testArithmeticOperators<long,double,double>();
 
     // Base float
     testArithmeticOperators<float,float,float>();

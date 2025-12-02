@@ -43,8 +43,8 @@ private:
 
     TypeDecl _type;
     union {
-        int64_t ival;
-        int8_t chval;
+        uint64_t ival;
+        uint8_t chval;
         float fval;
         bool bval;
     } _value;
@@ -78,12 +78,40 @@ inline T ExpressionValue::get() const
         if (_type.isFloating()) {
             return (T)_value.fval;
         }
-        return (T)_value.ival;
+
+        switch (_type.getType()) {
+            case TypeDecl::CHAR:
+                return static_cast<T>(static_cast<int8_t>(_value.ival));
+            case TypeDecl::SHORT:
+                return static_cast<T>(static_cast<int16_t>(_value.ival));
+            case TypeDecl::INT:
+                return static_cast<T>(static_cast<int32_t>(_value.ival));
+            case TypeDecl::LONG:
+                return static_cast<T>(static_cast<int64_t>(_value.ival));
+            default:
+                return static_cast<T>(_value.ival);
+        }
+
+        return static_cast<T>(_value.ival);
     } else if constexpr (std::is_floating_point_v<T>) {
         if (_type.isFloating()) {
             return _value.fval;
         }
-        return (T)_value.ival;
+
+        switch (_type.getType()) {
+            case TypeDecl::CHAR:
+                return static_cast<T>(static_cast<int8_t>(_value.ival));
+            case TypeDecl::SHORT:
+                return static_cast<T>(static_cast<int16_t>(_value.ival));
+            case TypeDecl::INT:
+                return static_cast<T>(static_cast<int32_t>(_value.ival));
+            case TypeDecl::LONG:
+                return static_cast<T>(static_cast<int64_t>(_value.ival));
+            default:
+                return static_cast<T>(_value.ival);
+        }
+
+        return static_cast<T>(_value.ival);
     }
 }
 

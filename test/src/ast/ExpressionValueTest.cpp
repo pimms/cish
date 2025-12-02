@@ -32,13 +32,15 @@ TEST(ExpressionValueTest, IntegerIsCorrectlyIdentifiedFromString)
     ASSERT_EQ(TypeDecl::INT, ExpressionValue("1").getIntrinsicType().getType());
     ASSERT_EQ(TypeDecl::INT, ExpressionValue("10").getIntrinsicType().getType());
     ASSERT_EQ(TypeDecl::INT, ExpressionValue("101").getIntrinsicType().getType());
+    ASSERT_EQ(TypeDecl::LONG, ExpressionValue("1010123123912839").getIntrinsicType().getType());
 }
 
 TEST(ExpressionValueTest, HexadecimalIntegerIsCorrectlyIdentifiedFromString)
 {
     ASSERT_EQ(TypeDecl::INT, ExpressionValue("0x10c").getIntrinsicType().getType());
     ASSERT_EQ(TypeDecl::INT, ExpressionValue("0x0").getIntrinsicType().getType());
-    ASSERT_EQ(TypeDecl::INT, ExpressionValue("0xffFFffFF").getIntrinsicType().getType());
+    ASSERT_EQ(TypeDecl::INT, ExpressionValue("0xFFffFF").getIntrinsicType().getType());
+    ASSERT_EQ(TypeDecl::LONG, ExpressionValue("0xFFFFFFffFF").getIntrinsicType().getType());
 }
 
 TEST(ExpressionValueTest, BoolIsCorrectlyIdentifiedFromString)
@@ -105,6 +107,7 @@ TEST(ExpressionValueTest, IntrinsicHex_GetAsIntTypes)
     ASSERT_EQ(199, ExpressionValue("0xc7").get<uint8_t>());
     ASSERT_EQ(199, ExpressionValue("0Xc7").get<int16_t>());
     ASSERT_EQ(199, ExpressionValue("0Xc7").get<int32_t>());
+    ASSERT_EQ(281474976710655, ExpressionValue("0x00FFFFFFFFFFFF").get<int64_t>());
 
     ASSERT_EQ(true, ExpressionValue("0xC7").get<bool>());
     ASSERT_EQ(false, ExpressionValue("0x0000").get<bool>());

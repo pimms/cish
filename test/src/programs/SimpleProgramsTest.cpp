@@ -991,7 +991,7 @@ TEST(SimpleProgramsTest, longVariable)
 TEST(SimpleProgramsTest, longLiterals)
 {
     assertExitCode(
-        "int main() { return (0x3333333333333333 | 0xCCCCCCCCCCCCCCCC) == 0xFFFFFFFFFFFFFFFF; }",
+        "int main() { return (0x3333333333333333 | 0xCCCCCCCCCCCCCCCC) == -1; }",
         1
     );
 }
