@@ -38,6 +38,17 @@ public:
                                  vm::Variable*) const override;
 };
 
+class Atol: public Function
+{
+public:
+    static ast::FuncDeclaration getSignature();
+
+    Atol();
+    ast::ExpressionValue execute(vm::ExecutionContext *context,
+                                 FuncParams params,
+                                 vm::Variable*) const override;
+};
+
 class Rand: public Function
 {
 public:

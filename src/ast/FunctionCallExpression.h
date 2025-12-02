@@ -15,7 +15,9 @@ DECLARE_EXCEPTION(InvalidParameterException);
 class FunctionCallExpression: public Expression
 {
 public:
-    FunctionCallExpression(DeclarationContext *context, const std::string &funName, std::vector<Expression::Ptr> params);
+    FunctionCallExpression(DeclarationContext *context,
+            const std::string &funName,
+            std::vector<Expression::Ptr> params);
 
     virtual TypeDecl getType() const override;
     virtual ExpressionValue evaluate(vm::ExecutionContext*) const override;

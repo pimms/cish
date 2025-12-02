@@ -52,7 +52,7 @@ private:
 
 
 template<typename T>
-ExpressionValue::ExpressionValue(TypeDecl type, T value)
+inline ExpressionValue::ExpressionValue(TypeDecl type, T value)
 {
     _type = type;
     memset(&_value, 0, sizeof(_value));
@@ -69,7 +69,7 @@ ExpressionValue::ExpressionValue(TypeDecl type, T value)
 }
 
 template<typename T>
-T ExpressionValue::get() const
+inline T ExpressionValue::get() const
 {
     static_assert(std::is_integral_v<T> || std::is_floating_point_v<T>,
                   "T must be integral or floating");
@@ -79,7 +79,7 @@ T ExpressionValue::get() const
             return (T)_value.fval;
         }
         return (T)_value.ival;
-    } else if (std::is_floating_point_v<T>) {
+    } else if constexpr (std::is_floating_point_v<T>) {
         if (_type.isFloating()) {
             return _value.fval;
         }
@@ -90,7 +90,7 @@ T ExpressionValue::get() const
 
 
 template<typename T>
-ExpressionValue ExpressionValue::cast() const
+inline ExpressionValue ExpressionValue::cast() const
 {
     ExpressionValue exprVal;
 

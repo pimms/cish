@@ -11,13 +11,13 @@ namespace cish::ast::internal
 {
 
 template<typename T>
-T multiply(T a, T b)
+inline T multiply(const T& a, const T& b)
 {
     return a * b;
 }
 
 template<typename T>
-T safe_div(T a, T b)
+inline T safe_div(const T& a, const T& b)
 {
     if (b == 0) {
         Throw(DivisionByZeroException, "Division by zero");
@@ -26,97 +26,97 @@ T safe_div(T a, T b)
 }
 
 template<typename T>
-T plus(T a, T b)
+inline T plus(const T& a, const T& b)
 {
     return a + b;
 }
 
 template<typename T>
-T minus(T a, T b)
+inline T minus(const T& a, const T& b)
 {
     return a - b;
 }
 
 template<typename T>
-T bitwiseAnd(T a, T b)
+inline T bitwiseAnd(const T& a, const T& b)
 {
     return a & b;
 }
 
 template<typename T>
-T bitwiseXor(T a, T b)
+inline T bitwiseXor(const T& a, const T& b)
 {
     return a ^ b;
 }
 
 template<typename T>
-T bitwiseOr(T a, T b)
+inline T bitwiseOr(const T& a, const T& b)
 {
     return a | b;
 }
 
 template<typename T>
-T lshift(T a, T n)
+inline T lshift(const T& a, const T& n)
 {
     return a << n;
 }
 
 template<typename T>
-T rshift(T a, T n)
+inline T rshift(const T& a, const T& n)
 {
     return a >> n;
 }
 
 template<typename T>
-T greater(T a, T b)
+inline T greater(const T& a, const T& b)
 {
     return a > b;
 }
 
 template<typename T>
-T less(T a, T b)
+inline T less(const T& a, const T& b)
 {
     return a < b;
 }
 
 template<typename T>
-T greaterEqual(T a, T b)
+inline T greaterEqual(const T& a, const T& b)
 {
     return a >= b;
 }
 
 template<typename T>
-T lessEqual(T a, T b)
+inline T lessEqual(const T& a, const T& b)
 {
     return a <= b;
 }
 
 template<typename T>
-T equalTo(T a, T b)
+inline T equalTo(const T& a, const T& b)
 {
     return a == b;
 }
 
 template<typename T>
-T notEqual(T a, T b)
+inline T notEqual(const T& a, const T& b)
 {
     return a != b;
 }
 
 template<typename T>
-T logicalAnd(T a, T b)
+inline T logicalAnd(const T& a, const T& b)
 {
     return a && b;
 }
 
 template<typename T>
-T logicalOr(T a, T b)
+inline T logicalOr(const T& a, const T& b)
 {
     return a || b;
 }
 
 template<typename T>
-T safe_mod(T a, T b)
+inline T safe_mod(const T& a, const T& b)
 {
     if (b == 0) {
         Throw(DivisionByZeroException, "Division by zero");
@@ -255,7 +255,7 @@ T BinaryExpression::evalWithContext(vm::ExecutionContext *ctx) const
 
 
 template<typename T>
-T BinaryExpression::op_multiply(vm::ExecutionContext *ctx) const
+inline T BinaryExpression::op_multiply(vm::ExecutionContext *ctx) const
 {
     T a = _left->evaluate(ctx).get<T>();
     T b = _right->evaluate(ctx).get<T>();
@@ -263,7 +263,7 @@ T BinaryExpression::op_multiply(vm::ExecutionContext *ctx) const
 }
 
 template<typename T>
-T BinaryExpression::op_safe_div(vm::ExecutionContext *ctx) const
+inline T BinaryExpression::op_safe_div(vm::ExecutionContext *ctx) const
 {
     T a = _left->evaluate(ctx).get<T>();
     T b = _right->evaluate(ctx).get<T>();
@@ -274,7 +274,7 @@ T BinaryExpression::op_safe_div(vm::ExecutionContext *ctx) const
 }
 
 template<typename T>
-T BinaryExpression::op_plus(vm::ExecutionContext *ctx) const
+inline T BinaryExpression::op_plus(vm::ExecutionContext *ctx) const
 {
     T a = _left->evaluate(ctx).get<T>();
     T b = _right->evaluate(ctx).get<T>();
@@ -282,7 +282,7 @@ T BinaryExpression::op_plus(vm::ExecutionContext *ctx) const
 }
 
 template<typename T>
-T BinaryExpression::op_minus(vm::ExecutionContext *ctx) const
+inline T BinaryExpression::op_minus(vm::ExecutionContext *ctx) const
 {
     T a = _left->evaluate(ctx).get<T>();
     T b = _right->evaluate(ctx).get<T>();
@@ -290,7 +290,7 @@ T BinaryExpression::op_minus(vm::ExecutionContext *ctx) const
 }
 
 template<typename T>
-T BinaryExpression::op_bitwiseAnd(vm::ExecutionContext *ctx) const
+inline T BinaryExpression::op_bitwiseAnd(vm::ExecutionContext *ctx) const
 {
     T a = _left->evaluate(ctx).get<T>();
     T b = _right->evaluate(ctx).get<T>();
@@ -298,7 +298,7 @@ T BinaryExpression::op_bitwiseAnd(vm::ExecutionContext *ctx) const
 }
 
 template<typename T>
-T BinaryExpression::op_bitwiseXor(vm::ExecutionContext *ctx) const
+inline T BinaryExpression::op_bitwiseXor(vm::ExecutionContext *ctx) const
 {
     T a = _left->evaluate(ctx).get<T>();
     T b = _right->evaluate(ctx).get<T>();
@@ -306,7 +306,7 @@ T BinaryExpression::op_bitwiseXor(vm::ExecutionContext *ctx) const
 }
 
 template<typename T>
-T BinaryExpression::op_bitwiseOr(vm::ExecutionContext *ctx) const
+inline T BinaryExpression::op_bitwiseOr(vm::ExecutionContext *ctx) const
 {
     T a = _left->evaluate(ctx).get<T>();
     T b = _right->evaluate(ctx).get<T>();
@@ -314,7 +314,7 @@ T BinaryExpression::op_bitwiseOr(vm::ExecutionContext *ctx) const
 }
 
 template<typename T>
-T BinaryExpression::op_lshift(vm::ExecutionContext *ctx) const
+inline T BinaryExpression::op_lshift(vm::ExecutionContext *ctx) const
 {
     T a = _left->evaluate(ctx).get<T>();
     T b = _right->evaluate(ctx).get<T>();
@@ -322,7 +322,7 @@ T BinaryExpression::op_lshift(vm::ExecutionContext *ctx) const
 }
 
 template<typename T>
-T BinaryExpression::op_rshift(vm::ExecutionContext *ctx) const
+inline T BinaryExpression::op_rshift(vm::ExecutionContext *ctx) const
 {
     T a = _left->evaluate(ctx).get<T>();
     T b = _right->evaluate(ctx).get<T>();
@@ -330,7 +330,7 @@ T BinaryExpression::op_rshift(vm::ExecutionContext *ctx) const
 }
 
 template<typename T>
-T BinaryExpression::op_greater(vm::ExecutionContext *ctx) const
+inline T BinaryExpression::op_greater(vm::ExecutionContext *ctx) const
 {
     T a = _left->evaluate(ctx).get<T>();
     T b = _right->evaluate(ctx).get<T>();
@@ -338,7 +338,7 @@ T BinaryExpression::op_greater(vm::ExecutionContext *ctx) const
 }
 
 template<typename T>
-T BinaryExpression::op_less(vm::ExecutionContext *ctx) const
+inline T BinaryExpression::op_less(vm::ExecutionContext *ctx) const
 {
     T a = _left->evaluate(ctx).get<T>();
     T b = _right->evaluate(ctx).get<T>();
@@ -346,7 +346,7 @@ T BinaryExpression::op_less(vm::ExecutionContext *ctx) const
 }
 
 template<typename T>
-T BinaryExpression::op_greaterEqual(vm::ExecutionContext *ctx) const
+inline T BinaryExpression::op_greaterEqual(vm::ExecutionContext *ctx) const
 {
     T a = _left->evaluate(ctx).get<T>();
     T b = _right->evaluate(ctx).get<T>();
@@ -354,7 +354,7 @@ T BinaryExpression::op_greaterEqual(vm::ExecutionContext *ctx) const
 }
 
 template<typename T>
-T BinaryExpression::op_lessEqual(vm::ExecutionContext *ctx) const
+inline T BinaryExpression::op_lessEqual(vm::ExecutionContext *ctx) const
 {
     T a = _left->evaluate(ctx).get<T>();
     T b = _right->evaluate(ctx).get<T>();
@@ -362,7 +362,7 @@ T BinaryExpression::op_lessEqual(vm::ExecutionContext *ctx) const
 }
 
 template<typename T>
-T BinaryExpression::op_equalTo(vm::ExecutionContext *ctx) const
+inline T BinaryExpression::op_equalTo(vm::ExecutionContext *ctx) const
 {
     T a = _left->evaluate(ctx).get<T>();
     T b = _right->evaluate(ctx).get<T>();
@@ -370,7 +370,7 @@ T BinaryExpression::op_equalTo(vm::ExecutionContext *ctx) const
 }
 
 template<typename T>
-T BinaryExpression::op_notEqual(vm::ExecutionContext *ctx) const
+inline T BinaryExpression::op_notEqual(vm::ExecutionContext *ctx) const
 {
     T a = _left->evaluate(ctx).get<T>();
     T b = _right->evaluate(ctx).get<T>();
@@ -378,7 +378,7 @@ T BinaryExpression::op_notEqual(vm::ExecutionContext *ctx) const
 }
 
 template<typename T>
-T BinaryExpression::op_logicalAnd(vm::ExecutionContext *ctx) const
+inline T BinaryExpression::op_logicalAnd(vm::ExecutionContext *ctx) const
 {
     T a = _left->evaluate(ctx).get<T>();
     if (a) {
@@ -390,7 +390,7 @@ T BinaryExpression::op_logicalAnd(vm::ExecutionContext *ctx) const
 }
 
 template<typename T>
-T BinaryExpression::op_logicalOr(vm::ExecutionContext *ctx) const
+inline T BinaryExpression::op_logicalOr(vm::ExecutionContext *ctx) const
 {
     T a = _left->evaluate(ctx).get<T>();
     if (a) {
@@ -402,7 +402,7 @@ T BinaryExpression::op_logicalOr(vm::ExecutionContext *ctx) const
 }
 
 template<typename T>
-T BinaryExpression::op_safe_mod(vm::ExecutionContext *ctx) const
+inline T BinaryExpression::op_safe_mod(vm::ExecutionContext *ctx) const
 {
     T a = _left->evaluate(ctx).get<T>();
     T b = _right->evaluate(ctx).get<T>();

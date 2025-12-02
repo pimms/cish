@@ -16,6 +16,7 @@ Module::Ptr buildModule() {
                       Module::Ptr module = Module::create("stdlib.h");
                       module->addFunction(Function::Ptr(new impl::Atof()));
                       module->addFunction(Function::Ptr(new impl::Atoi()));
+                      module->addFunction(Function::Ptr(new impl::Atol()));
                       module->addFunction(Function::Ptr(new impl::Rand()));
                       module->addFunction(Function::Ptr(new impl::Srand()));
                       module->addFunction(Function::Ptr(new impl::Malloc(mallocContext)));
@@ -112,6 +113,45 @@ ast::ExpressionValue Atoi::execute(vm::ExecutionContext *context,
 
     const int result = atoi(str.data());
     return ExpressionValue(TypeDecl::INT, result);
+}
+
+
+/*
+==================
+long atol(const char *s)
+==================
+*/
+ast::FuncDeclaration Atol::getSignature()
+{
+    FuncDeclaration decl;
+    decl.returnType = TypeDecl::LONG;
+    decl.name = "atol";
+
+    decl.params.push_back(
+        VarDeclaration {
+            TypeDecl::getPointer(TypeDecl::getConst(TypeDecl::CHAR)),
+            "s"
+        }
+    );
+
+    return decl;
+}
+
+Atol::Atol(): Function(getSignature()) {}
+
+ast::ExpressionValue Atol::execute(vm::ExecutionContext *context,
+                                   FuncParams params,
+                                   vm::Variable*) const
+{
+    ExpressionValue param = params[0];
+    const uint32_t addr = param.get<uint32_t>();
+    MemoryView view = context->getMemory()->getView(addr);
+
+    std::vector<char> str;
+    utils::readString(view, str);
+
+    const long result = atol(str.data());
+    return ExpressionValue(TypeDecl::LONG, result);
 }
 
 
