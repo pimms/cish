@@ -2,14 +2,12 @@
 
 #include "antlr/CMBaseVisitor.h"
 #include "antlr/CMParser.h"
-#include "AntlrContext.h"
 #include "ParseContext.h"
 
 #include "AstNodes.h"
 #include "Lvalue.h"
 
 #include "BinaryExpression.h"
-#include "StringEscape.h"
 #include "Ast.h"
 #include "StringLiteralExpression.h"
 

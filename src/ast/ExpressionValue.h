@@ -1,9 +1,7 @@
 #pragma once
 
 #include <stdint.h>
-#include <stdexcept>
 #include <string>
-#include <map>
 
 #include "Type.h"
 #include "../Exception.h"

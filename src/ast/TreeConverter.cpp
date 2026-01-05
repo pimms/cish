@@ -28,6 +28,7 @@
 #include "StructLayout.h"
 #include "StructField.h"
 
+#include "StringEscape.h"
 
 namespace cish::ast::internal
 {
@@ -825,7 +826,7 @@ StringLiteralExpression::Ptr TreeConverter::manuallyVisitStringLiteral(CMParser:
 {
     std::string str = ctx->getText();
     str = str.substr(1, str.length() - 2);
-    str = ast::string::unescapeString(str);
+    str = cish::ast::string::unescapeString(str);
     const StringId stringId = _stringTable->insert(str);
     return std::make_shared<StringLiteralExpression>(stringId);
 }
