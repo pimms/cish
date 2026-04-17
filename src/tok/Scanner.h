@@ -18,7 +18,7 @@ public:
     std::vector<Token> tokenize();
 
 private:
-    Trie _trie;
+    TokenTrie _trie;
     std::string _source;
     std::vector<Token> _tokens;
     int _pos{};

@@ -6,12 +6,12 @@ using namespace cish::tok;
 
 TEST(TrieTest, TestSingleCharEntries)
 {
-    Trie trie;
+    TokenTrie trie;
     trie.insert("(", TokenType::PAREN_L);
     trie.insert(")", TokenType::PAREN_R);
     trie.insert("+", TokenType::PLUS);
 
-    Trie::Result exp;
+    TokenTrie::Result exp;
 
     exp = { true, 1, TokenType::PAREN_L };
     ASSERT_EQ(exp, trie.search("(aaerhajer"));
@@ -31,11 +31,11 @@ TEST(TrieTest, TestSingleCharEntries)
 
 TEST(TrieTest, TestWords)
 {
-    Trie trie;
+    TokenTrie trie;
     trie.insert("semicolon", TokenType::SEMICOLON);
     trie.insert("colon", TokenType::COLON);
 
-    Trie::Result exp;
+    TokenTrie::Result exp;
 
     exp = { true, 9, TokenType::SEMICOLON };
     ASSERT_EQ(exp, trie.search("semicolons are nice"));
@@ -46,12 +46,12 @@ TEST(TrieTest, TestWords)
 
 TEST(TrieTest, LongestWordIsReturned)
 {
-    Trie trie;
+    TokenTrie trie;
     trie.insert(">>=", TokenType::RS_ASSIGN);
     trie.insert(">>", TokenType::RSHIFT);
     trie.insert(">", TokenType::ABRACE_R);
 
-    Trie::Result exp;
+    TokenTrie::Result exp;
 
     exp = { true, 3, TokenType::RS_ASSIGN };
     ASSERT_EQ(exp, trie.search(">>= 3"));
@@ -61,4 +61,16 @@ TEST(TrieTest, LongestWordIsReturned)
 
     exp = { true, 1, TokenType::ABRACE_R };
     ASSERT_EQ(exp, trie.search("> langt"));
+}
+
+TEST(TrieTest, SimpleWordSalad)
+{
+    Trie<bool, const char, 0, 255> trie;
+    trie.insert("eple", true);
+    trie.insert("eplekake", true);
+
+    ASSERT_FALSE(trie.search("pære er en frukt").success);
+    ASSERT_TRUE(trie.search("eple er noe annet").success);
+    ASSERT_TRUE(trie.search("eplekake er brunt").success);
+    ASSERT_TRUE(trie.search("eplefjes").success); 
 }
