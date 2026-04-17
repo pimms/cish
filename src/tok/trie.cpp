@@ -28,7 +28,7 @@ Trie::Result Trie::search(std::string_view s) const
     return stack.back();
 }
 
-void Trie::insert(std::string_view s, T type)
+void Trie::insert(std::string_view s, TokenType type)
 {
     Node *node = &root;
 
