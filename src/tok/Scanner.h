@@ -26,12 +26,13 @@ private:
     int _col{};
 
     void reset();
+
     bool readToken();
-    void addToken(TokenType t, int lexemeLen);
+    uint32_t readRegexToken(const std::string& strExpr);
+    void addToken(TokenType type, uint32_t len);
 
     void skipToNextNonWS();
-
-    char peek() const;
+    bool skipToNextOccurence(std::string_view needle);
     char peek(int n) const;
     bool match(const std::string_view s);
 };

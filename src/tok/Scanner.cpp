@@ -1,5 +1,7 @@
 #include "Scanner.h"
 #include <cassert>
+#include <optional>
+#include <regex>
 
 namespace cish::tok 
 {
@@ -19,10 +21,10 @@ Scanner::Scanner(const std::string& source)
     _trie.insert(";", TokenType::SEMICOLON);
     _trie.insert(":", TokenType::COLON);
     _trie.insert("/", TokenType::RSLASH);
-    _trie.insert("\"", TokenType::DQUOTE);
-    _trie.insert("'", TokenType::SQUOTE);
     _trie.insert("!", TokenType::BANG);
     _trie.insert("*", TokenType::STAR);
+    _trie.insert("+", TokenType::PLUS);
+    _trie.insert("-", TokenType::MINUS);
     _trie.insert("&", TokenType::AMPERSAND);
     _trie.insert("|", TokenType::PIPE);
     _trie.insert("~", TokenType::TILDE);
@@ -50,8 +52,8 @@ Scanner::Scanner(const std::string& source)
     _trie.insert("|=", TokenType::BWOR_ASSIGN);
     _trie.insert("~=", TokenType::BNEG_ASSIGN);
     _trie.insert("^=", TokenType::BXOR_ASSIGN);
-    _trie.insert("//", TokenType::COMMENT_LINE_BEG);
-    _trie.insert("/*", TokenType::COMMENT_BLOCK_BEG);
+    _trie.insert("//", TokenType::COMMENT_LINE);
+    _trie.insert("/*", TokenType::COMMENT_BLOCK);
     _trie.insert("//", TokenType::COMMENT_LINE);
     _trie.insert("/*", TokenType::COMMENT_BLOCK);
     _trie.insert("do", TokenType::DO);
@@ -65,11 +67,16 @@ Scanner::Scanner(const std::string& source)
     _trie.insert("typedef", TokenType::TYPEDEF);
     _trie.insert("#include", TokenType::INCLUDE);
     _trie.insert("struct", TokenType::STRUCT);
+    _trie.insert("const", TokenType::CONST);
 }
 
 std::vector<Token> Scanner::tokenize()
 {
     reset();
+
+    while (readToken()) {
+        // cool
+    }
 
     return _tokens;
 }
@@ -84,24 +91,89 @@ void Scanner::reset()
 
 bool Scanner::readToken()
 {
-    const char ch = peek(0);
-    if (!ch) return false;
+    skipToNextNonWS();
 
-    return true;
+    if (_pos >= _source.size()) {
+        return false;
+    }
+
+    const std::span span(_source.c_str() + _pos, _source.size() - _pos);
+    const auto result = _trie.search(span);
+
+    if (result.success) {
+        if (result.tokenType == TokenType::COMMENT_LINE) {
+            return skipToNextOccurence("\n");
+        } else if (result.tokenType == TokenType::COMMENT_BLOCK) {
+            return skipToNextOccurence("*/");
+        }
+
+        Token t {
+            result.tokenType.value(),
+            std::string_view(_source.c_str() + _pos, result.length),
+            _line,
+            _col
+        };
+        _tokens.push_back(t);
+
+        _pos += result.length;
+        _col += result.length;
+        return true;
+    }
+
+    static std::vector<std::tuple<TokenType, std::string>> patterns = {
+        { TokenType::IDENTIFIER, "[_a-zA-Z][_a-zA-Z0-9]*" },
+        { TokenType::LIT_INT, "[0-9]+" },
+        { TokenType::LIT_INT, "0x[a-fA-F0-9]+" },
+        { TokenType::LIT_FLOAT, "[0-9]+\\.[0-9]*[fF]?" },
+        { TokenType::LIT_FLOAT, "\\.[0-9]+[fF]?" },
+        { TokenType::LIT_CHAR, R"('(\\'|[^\r\n]|\\[^\r\n ])')" },
+        { TokenType::LIT_STRING, R"("(?:\\[^\r\n ]|[^"\r\n])*")" },
+        { TokenType::SYSTEM_MODULE, "<(a-zA-Z0-9/._-)+>" },
+    };
+
+    for (const auto& [type, expr]: patterns) {
+        if (const uint32_t len = readRegexToken(expr)) {
+            addToken(type, len);
+            return true;
+        }
+    }
+
+    return false;
 }
 
-void Scanner::addToken(TokenType type, int lexemeLen)
+uint32_t Scanner::readRegexToken(const std::string& strExpr)
 {
-    const std::string_view lexeme(_source.c_str() + _pos, lexemeLen);
-    Token token(type, lexeme, _line, _col);
+    std::regex regex(strExpr);
+    std::cmatch match;
+    std::regex_search(_source.c_str() + _pos, match, regex, std::regex_constants::match_continuous);
+
+    assert(match.size() < 2 && "The expression should not contain a capture group");
+
+    if (match.size() == 1) {
+        return match[0].length();
+    }
+    return 0;
+}
+
+void Scanner::addToken(TokenType type, uint32_t len)
+{
+    Token token {
+        type,
+        std::string_view(_source.c_str() + _pos, len),
+        _line,
+        _col
+    };
     _tokens.push_back(token);
+
+    _pos += len;
+    _col += len;
 }
 
 void Scanner::skipToNextNonWS()
 {
     // We handle newlines explicitly to ensure the lineNo-bookkeeping
     // is in order, but rely on stdlib for other whitespace checking.
-    while (const char ch = peek(1)) {
+    while (const char ch = peek(0)) {
         switch (ch) {
             case '\n':
                 _line++;
@@ -117,6 +189,40 @@ void Scanner::skipToNextNonWS()
                 }
         }
     }
+}
+
+bool Scanner::skipToNextOccurence(std::string_view needle)
+{
+    const int needleLen = needle.size();
+    const int upperLimit =  _source.size() - needleLen;
+
+    int newLine = _line;
+    int newCol = _col;
+
+    for (int i=_pos; i<upperLimit; i++) {
+        if (_source[i] == '\n') {
+            newLine++;
+            newCol = 0;
+        } else {
+            newCol++;
+        }
+
+        bool match = true;
+        for (int j=0; j<needleLen; j++) {
+            if (needle[j] != _source[i+j]) {
+                match = false;
+                break;
+            }
+        }
+        if (match) {
+            _pos = i + needleLen;
+            _line = newLine;
+            _col = newCol + needleLen - 1;
+            return true;
+        }
+    }
+
+    return false;
 }
 
 char Scanner::peek(int n) const

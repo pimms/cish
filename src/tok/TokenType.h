@@ -16,8 +16,6 @@ enum class TokenType
     SEMICOLON,          // ;
     COLON,              // :
     RSLASH,             // /
-    DQUOTE,             // "
-    SQUOTE,             // '
     BANG,               // !
     STAR,               // *
     PLUS,               // +
@@ -53,11 +51,10 @@ enum class TokenType
     BNEG_ASSIGN,        // ~=
     BXOR_ASSIGN,        // ^=
 
-    COMMENT_LINE_BEG,   // //
-    COMMENT_BLOCK_BEG,  // /*
+    COMMENT_LINE,       // //
+    COMMENT_BLOCK,      // /*
 
-    COMMENT_LINE,       // // blablabla
-    COMMENT_BLOCK,      // /* blablabla */
+    SYSTEM_MODULE,      // <inet/inet.h>
 
     DO,
     WHILE,
@@ -70,6 +67,7 @@ enum class TokenType
     TYPEDEF,
     INCLUDE,
     STRUCT,
+    CONST,
 
     LIT_NULL,
     LIT_STRING,

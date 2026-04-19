@@ -94,7 +94,7 @@ private:
     Node root;
 };
 
-typedef Trie<TokenType, const char, 32, 127> TokenTrie;
+typedef Trie<TokenType, const char, 0, 127> TokenTrie;
 
 }
 
