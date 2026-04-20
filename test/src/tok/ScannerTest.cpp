@@ -190,7 +190,8 @@ TEST(ScannerTest, VerifyGCCTestSuiteTokenizesCleanly)
             // We have no idea what the file contains, we only know that
             // it shouldn't throw an error to tokenize it.
             Scanner s(buffer);
-            auto tokens = s.tokenize();
+            std::vector<Token> tokens;
+            ASSERT_NO_THROW(tokens = s.tokenize());
             ASSERT_NE(0, tokens.size());
         }
     }
