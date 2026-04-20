@@ -10,6 +10,7 @@
 #include "vm/ExecutionContext.h"
 #include "vm/VirtualMachine.h"
 #include "vm/Variable.h"
+#include "tok/Token.h"
 
 #include "module/ModuleContext.h"
 
@@ -29,4 +30,5 @@ void assertExitCode(cish::module::ModuleContext::Ptr moduleContext, const std::s
 
 void assertRuntimeFailure(const std::string &source);
 void assertCompilationFailure(const std::string &source);
+
 

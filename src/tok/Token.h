@@ -1,7 +1,8 @@
 #include "TokenType.h"
+#include <ostream>
 #include <string>
 
-namespace cish::tok 
+namespace cish::tok
 {
 
 struct Token 
@@ -22,5 +23,7 @@ private:
     int _line;
     int _col;
 };
+
+std::ostream& operator<<(std::ostream&, const Token&);
 
 }

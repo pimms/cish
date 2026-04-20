@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ostream>
+
 namespace cish::tok
 {
 
@@ -26,6 +28,10 @@ enum class TokenType
     MODULO,             // %
     CARET,              // ^
     EQUAL,              // =
+
+    COMMA,              // ,
+    DOT,                // .
+    ARROW,              // ->
 
     CMP_LTEQ,           // <=
     CMP_GTEQ,           // >=
@@ -54,7 +60,7 @@ enum class TokenType
     COMMENT_LINE,       // //
     COMMENT_BLOCK,      // /*
 
-    SYSTEM_MODULE,      // <inet/inet.h>
+    INCLUDE_SYS,        // #include <inet/inet.h>
 
     DO,
     WHILE,
@@ -65,7 +71,6 @@ enum class TokenType
     BREAK,
     CONTINUE,
     TYPEDEF,
-    INCLUDE,
     STRUCT,
     CONST,
 
@@ -75,7 +80,9 @@ enum class TokenType
     LIT_CHAR,
     LIT_FLOAT,
     
-    IDENTIFIER, 
+    IDENTIFIER,
 };
+
+std::ostream& operator<<(std::ostream&, const TokenType&);
 
 }

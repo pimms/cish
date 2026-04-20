@@ -1,5 +1,8 @@
+#include "gtest/gtest.h"
 #include <gtest/gtest.h>
 #include <string>
+#include <filesystem>
+#include <fstream>
 
 #include "tok/Scanner.h"
 
@@ -60,4 +63,135 @@ TEST(ScannerTest, LineCommentsAreNotReturned)
     ASSERT_EQ(2, tokens.size());
     ASSERT_EQ(Token(TokenType::RETURN, "return", 1, 0), tokens[0]);
     ASSERT_EQ(Token(TokenType::LIT_INT, "5", 2, 0), tokens[1]);
+}
+
+TEST(ScannerTest, VerifyFullTokenization)
+{
+    const std::string src = R"(
+    #include <std/_lib.h>
+    int main(const char** argv, int argc)
+    {
+        /**
+         * Everything in this program should be tokenized.
+         */
+        // yess
+        float f = .4f;
+        f = 0.5 + 0.013f;
+        int n = 0x14;
+        n >>= ++n - 1;
+        return 0;
+    }
+    )";
+
+    Scanner scanner(src);
+    const auto tokens = scanner.tokenize();
+
+    std::vector<TokenType> actual;
+    std::transform(tokens.begin(), tokens.end(), std::back_inserter(actual), [](auto t) { return t.getType(); });
+
+    std::vector<TokenType> expected = {
+        TokenType::INCLUDE_SYS,         // #include <std/_lib.h>
+        TokenType::IDENTIFIER,          // int
+        TokenType::IDENTIFIER,          // main
+        TokenType::PAREN_L,             // (
+        TokenType::CONST,               // const
+        TokenType::IDENTIFIER,          // char
+        TokenType::STAR,                // *
+        TokenType::STAR,                // *
+        TokenType::IDENTIFIER,          // argv
+        TokenType::COMMA,
+        TokenType::IDENTIFIER,          // int
+        TokenType::IDENTIFIER,          // argc
+        TokenType::PAREN_R,             // )
+        TokenType::CBRACE_L,            // {
+        TokenType::IDENTIFIER,          // float
+        TokenType::IDENTIFIER,          // f
+        TokenType::EQUAL,               // =
+        TokenType::LIT_FLOAT,           // .4f
+        TokenType::SEMICOLON,
+        TokenType::IDENTIFIER,          // f
+        TokenType::EQUAL,               // =
+        TokenType::LIT_FLOAT,           // 0.5f
+        TokenType::PLUS,                // +
+        TokenType::LIT_FLOAT,           // 0.013f
+        TokenType::SEMICOLON,
+        TokenType::IDENTIFIER,          // int
+        TokenType::IDENTIFIER,          // n
+        TokenType::EQUAL,               // =
+        TokenType::LIT_INT,             // 0x14
+        TokenType::SEMICOLON,
+        TokenType::IDENTIFIER,          // n
+        TokenType::RS_ASSIGN,           // >>=
+        TokenType::INCREMENT,           // ++
+        TokenType::IDENTIFIER,          // n
+        TokenType::MINUS,               // -
+        TokenType::LIT_INT,             // 1
+        TokenType::SEMICOLON,
+        TokenType::RETURN,              // return
+        TokenType::LIT_INT,             // 0
+        TokenType::SEMICOLON,
+        TokenType::CBRACE_R,            // }
+    };
+
+    if (expected != actual) {
+        std::cout << std::setw(12) << "EXPECTED" << "|" << std::setw(12) << "ACTUAL" << std::endl;
+        for (int i=0; i<std::max(expected.size(), actual.size()); i++) {
+            std::ostringstream exp, act;
+            if (i < expected.size()) {
+                exp << expected[i];
+            }
+            if (i < actual.size()) {
+                act << actual[i];
+            }
+
+            std::cout << std::setw(12) << exp.str() << "|" << std::setw(12) << act.str() << std::endl;
+        }
+    }
+    ASSERT_EQ(expected, actual);
+}
+
+TEST(ScannerTest, UnexpectedTokensThrows)
+{
+    const std::string source = "#";
+    Scanner scanner(source);
+    ASSERT_THROW(scanner.tokenize(), cish::tok::TokenizerError);
+}
+
+TEST(ScannerTest, VerifyGCCTestSuiteTokenizesCleanly)
+{
+    // This test may not actually work, and that is fine.
+    // Traverse the directories upwards to find the 'gcc_compare/'-directory.
+    // Unless we're running from a different hierarchy entirely, we should begin
+    // able to find it within 5 parent dirs.
+    const int maxDirs = 5;
+    int steps = 0;
+
+    std::string dir = "./";
+
+    while (!std::filesystem::exists(dir + "gcc_compare/")) {
+        dir += "../";
+        steps++;
+        if (steps >= maxDirs) {
+            printf("Max directory attempts reached (%d), aborting test\n", maxDirs);
+            return;
+        }
+    }
+
+    for (const auto& file: std::filesystem::directory_iterator(dir + "gcc_compare/")) {
+        if (file.path().extension() == ".c") {
+            printf("Testing file '%s'\n", file.path().filename().c_str());
+            std::ifstream ifs(file.path());
+            ifs.seekg(0, std::ios::end);
+            const size_t size = ifs.tellg();
+            ifs.seekg(0);
+            std::string buffer(size, '\0');
+            ifs.read(&buffer[0], size);
+
+            // We have no idea what the file contains, we only know that
+            // it shouldn't throw an error to tokenize it.
+            Scanner s(buffer);
+            auto tokens = s.tokenize();
+            ASSERT_NE(0, tokens.size());
+        }
+    }
 }

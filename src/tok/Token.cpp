@@ -32,4 +32,14 @@ int Token::getCol() const
     return _col;
 }
 
+std::ostream& operator<<(std::ostream& os, const Token& token)
+{
+    return os
+        << "Token[type=" << token.getType()
+        << ",lexeme=\"" << token.getLexeme()
+        << "\",line=" << token.getLine()
+        << ",col=" << token.getCol()
+        << "]";
+}
+
 }

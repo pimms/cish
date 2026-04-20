@@ -1,10 +1,13 @@
 #include "Token.h"
 #include "Trie.h"
+#include "../Exception.h"
 
 #include <vector>
 
 namespace cish::tok 
 {
+
+DECLARE_EXCEPTION(TokenizerError);
 
 class Scanner
 {

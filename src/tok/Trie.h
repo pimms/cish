@@ -17,18 +17,17 @@ class Trie
 public:
     struct Result
     {
-        bool success{};
-        int length{};
-        std::optional<T> tokenType;
+        T value;
+        uint32_t length{};
         bool operator==(const Result&) const = default;
     };
 
-    Result search(std::span<C> s) const
+    std::optional<Result> search(std::span<C> s) const
     {
         const Node* node = &root;
         std::vector<Result> stack;
 
-        int len = 0;
+        uint32_t len = 0;
         for (const auto &i: s) {
             if (std::is_same_v<const char, C> && static_cast<uint32_t>(i) == 0) {
                 break;
@@ -40,7 +39,7 @@ public:
             if (node == nullptr) {
                 break;
             } else if (node->value.has_value()) {
-                stack.push_back({ true, len, node->value.value() });
+                stack.push_back({ node->value.value(), len });
             }
         }
 

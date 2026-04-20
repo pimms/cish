@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <optional>
 
 #include "tok/Trie.h"
 
@@ -13,20 +14,17 @@ TEST(TrieTest, TestSingleCharEntries)
 
     TokenTrie::Result exp;
 
-    exp = { true, 1, TokenType::PAREN_L };
+    exp = { TokenType::PAREN_L, 1 };
     ASSERT_EQ(exp, trie.search("(aaerhajer"));
 
-    exp = { true, 1, TokenType::PAREN_R };
+    exp = { TokenType::PAREN_R, 1 };
     ASSERT_EQ(exp, trie.search(")"));
 
-    exp = { true, 1, TokenType::PLUS };
+    exp = { TokenType::PLUS, 1 };
     ASSERT_EQ(exp, trie.search("+"));
 
-    exp = { false, 0 };
-    ASSERT_EQ(exp, trie.search(""));
-
-    exp = { false, 0 };
-    ASSERT_EQ(exp, trie.search("-"));
+    ASSERT_EQ(std::nullopt, trie.search(""));
+    ASSERT_EQ(std::nullopt, trie.search("-"));
 }
 
 TEST(TrieTest, TestWords)
@@ -37,10 +35,10 @@ TEST(TrieTest, TestWords)
 
     TokenTrie::Result exp;
 
-    exp = { true, 9, TokenType::SEMICOLON };
+    exp = { TokenType::SEMICOLON, 9 };
     ASSERT_EQ(exp, trie.search("semicolons are nice"));
 
-    exp = { true, 5, TokenType::COLON };
+    exp = { TokenType::COLON, 5 };
     ASSERT_EQ(exp, trie.search("colonoscopy"));
 }
 
@@ -53,13 +51,13 @@ TEST(TrieTest, LongestWordIsReturned)
 
     TokenTrie::Result exp;
 
-    exp = { true, 3, TokenType::RS_ASSIGN };
+    exp = { TokenType::RS_ASSIGN, 3 };
     ASSERT_EQ(exp, trie.search(">>= 3"));
 
-    exp = { true, 2, TokenType::RSHIFT };
+    exp = { TokenType::RSHIFT, 2 };
     ASSERT_EQ(exp, trie.search(">> mye"));
 
-    exp = { true, 1, TokenType::ABRACE_R };
+    exp = { TokenType::ABRACE_R, 1 };
     ASSERT_EQ(exp, trie.search("> langt"));
 }
 
@@ -69,8 +67,8 @@ TEST(TrieTest, SimpleWordSalad)
     trie.insert("eple", true);
     trie.insert("eplekake", true);
 
-    ASSERT_FALSE(trie.search("pære er en frukt").success);
-    ASSERT_TRUE(trie.search("eple er noe annet").success);
-    ASSERT_TRUE(trie.search("eplekake er brunt").success);
-    ASSERT_TRUE(trie.search("eplefjes").success); 
+    ASSERT_EQ(std::nullopt, trie.search("pære er en frukt"));
+    ASSERT_NE(std::nullopt, trie.search("eple er noe annet"));
+    ASSERT_NE(std::nullopt, trie.search("eplekake er brunt"));
+    ASSERT_NE(std::nullopt, trie.search("eplefjes")); 
 }

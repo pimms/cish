@@ -11,7 +11,7 @@ Scanner::Scanner(const std::string& source)
     , _pos(0)
 {
     _trie.insert("(", TokenType::PAREN_L);
-    _trie.insert(")", TokenType::PAREN_L);
+    _trie.insert(")", TokenType::PAREN_R);
     _trie.insert("[", TokenType::SQPAREN_L);
     _trie.insert("]", TokenType::SQPAREN_R);
     _trie.insert("{", TokenType::CBRACE_L);
@@ -31,6 +31,9 @@ Scanner::Scanner(const std::string& source)
     _trie.insert("%", TokenType::MODULO);
     _trie.insert("^", TokenType::CARET);
     _trie.insert("=", TokenType::EQUAL);
+    _trie.insert(",", TokenType::COMMA);
+    _trie.insert(".", TokenType::DOT);
+    _trie.insert("->", TokenType::ARROW);
     _trie.insert("<=", TokenType::CMP_LTEQ);
     _trie.insert(">=", TokenType::CMP_GTEQ);
     _trie.insert("==", TokenType::CMP_EQ);
@@ -65,7 +68,6 @@ Scanner::Scanner(const std::string& source)
     _trie.insert("break", TokenType::BREAK);
     _trie.insert("continue", TokenType::CONTINUE);
     _trie.insert("typedef", TokenType::TYPEDEF);
-    _trie.insert("#include", TokenType::INCLUDE);
     _trie.insert("struct", TokenType::STRUCT);
     _trie.insert("const", TokenType::CONST);
 }
@@ -100,44 +102,60 @@ bool Scanner::readToken()
     const std::span span(_source.c_str() + _pos, _source.size() - _pos);
     const auto result = _trie.search(span);
 
-    if (result.success) {
-        if (result.tokenType == TokenType::COMMENT_LINE) {
+    std::optional<std::tuple<TokenType,uint32_t>> trieResult;
+    std::optional<std::tuple<TokenType,uint32_t>> regexResult;
+
+    if (result.has_value()) {
+        auto& [type, len] = result.value();
+        // Special handling of comments
+        if (type == TokenType::COMMENT_LINE) {
             return skipToNextOccurence("\n");
-        } else if (result.tokenType == TokenType::COMMENT_BLOCK) {
+        } else if (type == TokenType::COMMENT_BLOCK) {
             return skipToNextOccurence("*/");
         }
-
-        Token t {
-            result.tokenType.value(),
-            std::string_view(_source.c_str() + _pos, result.length),
-            _line,
-            _col
-        };
-        _tokens.push_back(t);
-
-        _pos += result.length;
-        _col += result.length;
-        return true;
+        trieResult = { type, len };
     }
 
     static std::vector<std::tuple<TokenType, std::string>> patterns = {
         { TokenType::IDENTIFIER, "[_a-zA-Z][_a-zA-Z0-9]*" },
-        { TokenType::LIT_INT, "[0-9]+" },
-        { TokenType::LIT_INT, "0x[a-fA-F0-9]+" },
         { TokenType::LIT_FLOAT, "[0-9]+\\.[0-9]*[fF]?" },
         { TokenType::LIT_FLOAT, "\\.[0-9]+[fF]?" },
-        { TokenType::LIT_CHAR, R"('(\\'|[^\r\n]|\\[^\r\n ])')" },
+        { TokenType::LIT_INT, "0x[a-fA-F0-9]+" },
+        { TokenType::LIT_INT, "[0-9]+" },
+        { TokenType::LIT_CHAR, R"('(?:\\'|[^\r\n]|\\[^\r\n ])')" },
         { TokenType::LIT_STRING, R"("(?:\\[^\r\n ]|[^"\r\n])*")" },
-        { TokenType::SYSTEM_MODULE, "<(a-zA-Z0-9/._-)+>" },
+        { TokenType::INCLUDE_SYS, "#include\\s*<[a-zA-Z0-9/._-]+>" },
     };
 
     for (const auto& [type, expr]: patterns) {
         if (const uint32_t len = readRegexToken(expr)) {
-            addToken(type, len);
-            return true;
+            regexResult = { type, len };
+            break;
         }
     }
 
+    // Certain tokens can be interpreted as both a "primitive" and as a dynamic token.
+    // Consider for example the float literal ".15f"; this will be interpreted by the
+    // regex search correctly as LIT_FLOAT, while the trie search will consider the first
+    // character as DOT and defer "15f" to the next iteration.
+    //
+    // We do however need to distinguish between keywords (return, break, etc) and IDENTIFIERs.
+    if (regexResult.has_value()) {
+        const auto& [rtype, rlen] = regexResult.value();
+        if (rtype == TokenType::IDENTIFIER && trieResult.has_value()) {
+            const auto& [ttype, tlen] = trieResult.value();
+            addToken(ttype, tlen);
+        } else {
+            addToken(rtype, rlen);
+        }
+        return true;
+    } else if (trieResult.has_value()) {
+        const auto& [ttype, tlen] = trieResult.value();
+        addToken(ttype, tlen);
+        return true;
+    }
+
+    Throw(TokenizerError, "Unrecognized token at line %d col %d", _line, _col);
     return false;
 }
 
