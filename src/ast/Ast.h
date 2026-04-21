@@ -1,7 +1,6 @@
 #pragma once
 
 #include "AstNodes.h"
-#include "FunctionDefinition.h"
 #include "StringTable.h"
 #include "StructLayout.h"
 #include "../module/Module.h"

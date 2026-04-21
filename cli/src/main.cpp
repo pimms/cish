@@ -1,6 +1,4 @@
 #include "vm/VirtualMachine.h"
-#include "vm/ExecutionContext.h"
-
 #include "ast/AstBuilder.h"
 #include "ast/Ast.h"
 #include "ast/AntlrContext.h"

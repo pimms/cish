@@ -4,7 +4,6 @@
 
 #include "ast/AstBuilder.h"
 #include "ast/AntlrContext.h"
-#include "ast/LiteralExpression.h"
 #include "ast/VariableDeclarationStatement.h"
 
 using namespace cish::vm;

@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include "TestHelpers.h"
 #include "module/ModuleContext.h"
 #include "module/stdlib/stdlibModule.h"

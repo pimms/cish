@@ -1,7 +1,6 @@
 #include "AstBuilder.h"
 #include "TreeConverter.h"
 
-#include "antlr/CMBaseVisitor.h"
 #include "AntlrContext.h"
 
 #include <cassert>
