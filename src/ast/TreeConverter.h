@@ -2,7 +2,7 @@
 
 #include "antlr/CMBaseVisitor.h"
 #include "antlr/CMParser.h"
-#include "ParseContext.h"
+#include "AntlrContext.h"
 
 #include "AstNodes.h"
 #include "Lvalue.h"
@@ -36,7 +36,7 @@ class TreeConverter: public CMBaseVisitor
 
 public:
     TreeConverter(ModuleContext::Ptr moduleContext);
-    Ast::Ptr convertTree(const ParseContext *parseContext);
+    Ast::Ptr convertTree(const AntlrContext *parseContext);
 
     virtual antlrcpp::Any visitChildren(antlr4::tree::ParseTree *node) override;
     virtual antlrcpp::Any visitRoot(CMParser::RootContext *ctx) override;

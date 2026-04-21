@@ -3,14 +3,13 @@
 
 #include "antlr/CMBaseVisitor.h"
 #include "AntlrContext.h"
-#include "ParseContext.h"
 
 #include <cassert>
 
 namespace cish::ast
 {
 
-AstBuilder::AstBuilder(const ParseContext::Ptr parseContext, ModuleContext::Ptr moduleContext):
+AstBuilder::AstBuilder(const AntlrContext::Ptr parseContext, ModuleContext::Ptr moduleContext):
     _parseContext(parseContext),
     _moduleContext(std::move(moduleContext))
 {

@@ -58,7 +58,7 @@ int execute(const CliArgs& args)
 
     cish::module::ModuleContext::Ptr moduleContext = createModuleContext();
 
-    cish::ast::ParseContext::Ptr parseContext = cish::ast::ParseContext::parseSource(source);
+    cish::ast::AntlrContext::Ptr parseContext = std::make_shared<cish::ast::AntlrContext>(source);
     cish::ast::AstBuilder builder(parseContext, std::move(moduleContext));
 
     cish::ast::Ast::Ptr ast;

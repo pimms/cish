@@ -1,5 +1,6 @@
 #include "TreeConverter.h"
 
+#include "AntlrContext.h"
 #include "BinaryExpression.h"
 #include "FunctionCallExpression.h"
 #include "LiteralExpression.h"
@@ -39,7 +40,7 @@ TreeConverter::TreeConverter(ModuleContext::Ptr moduleContext):
     _stringTable = StringTable::create();
 }
 
-Ast::Ptr TreeConverter::convertTree(const ParseContext *parseContext)
+Ast::Ptr TreeConverter::convertTree(const AntlrContext *parseContext)
 {
     antlr4::tree::ParseTree *tree = parseContext->getParseTree();
     Ast::Ptr ast = std::any_cast<Ast::Ptr>(visit(tree));

@@ -1,9 +1,7 @@
 #pragma once
 
-#include "ParseContext.h"
 #include "../Exception.h"
 
-#include "antlr4-runtime.h"
 #include "antlr/CMLexer.h"
 #include "antlr/CMParser.h"
 
@@ -15,8 +13,14 @@ namespace cish::ast
 
 DECLARE_EXCEPTION(SyntaxErrorException);
 
+struct CompilationError
+{
+    std::string message;
+    int lineNumber;
+    int charNumber;
+};
 
-class AntlrContext: public ParseContext, private antlr4::ANTLRErrorListener
+class AntlrContext: private antlr4::ANTLRErrorListener
 {
 public:
     typedef std::shared_ptr<AntlrContext> Ptr;
@@ -24,9 +28,9 @@ public:
     AntlrContext(const std::string &source);
     ~AntlrContext();
 
-    bool hasErrors() const override;
-    std::vector<CompilationError> getErrors() const override;
-    antlr4::tree::ParseTree* getParseTree() const override;
+    bool hasErrors() const;
+    std::vector<CompilationError> getErrors() const;
+    antlr4::tree::ParseTree* getParseTree() const;
 
 private:
     antlr4::ANTLRInputStream *_inputStream;

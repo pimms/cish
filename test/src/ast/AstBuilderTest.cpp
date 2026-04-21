@@ -13,7 +13,7 @@ using namespace cish::module;
 
 Ast::Ptr buildAst(const std::string &source)
 {
-    ParseContext::Ptr parseContext = ParseContext::parseSource(source);
+    AntlrContext::Ptr parseContext = std::make_shared<AntlrContext>(source);
     AstBuilder builder(parseContext, ModuleContext::create());
     return builder.buildAst();
 }
