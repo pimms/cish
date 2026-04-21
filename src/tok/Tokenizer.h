@@ -9,14 +9,14 @@ namespace cish::tok
 
 DECLARE_EXCEPTION(TokenizerError);
 
-class Scanner
+class Tokenizer
 {
 public:
-    Scanner(const std::string& source);
-    Scanner(const Scanner&) = delete;
-    Scanner(Scanner&&) = delete;
-    Scanner& operator=(const Scanner&) = delete;
-    Scanner& operator=(Scanner&&) = delete;
+    Tokenizer(const std::string& source);
+    Tokenizer(const Tokenizer&) = delete;
+    Tokenizer(Tokenizer&&) = delete;
+    Tokenizer& operator=(const Tokenizer&) = delete;
+    Tokenizer& operator=(Tokenizer&&) = delete;
 
     std::vector<Token> tokenize();
 

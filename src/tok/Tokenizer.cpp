@@ -1,4 +1,4 @@
-#include "Scanner.h"
+#include "Tokenizer.h"
 #include <cassert>
 #include <optional>
 #include <regex>
@@ -6,7 +6,7 @@
 namespace cish::tok 
 {
 
-Scanner::Scanner(const std::string& source)
+Tokenizer::Tokenizer(const std::string& source)
     : _source(source)
     , _pos(0)
 {
@@ -72,7 +72,7 @@ Scanner::Scanner(const std::string& source)
     _trie.insert("const", TokenType::CONST);
 }
 
-std::vector<Token> Scanner::tokenize()
+std::vector<Token> Tokenizer::tokenize()
 {
     reset();
 
@@ -83,7 +83,7 @@ std::vector<Token> Scanner::tokenize()
     return _tokens;
 }
 
-void Scanner::reset()
+void Tokenizer::reset()
 {
     _tokens = {};
     _pos = 0;
@@ -91,7 +91,7 @@ void Scanner::reset()
     _col = 0;
 }
 
-bool Scanner::readToken()
+bool Tokenizer::readToken()
 {
     skipToNextNonWS();
 
@@ -159,7 +159,7 @@ bool Scanner::readToken()
     return false;
 }
 
-uint32_t Scanner::readRegexToken(const std::string& strExpr)
+uint32_t Tokenizer::readRegexToken(const std::string& strExpr)
 {
     std::regex regex(strExpr);
     std::cmatch match;
@@ -173,7 +173,7 @@ uint32_t Scanner::readRegexToken(const std::string& strExpr)
     return 0;
 }
 
-void Scanner::addToken(TokenType type, uint32_t len)
+void Tokenizer::addToken(TokenType type, uint32_t len)
 {
     Token token {
         type,
@@ -187,7 +187,7 @@ void Scanner::addToken(TokenType type, uint32_t len)
     _col += len;
 }
 
-void Scanner::skipToNextNonWS()
+void Tokenizer::skipToNextNonWS()
 {
     // We handle newlines explicitly to ensure the lineNo-bookkeeping
     // is in order, but rely on stdlib for other whitespace checking.
@@ -209,7 +209,7 @@ void Scanner::skipToNextNonWS()
     }
 }
 
-bool Scanner::skipToNextOccurence(std::string_view needle)
+bool Tokenizer::skipToNextOccurence(std::string_view needle)
 {
     const int needleLen = needle.size();
     const int upperLimit =  _source.size() - needleLen;
@@ -243,7 +243,7 @@ bool Scanner::skipToNextOccurence(std::string_view needle)
     return false;
 }
 
-char Scanner::peek(int n) const
+char Tokenizer::peek(int n) const
 {
     if (_pos + n < _source.size()) {
         return _source[_pos+n];
@@ -252,7 +252,7 @@ char Scanner::peek(int n) const
     }
 }
 
-bool Scanner::match(const std::string_view s)
+bool Tokenizer::match(const std::string_view s)
 {
     const int n = s.size();
     for (int i=0; i<n; i++) {

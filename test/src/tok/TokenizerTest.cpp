@@ -4,15 +4,15 @@
 #include <filesystem>
 #include <fstream>
 
-#include "tok/Scanner.h"
+#include "tok/Tokenizer.h"
 
 using namespace cish::tok;
 
-TEST(ScannerTest, BasicPrimitives)
+TEST(TokenizerTest, BasicPrimitives)
 {
     const std::string src = "(+-";
-    Scanner scanner(src);
-    const auto tokens = scanner.tokenize();
+    Tokenizer tokenizer(src);
+    const auto tokens = tokenizer.tokenize();
 
     ASSERT_EQ(3, tokens.size());
     ASSERT_EQ(Token(TokenType::PAREN_L, "(", 1, 0), tokens[0]);
@@ -20,11 +20,11 @@ TEST(ScannerTest, BasicPrimitives)
     ASSERT_EQ(Token(TokenType::MINUS, "-", 1, 2), tokens[2]);
 }
 
-TEST(ScannerTest, SimpleTokenizerTest)
+TEST(TokenizerTest, SimpleTokenizerTest)
 {
     const std::string src = "int a = 5";
-    Scanner scanner(src);
-    const auto tokens = scanner.tokenize();
+    Tokenizer tokenizer(src);
+    const auto tokens = tokenizer.tokenize();
 
     ASSERT_EQ(4, tokens.size());
 
@@ -34,38 +34,38 @@ TEST(ScannerTest, SimpleTokenizerTest)
     ASSERT_EQ(Token(TokenType::LIT_INT, "5", 1, 8), tokens[3]);
 }
 
-TEST(ScannerTest, StringLiterals)
+TEST(TokenizerTest, StringLiterals)
 {
     const std::string src = R"("wtf \"er\" dette??"   )";
-    Scanner scanner(src);
-    const auto tokens = scanner.tokenize();
+    Tokenizer tokenizer(src);
+    const auto tokens = tokenizer.tokenize();
 
     ASSERT_EQ(1, tokens.size());
     ASSERT_EQ(TokenType::LIT_STRING, tokens[0].getType());
     ASSERT_EQ("\"wtf \\\"er\\\" dette??\"", tokens[0].getLexeme());
 }
 
-TEST(ScannerTest, BlockCommentsAreNotReturned)
+TEST(TokenizerTest, BlockCommentsAreNotReturned)
 {
     const std::string src = "return /* ignore this\nand this\n*/5";
-    Scanner scanner(src);
-    const auto tokens = scanner.tokenize();
+    Tokenizer tokenizer(src);
+    const auto tokens = tokenizer.tokenize();
     ASSERT_EQ(2, tokens.size());
     ASSERT_EQ(Token(TokenType::RETURN, "return", 1, 0), tokens[0]);
     ASSERT_EQ(Token(TokenType::LIT_INT, "5", 3, 2), tokens[1]);
 }
 
-TEST(ScannerTest, LineCommentsAreNotReturned)
+TEST(TokenizerTest, LineCommentsAreNotReturned)
 {
     const std::string src = "return // ignore_this\n5";
-    Scanner scanner(src);
-    const auto tokens = scanner.tokenize();
+    Tokenizer tokenizer(src);
+    const auto tokens = tokenizer.tokenize();
     ASSERT_EQ(2, tokens.size());
     ASSERT_EQ(Token(TokenType::RETURN, "return", 1, 0), tokens[0]);
     ASSERT_EQ(Token(TokenType::LIT_INT, "5", 2, 0), tokens[1]);
 }
 
-TEST(ScannerTest, VerifyFullTokenization)
+TEST(TokenizerTest, VerifyFullTokenization)
 {
     const std::string src = R"(
     #include <std/_lib.h>
@@ -83,8 +83,8 @@ TEST(ScannerTest, VerifyFullTokenization)
     }
     )";
 
-    Scanner scanner(src);
-    const auto tokens = scanner.tokenize();
+    Tokenizer tokenizer(src);
+    const auto tokens = tokenizer.tokenize();
 
     std::vector<TokenType> actual;
     std::transform(tokens.begin(), tokens.end(), std::back_inserter(actual), [](auto t) { return t.getType(); });
@@ -150,14 +150,14 @@ TEST(ScannerTest, VerifyFullTokenization)
     ASSERT_EQ(expected, actual);
 }
 
-TEST(ScannerTest, UnexpectedTokensThrows)
+TEST(TokenizerTest, UnexpectedTokensThrows)
 {
     const std::string source = "#";
-    Scanner scanner(source);
-    ASSERT_THROW(scanner.tokenize(), cish::tok::TokenizerError);
+    Tokenizer tokenizer(source);
+    ASSERT_THROW(tokenizer.tokenize(), cish::tok::TokenizerError);
 }
 
-TEST(ScannerTest, VerifyGCCTestSuiteTokenizesCleanly)
+TEST(TokenizerTest, VerifyGCCTestSuiteTokenizesCleanly)
 {
     // This test may not actually work, and that is fine.
     // Traverse the directories upwards to find the 'gcc_compare/'-directory.
@@ -189,7 +189,7 @@ TEST(ScannerTest, VerifyGCCTestSuiteTokenizesCleanly)
 
             // We have no idea what the file contains, we only know that
             // it shouldn't throw an error to tokenize it.
-            Scanner s(buffer);
+            Tokenizer s(buffer);
             std::vector<Token> tokens;
             ASSERT_NO_THROW(tokens = s.tokenize());
             ASSERT_NE(0, tokens.size());
