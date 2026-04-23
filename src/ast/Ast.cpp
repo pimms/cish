@@ -1,7 +1,6 @@
 #include "Ast.h"
 
-#include "FunctionDefinition.h"
-#include "FunctionDeclarationStatement.h"
+#include "DeclarationContext.h"
 
 
 namespace cish::ast

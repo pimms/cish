@@ -5,7 +5,6 @@
 
 #include "Type.h"
 #include "../Exception.h"
-#include "SuperStatement.h"
 #include "VarDeclaration.h"
 #include "FuncDeclaration.h"
 #include "FunctionDefinition.h"
