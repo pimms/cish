@@ -71,6 +71,17 @@ public:
                                  vm::Variable*) const override;
 };
 
+class Abs: public Function
+{
+public:
+    static ast::FuncDeclaration getSignature();
+
+    Abs();
+    ast::ExpressionValue execute(vm::ExecutionContext *context,
+                                 FuncParams params,
+                                 vm::Variable*) const override;
+};
+
 class Malloc: public Function
 {
 public:

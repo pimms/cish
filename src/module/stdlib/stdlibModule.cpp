@@ -10,20 +10,21 @@
 namespace cish::module::stdlib
 {
 
-Module::Ptr buildModule() {
-                      MallocContext::Ptr mallocContext = MallocContext::Ptr(new MallocContext());
+Module::Ptr buildModule()
+{
+    MallocContext::Ptr mallocContext = MallocContext::Ptr(new MallocContext());
+    Module::Ptr module = Module::create("stdlib.h");
+    module->addFunction(Function::Ptr(new impl::Atof()));
+    module->addFunction(Function::Ptr(new impl::Atoi()));
+    module->addFunction(Function::Ptr(new impl::Atol()));
+    module->addFunction(Function::Ptr(new impl::Rand()));
+    module->addFunction(Function::Ptr(new impl::Srand()));
+    module->addFunction(Function::Ptr(new impl::Abs()));
+    module->addFunction(Function::Ptr(new impl::Malloc(mallocContext)));
+    module->addFunction(Function::Ptr(new impl::Free(mallocContext)));
 
-                      Module::Ptr module = Module::create("stdlib.h");
-                      module->addFunction(Function::Ptr(new impl::Atof()));
-                      module->addFunction(Function::Ptr(new impl::Atoi()));
-                      module->addFunction(Function::Ptr(new impl::Atol()));
-                      module->addFunction(Function::Ptr(new impl::Rand()));
-                      module->addFunction(Function::Ptr(new impl::Srand()));
-                      module->addFunction(Function::Ptr(new impl::Malloc(mallocContext)));
-                      module->addFunction(Function::Ptr(new impl::Free(mallocContext)));
-
-                      return module;
-                      }
+    return module;
+}
 
 }
 
@@ -202,6 +203,35 @@ ast::ExpressionValue Srand::execute(vm::ExecutionContext *context,
 
 /*
 ==================
+int abs(int n)
+==================
+*/
+ast::FuncDeclaration Abs::getSignature()
+{
+    return FuncDeclaration(
+        TypeDecl::INT,
+        "abs",
+        { VarDeclaration { TypeDecl::INT, "n" } }
+    );
+}
+
+Abs::Abs():
+    Function(getSignature())
+{
+
+}
+
+ast::ExpressionValue Abs::execute(vm::ExecutionContext *context,
+                                  FuncParams params,
+                                  vm::Variable*) const
+{
+    const int n = params[0].get<int>();
+    return std::abs(n);
+}
+
+
+/*
+==================
 void* malloc(int)
 ==================
 */
@@ -257,8 +287,8 @@ Free::Free(MallocContext::Ptr mallocContext):
 {}
 
 ast::ExpressionValue Free::execute(vm::ExecutionContext *context,
-                                     FuncParams params,
-                                     vm::Variable*) const
+                                   FuncParams params,
+                                   vm::Variable*) const
 {
     const uint32_t addr = params[0].get<uint32_t>();
     if (!_mallocContext->attemptDeallocation(addr)) {
