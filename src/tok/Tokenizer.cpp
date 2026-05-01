@@ -70,6 +70,7 @@ Tokenizer::Tokenizer(const std::string& source)
     _trie.insert("typedef", TokenType::TYPEDEF);
     _trie.insert("struct", TokenType::STRUCT);
     _trie.insert("const", TokenType::CONST);
+    _trie.insert("sizeof", TokenType::SIZEOF);
 }
 
 std::vector<Token> Tokenizer::tokenize()

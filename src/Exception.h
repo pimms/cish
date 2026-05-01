@@ -46,6 +46,7 @@
     { \
         _TYPE __e__(__FILE__, __FUNCTION__, __LINE__, __VA_ARGS__); __e__.raise(); \
         /* SHOULD NEVER HAPPEN --> */ assert(0); throw __e__;\
+        /* SHOULD ABSOLUTELY NEVER HAPPEN --> */ exit(1); \
     }
 
 namespace cish

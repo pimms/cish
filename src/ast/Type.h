@@ -83,7 +83,10 @@ public:
 
 private:
     Type _type;
-    mutable std::shared_ptr<TypeDecl> _referencedType;
+
+    // TODO: Can't we somehow do this better? What about
+    // if we instead have a vector of TypeDecl's?
+    std::shared_ptr<TypeDecl> _referencedType;
     bool _const;
     const StructLayout* _structLayout;
 };

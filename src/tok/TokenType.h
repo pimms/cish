@@ -73,6 +73,7 @@ enum class TokenType
     TYPEDEF,
     STRUCT,
     CONST,
+    SIZEOF,
 
     LIT_NULL,
     LIT_STRING,

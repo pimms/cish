@@ -21,7 +21,7 @@ void Ast::addFunctionDefinition(vm::Callable::Ptr callable)
               funcName.c_str());
     }
 
-    _funcDefs[funcName] = callable;
+    _funcDefs.insert({ funcName, callable });
 }
 
 void Ast::addModule(const module::Module::Ptr module)
@@ -42,7 +42,7 @@ const vm::Callable::Ptr Ast::getFunctionDefinition(const std::string &funcName)
 std::vector<vm::Callable::Ptr> Ast::getFunctionDefinitions() const
 {
     std::vector<vm::Callable::Ptr> funcs;
-    for (auto pair: _funcDefs) {
+    for (auto& pair: _funcDefs) {
         funcs.push_back(pair.second);
     }
 
@@ -57,10 +57,7 @@ void Ast::addRootStatement(Statement::Ptr statement)
 
 std::vector<Statement::Ptr> Ast::getRootStatements() const
 {
-    std::vector<Statement::Ptr> copy;
-    for (Statement::Ptr s: _rootStatements)
-        copy.push_back(s);
-    return copy;
+    return _rootStatements;
 }
 
 void Ast::setStringTable(StringTable::Ptr stringTable)

@@ -16,8 +16,19 @@ public:
     TokenContext& operator=(TokenContext&&) = delete;
     ~TokenContext() = default;
 
+    void reset();
+
+    void begin();
+    void revert();
+    void commit();
+
+    const Token* peek() const;
+    const Token* take();
+
 private:
-    std::vector<Token>& _tokens;
+    std::vector<Token> _tokens;
+    int _backIndex;
+    int _index;
 };
 
 }

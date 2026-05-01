@@ -16,7 +16,7 @@ public:
     static Ptr create();
 
     void addModule(Module::Ptr module);
-    const Module::Ptr getModule(const std::string &name) const;
+    const Module::Ptr getModule(const std::string& name) const;
     const std::vector<Module::Ptr> getModules() const;
 
 private:
