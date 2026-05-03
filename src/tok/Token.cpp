@@ -1,4 +1,5 @@
 #include "Token.h"
+#include <sstream>
 
 namespace cish::tok 
 {
@@ -30,6 +31,14 @@ int Token::getLine() const
 int Token::getCol() const 
 {
     return _col;
+}
+
+std::string Token::toString() const
+{
+    std::ostringstream ss;
+    ss << *this;
+    std::string s = ss.str();
+    return s;
 }
 
 std::ostream& operator<<(std::ostream& os, const Token& token)

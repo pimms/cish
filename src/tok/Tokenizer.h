@@ -1,3 +1,5 @@
+#pragma once
+
 #include "Token.h"
 #include "Trie.h"
 #include "../Exception.h"

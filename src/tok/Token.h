@@ -1,3 +1,5 @@
+#pragma once
+
 #include "TokenType.h"
 #include <ostream>
 #include <string>
@@ -16,6 +18,8 @@ public:
     const std::string& getLexeme() const;
     int getLine() const;
     int getCol() const;
+
+    std::string toString() const;
 
 private:
     TokenType _type;
