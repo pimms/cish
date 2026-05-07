@@ -165,7 +165,7 @@ struct BoolLiteralExpr {
     bool value;
 };
 struct CharLiteralExpr {
-    char value;
+    uint8_t value;
 };
 struct IntLiteralExpr {
     int64_t value;

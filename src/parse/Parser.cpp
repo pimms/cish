@@ -3,8 +3,8 @@
 #include "../Exception.h"
 
 #include <cassert>
-#include <cstddef>
 #include <optional>
+#include <map>
 
 namespace cish::parse
 {
@@ -231,7 +231,137 @@ std::unique_ptr<IStatement> Parser::parseStatement()
 
 std::optional<IExpression> Parser::parseExpression()
 {
+    std::optional<UnaryOperator> unary = parsePrefixUnaryOperator();
+
+
     Throw(ParseError, "TODO!")
+}
+
+std::optional<CharLiteralExpr> Parser::parseCharLiteral()
+{
+    const auto& token = _context.takeIf(tok::TokenType::LIT_CHAR);
+    if (!token) {
+        return std::nullopt;
+    }
+
+    const auto& lexeme = token->getLexeme();
+    assert(lexeme.size() > 2);
+
+    const std::string literal = lexeme.substr(1, lexeme.size() - 2);
+    if (literal == "\\") {
+        Throw(ParseError, "Literal '\\' is not a valid char, in token %s", token->toString().c_str());
+    }
+
+    uint8_t value = 0;
+    if (literal[0] == '\\') {
+        assert(literal.size() == 2);
+        switch (literal[1]) {
+            case '0': value = '\0'; break;
+            case 'a': value = '\a'; break;
+            case 'b': value = '\b'; break;
+            case 't': value = '\t'; break;
+            case 'n': value = '\n'; break;
+            case 'v': value = '\v'; break;
+            case 'f': value = '\f'; break;
+            case 'r': value = '\r'; break;
+            case 'e': value = '\e'; break;
+            case '\\': value = '\\'; break;
+            default: Throw(ParseError, "Unknown escape sequence: %s", token->toString().c_str())
+        }
+    } else {
+        assert(literal.size() == 1);
+        value = literal[0];
+    }
+
+    return CharLiteralExpr { .value = value };
+}
+
+std::optional<IntLiteralExpr> Parser::parseIntLiteralExpr()
+{
+    const auto& token = _context.takeIf(tok::TokenType::LIT_INT);
+    if (!token) {
+        return std::nullopt;
+    }
+
+    int64_t value = 0;
+    size_t parsed = 0;
+
+    const auto& lexeme = token->getLexeme();
+    if (lexeme.starts_with("0x") || lexeme.starts_with("0X")) {
+        value = std::stoi(lexeme.c_str()+2, &parsed, 16);
+        parsed += 2;
+    } else if (lexeme.starts_with("0b") || lexeme.starts_with("0B")) {
+        value = std::stoi(lexeme.c_str()+2, &parsed, 2);
+        parsed += 2;
+    } else if (lexeme.starts_with("0")) {
+        value = std::stoi(lexeme.c_str()+1, &parsed, 8);
+        parsed += 1;
+    } else {
+        value = std::stoi(lexeme, &parsed, 10);
+    }
+
+    if (parsed != lexeme.size()) {
+        Throw(ParseError, "Unexpected characters in int literal: %s", token->toString().c_str());
+    }
+
+    return IntLiteralExpr { .value = value };
+}
+
+std::optional<FloatLiteralExpr> Parser::parseFloatLiteralExpr()
+{
+    const auto& token = _context.takeIf(tok::TokenType::LIT_FLOAT);
+    if (!token) {
+        return std::nullopt;
+    }
+
+    const auto& lexeme = token->getLexeme();
+
+    size_t parsed = 0;
+    const double value = std::stod(lexeme, &parsed);
+    if (parsed < lexeme.size()) {
+        if (parsed+1 != lexeme.size() || lexeme[parsed] != 'f' || lexeme[parsed] != 'F') {
+            Throw(ParseError, "Unexpected characters in float literal: %s", token->toString().c_str());
+        }
+    }
+
+    return FloatLiteralExpr { .value = value };
+}
+
+std::optional<StringLiteralExpr> Parser::parseStringLiteralExpr()
+{
+    const auto& token = _context.takeIf(tok::TokenType::LIT_STRING);
+    if (!token) {
+        return std::nullopt;
+    }
+
+    const auto& lexeme = token->getLexeme();
+    assert(lexeme.size() >= 2);
+    std::string value = lexeme.substr(1, lexeme.size() - 2);
+    return StringLiteralExpr { .value = value };
+}
+
+std::optional<UnaryOperator> Parser::parsePrefixUnaryOperator()
+{
+    switch (_context.peek()->getType()) {
+        case tok::TokenType::INCREMENT: return UnaryOperator::PREINC;
+        case tok::TokenType::DECREMENT: return UnaryOperator::PREDEC;
+        case tok::TokenType::MINUS: return UnaryOperator::MINUS;
+        case tok::TokenType::BANG: return UnaryOperator::NEGATE;
+        case tok::TokenType::TILDE: return UnaryOperator::ONES_COMPL;
+        case tok::TokenType::STAR: return UnaryOperator::DEREF;
+        case tok::TokenType::AMPERSAND: return UnaryOperator::ADDROF;
+        case tok::TokenType::SIZEOF: return UnaryOperator::SIZEOF;
+        default: return std::nullopt;
+    }
+}
+
+std::optional<UnaryOperator> Parser::parsePostfixUnaryOperator()
+{
+    switch (_context.peek()->getType()) {
+        case tok::TokenType::INCREMENT: return UnaryOperator::POSTINC;
+        case tok::TokenType::DECREMENT: return UnaryOperator::POSTDEC;
+        default: return std::nullopt;
+    }
 }
 
 std::optional<TypeIdentifier> Parser::parseTypeIdentifier()
