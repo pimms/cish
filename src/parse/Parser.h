@@ -23,16 +23,17 @@ private:
     void reset();
 
     std::optional<IRootItem> parseRootItem();
-    std::optional<SystemInclude> convertSystemInclude(const tok::Token&);
+    std::optional<SystemInclude> convertSystemInclude();
     std::optional<StructDeclaration> parseStructDeclaration();
 
     std::unique_ptr<IStatement> parseStatement();
 
-    std::optional<IExpression> parseExpression();
-    std::optional<CharLiteralExpr> parseCharLiteral();
-    std::optional<IntLiteralExpr> parseIntLiteralExpr();
-    std::optional<FloatLiteralExpr> parseFloatLiteralExpr();
-    std::optional<StringLiteralExpr> parseStringLiteralExpr();
+    std::unique_ptr<IExpression> parseExpression();
+    std::unique_ptr<FunctionCallExpr> parseFunctionCallExpr();
+    std::unique_ptr<CharLiteralExpr> parseCharLiteral();
+    std::unique_ptr<IntLiteralExpr> parseIntLiteralExpr();
+    std::unique_ptr<FloatLiteralExpr> parseFloatLiteralExpr();
+    std::unique_ptr<StringLiteralExpr> parseStringLiteralExpr();
 
     std::optional<UnaryOperator> parsePrefixUnaryOperator();
     std::optional<UnaryOperator> parsePostfixUnaryOperator();

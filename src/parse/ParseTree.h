@@ -195,7 +195,7 @@ struct VariableDeclarationStatement {
     bool operator==(const VariableDeclarationStatement&) const = default;
     TypeIdentifier type;
     std::string varName;
-    std::optional<IExpression> expression;
+    std::unique_ptr<IExpression> expression;
 };
 struct ArithmeticAssignmentStatement {
     IExpression left;

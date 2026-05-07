@@ -46,7 +46,7 @@ std::optional<IRootItem> Parser::parseRootItem()
         case tok::TokenType::END_OF_FILE:
             return std::nullopt;
         case tok::TokenType::INCLUDE_SYS:
-            return convertSystemInclude(*_context.take());
+            return convertSystemInclude();
         case tok::TokenType::STRUCT:
             return parseStructDeclaration();
         default:
@@ -77,13 +77,13 @@ std::optional<IRootItem> Parser::parseRootItem()
             return VariableDeclarationStatement {
                 .type = typeIdentifier.value(),
                 .varName = identifier->getLexeme(),
-                .expression = std::nullopt
+                .expression = nullptr
            };
         }
         case tok::TokenType::EQUAL: {
             _context.take();
             auto expression = parseExpression();
-            if (!expression.has_value()) {
+            if (!expression) {
                 Throw(ParseError, "Expected expression");
             }
             if (!_context.takeIf(tok::TokenType::SEMICOLON)) {
@@ -149,15 +149,16 @@ std::optional<IRootItem> Parser::parseRootItem()
     };
 }
 
-std::optional<SystemInclude> Parser::convertSystemInclude(const tok::Token& token)
+std::optional<SystemInclude> Parser::convertSystemInclude()
 {
-    if (token.getType() != tok::TokenType::INCLUDE_SYS) {
+    const auto token = _context.takeIf(tok::TokenType::INCREMENT);
+    if (!token) {
         return std::nullopt;
     }
 
-    auto it = token.getLexeme().begin();
+    auto it = token->getLexeme().begin();
     while (*it++ != '<') { }
-    auto last = token.getLexeme().end() - 1;
+    auto last = token->getLexeme().end() - 1;
     std::string moduleName(it, last);
     if (moduleName.empty()) {
         return std::nullopt;
@@ -229,7 +230,7 @@ std::unique_ptr<IStatement> Parser::parseStatement()
     Throw(ParseError, "TODO");
 }
 
-std::optional<IExpression> Parser::parseExpression()
+std::unique_ptr<IExpression> Parser::parseExpression()
 {
     std::optional<UnaryOperator> unary = parsePrefixUnaryOperator();
 
@@ -237,11 +238,50 @@ std::optional<IExpression> Parser::parseExpression()
     Throw(ParseError, "TODO!")
 }
 
-std::optional<CharLiteralExpr> Parser::parseCharLiteral()
+std::unique_ptr<FunctionCallExpr> Parser::parseFunctionCallExpr()
+{
+    auto transaction = _context.beginTransaction();
+
+    auto functionName = _context.takeIf(tok::TokenType::IDENTIFIER);
+    if (!functionName) return nullptr;
+
+    if (!_context.takeIf(tok::TokenType::PAREN_L)) return nullptr;
+
+    std::vector<std::unique_ptr<IExpression>> params;
+    std::unique_ptr<IExpression> p;
+
+    bool expectParam = false;
+
+    while (!_context.takeIf(tok::TokenType::PAREN_R)) {
+        auto expr = parseExpression();
+        if (!expr) {
+            Throw(ParseError, "Unable to parse function parameter");
+        }
+        expectParam = false;
+        if (_context.takeIf(tok::TokenType::COMMA)) {
+            expectParam = true;
+        }
+    }
+    if (expectParam) {
+        Throw(ParseError, "Expected parameter, found ')'");
+    }
+
+    if (!_context.takeIf(tok::TokenType::SEMICOLON)) {
+        Throw(ParseError, "Expected ';', found %s", _context.peek()->toString().c_str());
+    }
+
+    transaction.commit();
+    return std::make_unique<FunctionCallExpr>(
+        functionName->getLexeme(),
+        std::move(params)
+    );
+}
+
+std::unique_ptr<CharLiteralExpr> Parser::parseCharLiteral()
 {
     const auto& token = _context.takeIf(tok::TokenType::LIT_CHAR);
     if (!token) {
-        return std::nullopt;
+        return nullptr;
     }
 
     const auto& lexeme = token->getLexeme();
@@ -273,14 +313,14 @@ std::optional<CharLiteralExpr> Parser::parseCharLiteral()
         value = literal[0];
     }
 
-    return CharLiteralExpr { .value = value };
+    return std::make_unique<CharLiteralExpr>(value);
 }
 
-std::optional<IntLiteralExpr> Parser::parseIntLiteralExpr()
+std::unique_ptr<IntLiteralExpr> Parser::parseIntLiteralExpr()
 {
     const auto& token = _context.takeIf(tok::TokenType::LIT_INT);
     if (!token) {
-        return std::nullopt;
+        return nullptr;
     }
 
     int64_t value = 0;
@@ -304,14 +344,14 @@ std::optional<IntLiteralExpr> Parser::parseIntLiteralExpr()
         Throw(ParseError, "Unexpected characters in int literal: %s", token->toString().c_str());
     }
 
-    return IntLiteralExpr { .value = value };
+    return std::make_unique<IntLiteralExpr>(value);
 }
 
-std::optional<FloatLiteralExpr> Parser::parseFloatLiteralExpr()
+std::unique_ptr<FloatLiteralExpr> Parser::parseFloatLiteralExpr()
 {
     const auto& token = _context.takeIf(tok::TokenType::LIT_FLOAT);
     if (!token) {
-        return std::nullopt;
+        return nullptr;
     }
 
     const auto& lexeme = token->getLexeme();
@@ -324,20 +364,20 @@ std::optional<FloatLiteralExpr> Parser::parseFloatLiteralExpr()
         }
     }
 
-    return FloatLiteralExpr { .value = value };
+    return std::make_unique<FloatLiteralExpr>(value);
 }
 
-std::optional<StringLiteralExpr> Parser::parseStringLiteralExpr()
+std::unique_ptr<StringLiteralExpr> Parser::parseStringLiteralExpr()
 {
     const auto& token = _context.takeIf(tok::TokenType::LIT_STRING);
     if (!token) {
-        return std::nullopt;
+        return nullptr;
     }
 
     const auto& lexeme = token->getLexeme();
     assert(lexeme.size() >= 2);
     std::string value = lexeme.substr(1, lexeme.size() - 2);
-    return StringLiteralExpr { .value = value };
+    return std::make_unique<StringLiteralExpr>(value);
 }
 
 std::optional<UnaryOperator> Parser::parsePrefixUnaryOperator()

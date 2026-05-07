@@ -137,7 +137,7 @@ TEST(ParserTest, ParseGlobalVariables)
             .pointerLevel = 0
         },
         .varName = "random_ass_var",
-        .expression = std::nullopt
+        .expression = nullptr
     };
     ASSERT_EQ(expected, decl);
 }

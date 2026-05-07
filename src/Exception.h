@@ -1,24 +1,25 @@
 #pragma once
 
-#include <cstdio>
-#include <stdexcept>
+#include <exception>
 #include <sstream>
 #include <cassert>
 
 #ifdef DEBUG
-    #define __DBGPRINT_EXCEPTION(_name) \
+    #define DBGPRINT_EXCEPTION(_name) \
         fprintf(stderr, "throwing %s at %s:%d (%s): %s\n", \
                 _name, file.c_str(), line, func.c_str(), buffer);
 #else
-    #define __DBGPRINT_EXCEPTION(_name)
+    #define DBGPRINT_EXCEPTION(_name)
 #endif
 
 #define DECLARE_EXCEPTION(name)                     \
     class name : public ::cish::Exception           \
     {                                               \
     public:                                         \
-        name(std::string file, std::string func,    \
-             int line, const char *format, ...)     \
+        name(const std::string& file,               \
+             const std::string& func,               \
+             int line,                              \
+             const char *format, ...)               \
         {                                           \
             char buffer[4096];                      \
                                                     \
@@ -36,36 +37,33 @@
             _what = ss.str().c_str();               \
             _userMessage = buffer;                  \
             _type = #name;                          \
-            __DBGPRINT_EXCEPTION(#name)             \
+            DBGPRINT_EXCEPTION(#name)               \
         }                                           \
-                                                    \
-        void raise() override { throw *this; }      \
     };
 
 #define Throw(_TYPE, ...) \
     { \
-        _TYPE __e__(__FILE__, __FUNCTION__, __LINE__, __VA_ARGS__); __e__.raise(); \
-        /* SHOULD NEVER HAPPEN --> */ assert(0); throw __e__;\
-        /* SHOULD ABSOLUTELY NEVER HAPPEN --> */ exit(1); \
+        throw _TYPE(__FILE__, __FUNCTION__, __LINE__, __VA_ARGS__); \
+        /* SHOULD NEVER HAPPEN --> */ assert(0);                    \
+        /* SHOULD ABSOLUTELY NEVER HAPPEN --> */ exit(1);           \
     }
 
 namespace cish
 {
 
-class Exception
+class Exception: public std::exception
 {
 public:
     Exception(std::string file, std::string func, int line, const char *format, ...);
     Exception();
 
-    Exception(const Exception &o);
-    Exception& operator=(const Exception &o);
+    Exception(const Exception &o) noexcept;
+    Exception& operator=(const Exception &o) noexcept;
 
-    virtual ~Exception() = default;
-    virtual const char* what() const noexcept;
+    ~Exception() override = default;
+    const char* what() const noexcept override;
     virtual const char* userMessage() const noexcept;
     virtual const char* type() const noexcept;
-    virtual void raise() { throw *this; }
 
 protected:
     std::string _type;

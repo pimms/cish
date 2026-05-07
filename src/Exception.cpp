@@ -22,17 +22,17 @@ Exception::Exception(std::string file, std::string func, int line, const char *f
     _what = ss.str().c_str();
     _userMessage = buffer;
 
-    __DBGPRINT_EXCEPTION("Exception");
+    DBGPRINT_EXCEPTION("Exception");
 }
 
 Exception::Exception(): _what("") { }
-Exception::Exception(const Exception &o):
+Exception::Exception(const Exception &o) noexcept :
     _type(o._type),
     _what(o._what),
     _userMessage(o._userMessage)
 { }
 
-Exception& Exception::operator=(const Exception &o)
+Exception& Exception::operator=(const Exception &o) noexcept
 {
     _what = o._what;
     return *this;
