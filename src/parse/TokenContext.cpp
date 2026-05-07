@@ -37,7 +37,9 @@ TokenContext::TokenContext(const std::vector<tok::Token>& tokens)
     : _tokens(tokens)
     , _index(0)
     , _contextId(0)
-{ }
+{
+    assert(_tokens.size() > 0 && _tokens.back().getType() == tok::TokenType::END_OF_FILE);
+}
 
 void TokenContext::reset()
 {
@@ -52,10 +54,7 @@ TokenContext::Transaction TokenContext::beginTransaction()
 
 const tok::Token* TokenContext::peek() const
 {
-    if (!atEnd()) {
-        return &_tokens[_index];
-    }
-    return nullptr;
+    return &_tokens[_index];
 }
 
 const tok::Token* TokenContext::take()

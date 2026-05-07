@@ -78,9 +78,9 @@ std::vector<Token> Tokenizer::tokenize()
     reset();
 
     while (readToken()) {
-        // cool
+        // Not much to do here except ignor
     }
-
+    _tokens.emplace_back(TokenType::END_OF_FILE, "", _line, _col);
     return _tokens;
 }
 
@@ -157,7 +157,6 @@ bool Tokenizer::readToken()
     }
 
     Throw(TokenizerError, "Unrecognized token at line %d col %d", _line, _col);
-    return false;
 }
 
 uint32_t Tokenizer::readRegexToken(const std::string& strExpr)
@@ -176,13 +175,17 @@ uint32_t Tokenizer::readRegexToken(const std::string& strExpr)
 
 void Tokenizer::addToken(TokenType type, uint32_t len)
 {
-    Token token {
-        type,
-        std::string_view(_source.c_str() + _pos, len),
-        _line,
-        _col
-    };
-    _tokens.push_back(token);
+    // This is a slightly awkward method of checking if both the current and previous token is a semicolon.
+    // If so, we don't add it to the token list.
+    if (_tokens.empty() || _tokens.back().getType() != TokenType::SEMICOLON || type != TokenType::SEMICOLON) {
+        Token token {
+            type,
+            std::string_view(_source.c_str() + _pos, len),
+            _line,
+            _col
+        };
+        _tokens.push_back(token);
+    }
 
     _pos += len;
     _col += len;

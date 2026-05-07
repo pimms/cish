@@ -72,6 +72,7 @@ std::ostream& operator<<(std::ostream& s, const TokenType& tokenType)
         case TokenType::LIT_CHAR: return s << "LIT_CHAR";
         case TokenType::LIT_FLOAT: return s << "LIT_FLOAT";
         case TokenType::IDENTIFIER: return s << "IDENTIFIER";
+        case TokenType::END_OF_FILE: return s<< "EOF";
         default:
             assert(0);
             return s << "UNKNOWN";

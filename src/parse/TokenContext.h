@@ -42,7 +42,7 @@ public:
     void reset();
     Transaction beginTransaction();
 
-    bool atEnd() const { return _index >= _tokens.size(); }
+    bool atEnd() const { return _tokens[_index].getType() == tok::TokenType::END_OF_FILE; }
     const tok::Token* peek() const;
     const tok::Token* take();
     const tok::Token* takeIf(tok::TokenType type);

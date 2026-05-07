@@ -40,9 +40,9 @@ TEST(ParserTest, ParseSystemIncludes)
 TEST(ParserTest, ParseStructDeclaration)
 {
     ParseTree tree = parse(R"(
-        struct Foo
+        ;;;struct Foo
         {
-            int n;;;;;;;;
+            ;;int n;;;;;;;;
         // TISS
         ;;;
             const int x;;;; /* promp */
@@ -54,20 +54,90 @@ TEST(ParserTest, ParseStructDeclaration)
 
     ASSERT_TRUE(std::holds_alternative<StructDeclaration>(tree.rootItems[0]));
     auto decl = std::get<StructDeclaration>(tree.rootItems[0]);
-    ASSERT_EQ("Foo", decl.name.name);
+    ASSERT_EQ("Foo", decl.name);
     ASSERT_EQ(3, decl.fields.size());
 
     auto t = TypeIdentifier { .isConst = false, .isStruct = false, .type = "int", .pointerLevel = 0};
 
-    ASSERT_EQ("n", decl.fields[0].name.name);
+    ASSERT_EQ("n", decl.fields[0].name);
     ASSERT_EQ(TypeIdentifier(false, false, "int", 0), decl.fields[0].type);
 
-    ASSERT_EQ("x", decl.fields[1].name.name);
+    ASSERT_EQ("x", decl.fields[1].name);
     ASSERT_EQ(TypeIdentifier(true, false, "int", 0), decl.fields[1].type);
 
-    ASSERT_EQ("arr", decl.fields[2].name.name);
+    ASSERT_EQ("arr", decl.fields[2].name);
     ASSERT_EQ(true, decl.fields[2].type.isConst);
     ASSERT_EQ(true, decl.fields[2].type.isStruct);
     ASSERT_EQ("Foo", decl.fields[2].type.type);
     ASSERT_EQ(2, decl.fields[2].type.pointerLevel);
+}
+
+TEST(ParserTest, ParseFunctionDeclaration)
+{
+    auto tree = parse(R"(
+        void foo(const struct bar*);
+        const int main (int argc, const
+                        char*
+                        * /* jesus christ*/
+                        argv)  ;;;
+    )");
+
+    ASSERT_EQ(2, tree.rootItems.size());
+
+    // verify foo
+    ASSERT_TRUE(std::holds_alternative<FunctionDeclaration>(tree.rootItems[0]));
+    FunctionDeclaration fooDecl = std::get<FunctionDeclaration>(tree.rootItems[0]);
+    auto fooExp = FunctionDeclaration {
+        .returnType = TypeIdentifier { .isConst = false, .isStruct = false, .type = "void", .pointerLevel = 0 },
+        .name = "foo",
+        .params = {
+            FunctionParameter {
+                .type = TypeIdentifier { .isConst=true, .isStruct=true, .type="bar", .pointerLevel=1 },
+                .name = std::nullopt
+            }
+        }
+    };
+    ASSERT_EQ(fooExp, fooDecl);
+
+    // Verify main
+    ASSERT_TRUE(std::holds_alternative<FunctionDeclaration>(tree.rootItems[1]));
+    const auto& mainDecl = std::get<FunctionDeclaration>(tree.rootItems[1]);
+    auto mainExp = FunctionDeclaration {
+        .returnType = TypeIdentifier { .isConst = true, .isStruct = false, .type = "int", .pointerLevel = 0 },
+        .name = "main",
+        .params = {
+            FunctionParameter {
+                .type = TypeIdentifier { .isConst=false, .isStruct=false, .type="int", .pointerLevel=0 },
+                .name = "argc"
+            },
+            FunctionParameter {
+                .type = TypeIdentifier { .isConst=true, .isStruct=false, .type="char", .pointerLevel=2 },
+                .name = "argv"
+            },
+        }
+    };
+    ASSERT_EQ(mainExp, mainDecl);
+}
+
+TEST(ParserTest, ParseGlobalVariables)
+{
+    auto tree = parse(R"(
+        const int random_ass_var;
+    )");
+
+    ASSERT_EQ(1, tree.rootItems.size());
+    ASSERT_TRUE(std::holds_alternative<VariableDeclarationStatement>(tree.rootItems[0]));
+
+    const auto& decl = std::get<VariableDeclarationStatement>(tree.rootItems[0]);
+    auto expected = VariableDeclarationStatement {
+        .type = TypeIdentifier {
+            .isConst = true,
+            .isStruct = false,
+            .type = "int",
+            .pointerLevel = 0
+        },
+        .varName = "random_ass_var",
+        .expression = std::nullopt
+    };
+    ASSERT_EQ(expected, decl);
 }

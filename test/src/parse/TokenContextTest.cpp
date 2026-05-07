@@ -14,6 +14,7 @@ TEST(TokenContextTest, TestBasicFunctionality)
         Token(TokenType::PAREN_R, "", 0, 0),
         Token(TokenType::PLUS, "", 0, 0),
         Token(TokenType::STAR, "", 0, 0),
+        Token(TokenType::END_OF_FILE, "", 0, 0),
     };
 
     TokenContext context(tokens);
@@ -30,7 +31,7 @@ TEST(TokenContextTest, TestBasicFunctionality)
 
     ASSERT_TRUE(context.atEnd());
     ASSERT_EQ(nullptr, context.take());
-    ASSERT_EQ(nullptr, context.peek());
+    ASSERT_EQ(TokenType::END_OF_FILE, context.peek()->getType());
 }
 
 TEST(TokenContextTest, TestTransactionRevert)
@@ -40,6 +41,7 @@ TEST(TokenContextTest, TestTransactionRevert)
         Token(TokenType::ABRACE_R, "", 0, 0),
         Token(TokenType::PAREN_L, "", 0, 0),
         Token(TokenType::PAREN_R, "", 0, 0),
+        Token(TokenType::END_OF_FILE, "", 0, 0),
     };
 
     TokenContext context(tokens);
@@ -65,6 +67,7 @@ TEST(TokenContextTest, TestHoldingItWrong)
         Token(TokenType::ABRACE_R, "", 0, 0),
         Token(TokenType::PAREN_L, "", 0, 0),
         Token(TokenType::PAREN_R, "", 0, 0),
+        Token(TokenType::END_OF_FILE, "", 0, 0),
     };
 
     TokenContext context(tokens);
@@ -95,6 +98,7 @@ TEST(TokenContextTest, NestedTransactions)
         Token(TokenType::ABRACE_R, "", 0, 0),
         Token(TokenType::PAREN_L, "", 0, 0),
         Token(TokenType::PAREN_R, "", 0, 0),
+        Token(TokenType::END_OF_FILE, "", 0, 0),
     };
 
     TokenContext context(tokens);

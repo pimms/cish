@@ -82,6 +82,7 @@ enum class TokenType
     LIT_FLOAT,
     
     IDENTIFIER,
+    END_OF_FILE,
 };
 
 std::ostream& operator<<(std::ostream&, const TokenType&);

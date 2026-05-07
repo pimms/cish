@@ -14,10 +14,11 @@ TEST(TokenizerTest, BasicPrimitives)
     Tokenizer tokenizer(src);
     const auto tokens = tokenizer.tokenize();
 
-    ASSERT_EQ(3, tokens.size());
+    ASSERT_EQ(4, tokens.size());
     ASSERT_EQ(Token(TokenType::PAREN_L, "(", 1, 0), tokens[0]);
     ASSERT_EQ(Token(TokenType::PLUS, "+", 1, 1), tokens[1]);
     ASSERT_EQ(Token(TokenType::MINUS, "-", 1, 2), tokens[2]);
+    ASSERT_EQ(Token(TokenType::END_OF_FILE, "", 1, 3), tokens[3]);
 }
 
 TEST(TokenizerTest, SimpleTokenizerTest)
@@ -26,12 +27,13 @@ TEST(TokenizerTest, SimpleTokenizerTest)
     Tokenizer tokenizer(src);
     const auto tokens = tokenizer.tokenize();
 
-    ASSERT_EQ(4, tokens.size());
+    ASSERT_EQ(5, tokens.size());
 
     ASSERT_EQ(Token(TokenType::IDENTIFIER, "int", 1, 0), tokens[0]);
     ASSERT_EQ(Token(TokenType::IDENTIFIER, "a", 1, 4), tokens[1]);
     ASSERT_EQ(Token(TokenType::EQUAL, "=", 1, 6), tokens[2]);
     ASSERT_EQ(Token(TokenType::LIT_INT, "5", 1, 8), tokens[3]);
+    ASSERT_EQ(Token(TokenType::END_OF_FILE, "", 1, 9), tokens[4]);
 }
 
 TEST(TokenizerTest, StringLiterals)
@@ -40,9 +42,11 @@ TEST(TokenizerTest, StringLiterals)
     Tokenizer tokenizer(src);
     const auto tokens = tokenizer.tokenize();
 
-    ASSERT_EQ(1, tokens.size());
+    ASSERT_EQ(2, tokens.size());
     ASSERT_EQ(TokenType::LIT_STRING, tokens[0].getType());
     ASSERT_EQ("\"wtf \\\"er\\\" dette??\"", tokens[0].getLexeme());
+
+    ASSERT_EQ(TokenType::END_OF_FILE, tokens[1].getType());
 }
 
 TEST(TokenizerTest, BlockCommentsAreNotReturned)
@@ -50,9 +54,11 @@ TEST(TokenizerTest, BlockCommentsAreNotReturned)
     const std::string src = "return /* ignore this\nand this\n*/5";
     Tokenizer tokenizer(src);
     const auto tokens = tokenizer.tokenize();
-    ASSERT_EQ(2, tokens.size());
+    ASSERT_EQ(3, tokens.size());
     ASSERT_EQ(Token(TokenType::RETURN, "return", 1, 0), tokens[0]);
     ASSERT_EQ(Token(TokenType::LIT_INT, "5", 3, 2), tokens[1]);
+
+    ASSERT_EQ(Token(TokenType::END_OF_FILE, "", 3, 3), tokens[2]);
 }
 
 TEST(TokenizerTest, LineCommentsAreNotReturned)
@@ -60,9 +66,11 @@ TEST(TokenizerTest, LineCommentsAreNotReturned)
     const std::string src = "return // ignore_this\n5";
     Tokenizer tokenizer(src);
     const auto tokens = tokenizer.tokenize();
-    ASSERT_EQ(2, tokens.size());
+    ASSERT_EQ(3, tokens.size());
     ASSERT_EQ(Token(TokenType::RETURN, "return", 1, 0), tokens[0]);
     ASSERT_EQ(Token(TokenType::LIT_INT, "5", 2, 0), tokens[1]);
+
+    ASSERT_EQ(Token(TokenType::END_OF_FILE, "", 2, 1), tokens[2]);
 }
 
 TEST(TokenizerTest, VerifyFullTokenization)
@@ -131,6 +139,7 @@ TEST(TokenizerTest, VerifyFullTokenization)
         TokenType::LIT_INT,             // 0
         TokenType::SEMICOLON,
         TokenType::CBRACE_R,            // }
+        TokenType::END_OF_FILE,
     };
 
     if (expected != actual) {
@@ -155,6 +164,29 @@ TEST(TokenizerTest, UnexpectedTokensThrows)
     const std::string source = "#";
     Tokenizer tokenizer(source);
     ASSERT_THROW(tokenizer.tokenize(), cish::tok::TokenizerError);
+}
+
+TEST(TokenizerTest, RepeatedSemicolonsAreIgnored)
+{
+    const std::string src = R"(
+        ;;;; int 5 ;;;
+    )";
+
+    Tokenizer tokenizer(src);
+    const auto tokens = tokenizer.tokenize();
+
+    std::vector<TokenType> actual;
+    std::transform(tokens.begin(), tokens.end(), std::back_inserter(actual), [](auto t) { return t.getType(); });
+
+    std::vector expected = {
+        TokenType::SEMICOLON,
+        TokenType::IDENTIFIER,
+        TokenType::LIT_INT,
+        TokenType::SEMICOLON,
+        TokenType::END_OF_FILE,
+    };
+
+    ASSERT_EQ(expected, actual);
 }
 
 TEST(TokenizerTest, VerifyGCCTestSuiteTokenizesCleanly)
@@ -196,3 +228,4 @@ TEST(TokenizerTest, VerifyGCCTestSuiteTokenizesCleanly)
         }
     }
 }
+

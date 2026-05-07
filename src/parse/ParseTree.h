@@ -39,6 +39,16 @@ struct FunctionDefinition;
 struct SystemInclude;
 struct StructDeclaration;
 
+bool operator==(const SubscriptExpr& lhs, const SubscriptExpr& rhs);
+bool operator==(const FunctionCallExpr& lhs, const FunctionCallExpr& rhs);
+bool operator==(const VarRefExpr& lhs, const VarRefExpr& rhs);
+bool operator==(const BinaryExpr& lhs, const BinaryExpr& rhs);
+bool operator==(const UnaryExpr& lhs, const UnaryExpr& rhs);
+bool operator==(const BoolLiteralExpr& lhs, const BoolLiteralExpr& rhs);
+bool operator==(const CharLiteralExpr& lhs, const CharLiteralExpr& rhs);
+bool operator==(const IntLiteralExpr& lhs, const IntLiteralExpr& rhs);
+bool operator==(const FloatLiteralExpr& lhs, const FloatLiteralExpr& rhs);
+bool operator==(const StringLiteralExpr& lhs, const StringLiteralExpr& rhs);
 
 // Variants
 using IExpression = std::variant<
@@ -83,10 +93,6 @@ using IRootItem = std::variant<
 BUILDING BLOCKS
 ================
 */
-
-struct Identifier {
-    std::string name;
-};
 struct TypeIdentifier {
     bool operator==(const TypeIdentifier& other) const = default;
     bool isConst {};
@@ -96,12 +102,13 @@ struct TypeIdentifier {
     int pointerLevel {};
 };
 struct FunctionParameter {
+    bool operator==(const FunctionParameter&) const = default;
     TypeIdentifier type;
-    std::optional<Identifier> name;
+    std::optional<std::string> name;
 };
 struct StructFieldDeclaration {
     TypeIdentifier type;
-    Identifier name;
+    std::string name;
 };
 
 /*
@@ -143,7 +150,7 @@ struct FunctionCallExpr {
     std::vector<std::unique_ptr<IExpression>> params;
 };
 struct VarRefExpr {
-    Identifier identifier;
+    std::string identifier;
 };
 struct BinaryExpr {
     std::unique_ptr<IExpression> left;
@@ -185,8 +192,9 @@ struct AssignmentStatement {
     IExpression right;
 };
 struct VariableDeclarationStatement {
+    bool operator==(const VariableDeclarationStatement&) const = default;
     TypeIdentifier type;
-    Identifier varName;
+    std::string varName;
     std::optional<IExpression> expression;
 };
 struct ArithmeticAssignmentStatement {
@@ -220,8 +228,9 @@ ROOT ITEMS
 ================
 */
 struct FunctionDeclaration {
+    bool operator==(const FunctionDeclaration&) const = default;
     TypeIdentifier returnType;
-    Identifier name;
+    std::string name;
     std::vector<FunctionParameter> params;
 };
 struct FunctionDefinition {
@@ -232,7 +241,7 @@ struct SystemInclude {
     std::string moduleName;
 };
 struct StructDeclaration {
-    Identifier name;
+    std::string name;
     std::vector<StructFieldDeclaration> fields;
 };
 
