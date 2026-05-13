@@ -7,6 +7,15 @@
 namespace cish::parse
 {
 
+namespace internal
+{
+using BinaryPrecedence = int;
+const BinaryPrecedence BP_NONE = 0;
+const BinaryPrecedence BP_PREFIX = 13;
+std::optional<BinaryOperator> binaryOperatorFromToken(const tok::TokenType& type);
+BinaryPrecedence binaryPrecedenceValue(BinaryOperator type);
+}
+
 class Parser {
 public:
     explicit Parser(std::vector<tok::Token>& tokens);
@@ -23,19 +32,23 @@ private:
     void reset();
 
     std::optional<IRootItem> parseRootItem();
-    std::optional<SystemInclude> convertSystemInclude();
+    std::optional<SystemInclude> parseSystemInclude();
     std::optional<StructDeclaration> parseStructDeclaration();
 
     std::unique_ptr<IStatement> parseStatement();
 
-    std::unique_ptr<IExpression> parseExpression();
-    std::unique_ptr<FunctionCallExpr> parseFunctionCallExpr();
-    std::unique_ptr<CharLiteralExpr> parseCharLiteral();
-    std::unique_ptr<IntLiteralExpr> parseIntLiteralExpr();
-    std::unique_ptr<FloatLiteralExpr> parseFloatLiteralExpr();
-    std::unique_ptr<StringLiteralExpr> parseStringLiteralExpr();
+    std::unique_ptr<IExpression> parseExpression(internal::BinaryPrecedence minBP);
+
+    std::unique_ptr<IExpression> parseExpressionAtom();
+    std::unique_ptr<IExpression> parseFunctionCallExpr();
+    std::unique_ptr<IExpression> parseVarRefExpr();
+    std::unique_ptr<IExpression> parseCharLiteralExpr();
+    std::unique_ptr<IExpression> parseIntLiteralExpr();
+    std::unique_ptr<IExpression> parseFloatLiteralExpr();
+    std::unique_ptr<IExpression> parseStringLiteralExpr();
 
     std::optional<UnaryOperator> parsePrefixUnaryOperator();
+    std::optional<BinaryOperator> parseBinaryOperator();
     std::optional<UnaryOperator> parsePostfixUnaryOperator();
 
     std::optional<TypeIdentifier> parseTypeIdentifier();

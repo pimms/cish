@@ -54,9 +54,9 @@ bool operator==(const StringLiteralExpr& lhs, const StringLiteralExpr& rhs);
 using IExpression = std::variant<
     SubscriptExpr,
     FunctionCallExpr,
-    VarRefExpr,
     BinaryExpr,
     UnaryExpr,
+    VarRefExpr,
     BoolLiteralExpr,
     CharLiteralExpr,
     IntLiteralExpr,
@@ -75,7 +75,7 @@ using IStatement = std::variant<
     ExpressionStatement
 >;
 using IForLoopInitializer = std::variant<
-    IExpression,
+    std::unique_ptr<IExpression>,
     AssignmentStatement,
     VariableDeclarationStatement,
     ArithmeticAssignmentStatement
@@ -188,8 +188,8 @@ struct IfStatement {
     std::vector<std::unique_ptr<IStatement>> body;
 };
 struct AssignmentStatement {
-    IExpression left;
-    IExpression right;
+    std::unique_ptr<IExpression> left;
+    std::unique_ptr<IExpression> right;
 };
 struct VariableDeclarationStatement {
     bool operator==(const VariableDeclarationStatement&) const = default;
@@ -198,28 +198,28 @@ struct VariableDeclarationStatement {
     std::unique_ptr<IExpression> expression;
 };
 struct ArithmeticAssignmentStatement {
-    IExpression left;
+    std::unique_ptr<IExpression> left;
     ArithmeticAssignmentOperator oper;
-    IExpression right;
+    std::unique_ptr<IExpression> right;
 };
 struct ReturnStatement {
-    std::optional<IExpression> expression;
+    std::unique_ptr<IExpression> expression;
 };
 struct ForStatement {
     std::optional<IForLoopInitializer> initializer;
-    std::optional<IExpression> condition;
-    std::optional<IExpression> update;
+    std::unique_ptr<IExpression> condition;
+    std::unique_ptr<IExpression> update;
 };
 struct WhileStatement {
-    IExpression condition;
+    std::unique_ptr<IExpression> condition;
     std::vector<std::unique_ptr<IStatement>> body;
 };
 struct DoWhileStatement {
-    IExpression condition;
+    std::unique_ptr<IExpression> condition;
     std::vector<std::unique_ptr<IStatement>> body;
 };
 struct ExpressionStatement {
-    IExpression expression;
+    std::unique_ptr<IExpression> expression;
 };
 
 /*

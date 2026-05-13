@@ -11,6 +11,62 @@ namespace cish::parse
 
 DECLARE_EXCEPTION(ParseError);
 
+namespace internal
+{
+DECLARE_EXCEPTION(InternalError);
+
+std::optional<BinaryOperator> binaryOperatorFromToken(const tok::TokenType& type)
+{
+    switch (type) {
+        case tok::TokenType::STAR: return BinaryOperator::MULT;
+        case tok::TokenType::RSLASH: return BinaryOperator::DIVIDE;
+        case tok::TokenType::MODULO: return BinaryOperator::MODULO;
+        case tok::TokenType::PLUS: return BinaryOperator::PLUS;
+        case tok::TokenType::MINUS: return BinaryOperator::MINUS;
+        case tok::TokenType::LSHIFT: return BinaryOperator::LSHIFT;
+        case tok::TokenType::RSHIFT: return BinaryOperator::RSHIFT;
+        case tok::TokenType::CMP_EQ: return BinaryOperator::EQUALS;
+        case tok::TokenType::CMP_NE: return BinaryOperator::NEQUALS;
+        case tok::TokenType::CMP_GTEQ: return BinaryOperator::GTE;
+        case tok::TokenType::CMP_LTEQ: return BinaryOperator::LTE;
+        case tok::TokenType::ABRACE_L: return BinaryOperator::LT;
+        case tok::TokenType::ABRACE_R: return BinaryOperator::GT;
+        case tok::TokenType::AMPERSAND: return BinaryOperator::BITAND;
+        case tok::TokenType::CARET: return BinaryOperator::BITXOR;
+        case tok::TokenType::PIPE: return BinaryOperator::BITOR;
+        case tok::TokenType::LOG_AND: return BinaryOperator::LOGAND;
+        case tok::TokenType::LOG_OR: return BinaryOperator::LOGOR;
+        default: return std::nullopt;
+    }
+}
+
+BinaryPrecedence binaryPrecedenceValue(BinaryOperator type)
+{
+    switch (type) {
+        case BinaryOperator::LOGOR: return 12;
+        case BinaryOperator::LOGAND: return 11;
+        case BinaryOperator::BITOR: return 10;
+        case BinaryOperator::BITXOR: return 9;
+        case BinaryOperator::BITAND: return 8;
+        case BinaryOperator::EQUALS:
+        case BinaryOperator::NEQUALS: return 7;
+        case BinaryOperator::LTE:
+        case BinaryOperator::GTE:
+        case BinaryOperator::LT:
+        case BinaryOperator::GT: return 6;
+        case BinaryOperator::LSHIFT:
+        case BinaryOperator::RSHIFT: return 5;
+        case BinaryOperator::MULT:
+        case BinaryOperator::DIVIDE:
+        case BinaryOperator::MODULO: return 4;
+        default:
+            Throw(InternalError, "Unhandled operator: %d", type);
+    }
+}
+}
+
+using namespace internal;
+
 Parser::Parser(std::vector<tok::Token>& tokens)
     : _context(tokens)
 { }
@@ -46,7 +102,7 @@ std::optional<IRootItem> Parser::parseRootItem()
         case tok::TokenType::END_OF_FILE:
             return std::nullopt;
         case tok::TokenType::INCLUDE_SYS:
-            return convertSystemInclude();
+            return parseSystemInclude();
         case tok::TokenType::STRUCT:
             return parseStructDeclaration();
         default:
@@ -82,7 +138,7 @@ std::optional<IRootItem> Parser::parseRootItem()
         }
         case tok::TokenType::EQUAL: {
             _context.take();
-            auto expression = parseExpression();
+            auto expression = parseExpression(BP_NONE);
             if (!expression) {
                 Throw(ParseError, "Expected expression");
             }
@@ -135,8 +191,7 @@ std::optional<IRootItem> Parser::parseRootItem()
         Throw(ParseError, "Expected '{', found %s", _context.peek()->toString().c_str());
     }
     std::vector<std::unique_ptr<IStatement>> statements;
-    std::unique_ptr<IStatement> statement = parseStatement();
-    while (statement) {
+    while (auto statement = parseStatement()) {
         statements.push_back(std::move(statement));
     }
     if (!_context.takeIf(tok::TokenType::CBRACE_R)) {
@@ -149,9 +204,9 @@ std::optional<IRootItem> Parser::parseRootItem()
     };
 }
 
-std::optional<SystemInclude> Parser::convertSystemInclude()
+std::optional<SystemInclude> Parser::parseSystemInclude()
 {
-    const auto token = _context.takeIf(tok::TokenType::INCREMENT);
+    const auto token = _context.takeIf(tok::TokenType::INCLUDE_SYS);
     if (!token) {
         return std::nullopt;
     }
@@ -230,15 +285,83 @@ std::unique_ptr<IStatement> Parser::parseStatement()
     Throw(ParseError, "TODO");
 }
 
-std::unique_ptr<IExpression> Parser::parseExpression()
+std::unique_ptr<IExpression> Parser::parseExpression(BinaryPrecedence minBP)
 {
-    std::optional<UnaryOperator> unary = parsePrefixUnaryOperator();
+    auto prefixOperator = parsePrefixUnaryOperator();
+    std::unique_ptr<IExpression> left;
+    if (prefixOperator.has_value()) {
+        auto operand = parseExpression(BP_PREFIX);
+        left = std::make_unique<IExpression>(UnaryExpr(prefixOperator.value(), std::move(operand)));
+    } else {
+        left = parseExpressionAtom();
+    }
 
+    if (!left) return nullptr;
 
-    Throw(ParseError, "TODO!")
+    while (true) {
+        // Handle subscript operators
+        if (_context.peek()->getType() == tok::TokenType::SQPAREN_L) {
+            _context.take();
+            auto subscript = parseExpression(BP_NONE);
+            if (!subscript) {
+                Throw(ParseError, "Expected expression in subscript, found %s", _context.peek()->toString().c_str());
+            }
+            if (!_context.takeIf(tok::TokenType::SQPAREN_R)) {
+                Throw(ParseError, "Expected ']', found %s", _context.peek()->toString().c_str());
+            }
+            left = std::make_unique<IExpression>(SubscriptExpr(std::move(left), std::move(subscript)));
+            continue;
+        }
+
+        // Handle postfix operators
+        auto postfixOperator = parsePostfixUnaryOperator();
+        if (postfixOperator.has_value()) {
+            left = std::make_unique<IExpression>(UnaryExpr(postfixOperator.value(), std::move(left)));
+        }
+
+        // Handle infix operators
+        auto binop = binaryOperatorFromToken(_context.peek()->getType());
+        if (!binop.has_value()) {
+            break;
+        }
+        BinaryPrecedence nextBp = binaryPrecedenceValue(binop.value());
+        if (nextBp <= minBP) {
+            break;
+        }
+        auto right = parseExpression(nextBp);
+        if (!right) {
+            Throw(ParseError, "Expected expression, found '%s'", _context.peek()->toString().c_str());
+        }
+        left = std::make_unique<IExpression>(BinaryExpr(std::move(left), std::move(right), binop.value()));
+    }
+
+    return left;
 }
 
-std::unique_ptr<FunctionCallExpr> Parser::parseFunctionCallExpr()
+std::unique_ptr<IExpression> Parser::parseExpressionAtom()
+{
+    if (_context.takeIf(tok::TokenType::PAREN_L)) {
+        auto inner = parseExpression(BP_NONE);
+        if (!inner) Throw(ParseError, "Expected expression after '('");
+        if (!_context.takeIf(tok::TokenType::PAREN_R)) Throw(ParseError, "Expected ')'");
+        return inner;
+    }
+
+    std::unique_ptr<IExpression> e;
+    if (    ((e = parseFunctionCallExpr()))
+        ||  ((e = parseVarRefExpr()))
+        ||  ((e = parseCharLiteralExpr()))
+        ||  ((e = parseIntLiteralExpr()))
+        ||  ((e = parseFloatLiteralExpr()))
+        ||  ((e = parseStringLiteralExpr()))
+    ) {
+        return e;
+    }
+
+    return nullptr;
+}
+
+std::unique_ptr<IExpression> Parser::parseFunctionCallExpr()
 {
     auto transaction = _context.beginTransaction();
 
@@ -253,10 +376,11 @@ std::unique_ptr<FunctionCallExpr> Parser::parseFunctionCallExpr()
     bool expectParam = false;
 
     while (!_context.takeIf(tok::TokenType::PAREN_R)) {
-        auto expr = parseExpression();
+        auto expr = parseExpression(BP_NONE);
         if (!expr) {
             Throw(ParseError, "Unable to parse function parameter");
         }
+        params.push_back(std::move(expr));
         expectParam = false;
         if (_context.takeIf(tok::TokenType::COMMA)) {
             expectParam = true;
@@ -266,18 +390,28 @@ std::unique_ptr<FunctionCallExpr> Parser::parseFunctionCallExpr()
         Throw(ParseError, "Expected parameter, found ')'");
     }
 
-    if (!_context.takeIf(tok::TokenType::SEMICOLON)) {
-        Throw(ParseError, "Expected ';', found %s", _context.peek()->toString().c_str());
-    }
-
     transaction.commit();
-    return std::make_unique<FunctionCallExpr>(
-        functionName->getLexeme(),
-        std::move(params)
+    return std::make_unique<IExpression>(
+        FunctionCallExpr(
+            functionName->getLexeme(),
+            std::move(params)
+        )
     );
 }
 
-std::unique_ptr<CharLiteralExpr> Parser::parseCharLiteral()
+std::unique_ptr<IExpression> Parser::parseVarRefExpr()
+{
+    auto identifier = _context.takeIf(tok::TokenType::IDENTIFIER);
+    if (!identifier) {
+        return nullptr;
+    }
+
+    return std::make_unique<IExpression>(
+        VarRefExpr(identifier->getLexeme())
+    );
+}
+
+std::unique_ptr<IExpression> Parser::parseCharLiteralExpr()
 {
     const auto& token = _context.takeIf(tok::TokenType::LIT_CHAR);
     if (!token) {
@@ -313,10 +447,12 @@ std::unique_ptr<CharLiteralExpr> Parser::parseCharLiteral()
         value = literal[0];
     }
 
-    return std::make_unique<CharLiteralExpr>(value);
+    return std::make_unique<IExpression>(
+        CharLiteralExpr(value)
+    );
 }
 
-std::unique_ptr<IntLiteralExpr> Parser::parseIntLiteralExpr()
+std::unique_ptr<IExpression> Parser::parseIntLiteralExpr()
 {
     const auto& token = _context.takeIf(tok::TokenType::LIT_INT);
     if (!token) {
@@ -344,10 +480,12 @@ std::unique_ptr<IntLiteralExpr> Parser::parseIntLiteralExpr()
         Throw(ParseError, "Unexpected characters in int literal: %s", token->toString().c_str());
     }
 
-    return std::make_unique<IntLiteralExpr>(value);
+    return std::make_unique<IExpression>(
+        IntLiteralExpr(value)
+    );
 }
 
-std::unique_ptr<FloatLiteralExpr> Parser::parseFloatLiteralExpr()
+std::unique_ptr<IExpression> Parser::parseFloatLiteralExpr()
 {
     const auto& token = _context.takeIf(tok::TokenType::LIT_FLOAT);
     if (!token) {
@@ -359,15 +497,17 @@ std::unique_ptr<FloatLiteralExpr> Parser::parseFloatLiteralExpr()
     size_t parsed = 0;
     const double value = std::stod(lexeme, &parsed);
     if (parsed < lexeme.size()) {
-        if (parsed+1 != lexeme.size() || lexeme[parsed] != 'f' || lexeme[parsed] != 'F') {
+        if (parsed+1 != lexeme.size() || (lexeme[parsed] != 'f' && lexeme[parsed] != 'F')) {
             Throw(ParseError, "Unexpected characters in float literal: %s", token->toString().c_str());
         }
     }
 
-    return std::make_unique<FloatLiteralExpr>(value);
+    return std::make_unique<IExpression>(
+        FloatLiteralExpr(value)
+    );
 }
 
-std::unique_ptr<StringLiteralExpr> Parser::parseStringLiteralExpr()
+std::unique_ptr<IExpression> Parser::parseStringLiteralExpr()
 {
     const auto& token = _context.takeIf(tok::TokenType::LIT_STRING);
     if (!token) {
@@ -377,31 +517,52 @@ std::unique_ptr<StringLiteralExpr> Parser::parseStringLiteralExpr()
     const auto& lexeme = token->getLexeme();
     assert(lexeme.size() >= 2);
     std::string value = lexeme.substr(1, lexeme.size() - 2);
-    return std::make_unique<StringLiteralExpr>(value);
+    return std::make_unique<IExpression>(
+        StringLiteralExpr(value)
+    );
 }
 
 std::optional<UnaryOperator> Parser::parsePrefixUnaryOperator()
 {
+    UnaryOperator oper;
     switch (_context.peek()->getType()) {
-        case tok::TokenType::INCREMENT: return UnaryOperator::PREINC;
-        case tok::TokenType::DECREMENT: return UnaryOperator::PREDEC;
-        case tok::TokenType::MINUS: return UnaryOperator::MINUS;
-        case tok::TokenType::BANG: return UnaryOperator::NEGATE;
-        case tok::TokenType::TILDE: return UnaryOperator::ONES_COMPL;
-        case tok::TokenType::STAR: return UnaryOperator::DEREF;
-        case tok::TokenType::AMPERSAND: return UnaryOperator::ADDROF;
-        case tok::TokenType::SIZEOF: return UnaryOperator::SIZEOF;
+        case tok::TokenType::INCREMENT: oper = UnaryOperator::PREINC; break;
+        case tok::TokenType::DECREMENT: oper = UnaryOperator::PREDEC; break;
+        case tok::TokenType::MINUS: oper = UnaryOperator::MINUS; break;
+        case tok::TokenType::BANG: oper = UnaryOperator::NEGATE; break;
+        case tok::TokenType::TILDE: oper = UnaryOperator::ONES_COMPL; break;
+        case tok::TokenType::STAR: oper = UnaryOperator::DEREF; break;
+        case tok::TokenType::AMPERSAND: oper = UnaryOperator::ADDROF; break;
+        case tok::TokenType::SIZEOF: oper = UnaryOperator::SIZEOF; break;
         default: return std::nullopt;
     }
+
+    _context.take();
+    return oper;
+}
+
+std::optional<BinaryOperator> Parser::parseBinaryOperator()
+{
+    std::optional<BinaryOperator> oper = binaryOperatorFromToken(_context.peek()->getType());
+
+    if (oper.has_value()) {
+        _context.take();
+        return oper.value();
+    }
+    return std::nullopt;
 }
 
 std::optional<UnaryOperator> Parser::parsePostfixUnaryOperator()
 {
+    UnaryOperator oper;
     switch (_context.peek()->getType()) {
-        case tok::TokenType::INCREMENT: return UnaryOperator::POSTINC;
-        case tok::TokenType::DECREMENT: return UnaryOperator::POSTDEC;
+        case tok::TokenType::INCREMENT: oper = UnaryOperator::POSTINC; break;
+        case tok::TokenType::DECREMENT: oper = UnaryOperator::POSTDEC; break;
         default: return std::nullopt;
     }
+
+    _context.take();
+    return oper;
 }
 
 std::optional<TypeIdentifier> Parser::parseTypeIdentifier()
@@ -459,3 +620,4 @@ std::optional<FunctionParameter> Parser::parseFunctionParameter()
 }
 
 }
+
