@@ -21,6 +21,7 @@ struct CharLiteralExpr;
 struct IntLiteralExpr;
 struct FloatLiteralExpr;
 struct StringLiteralExpr;
+struct MemberAccessExpr;
 
 // Statements
 struct IfStatement;
@@ -49,6 +50,7 @@ bool operator==(const CharLiteralExpr& lhs, const CharLiteralExpr& rhs);
 bool operator==(const IntLiteralExpr& lhs, const IntLiteralExpr& rhs);
 bool operator==(const FloatLiteralExpr& lhs, const FloatLiteralExpr& rhs);
 bool operator==(const StringLiteralExpr& lhs, const StringLiteralExpr& rhs);
+bool operator==(const MemberAccessExpr& lhs, const MemberAccessExpr& rhs);
 
 // Variants
 using IExpression = std::variant<
@@ -61,13 +63,13 @@ using IExpression = std::variant<
     CharLiteralExpr,
     IntLiteralExpr,
     FloatLiteralExpr,
-    StringLiteralExpr
+    StringLiteralExpr,
+    MemberAccessExpr
 >;
 using IStatement = std::variant<
     IfStatement,
     AssignmentStatement,
     VariableDeclarationStatement,
-    ArithmeticAssignmentStatement,
     ReturnStatement,
     ForStatement,
     WhileStatement,
@@ -77,8 +79,7 @@ using IStatement = std::variant<
 using IForLoopInitializer = std::variant<
     std::unique_ptr<IExpression>,
     AssignmentStatement,
-    VariableDeclarationStatement,
-    ArithmeticAssignmentStatement
+    VariableDeclarationStatement
 >;
 using IRootItem = std::variant<
     VariableDeclarationStatement,
@@ -126,6 +127,10 @@ enum class UnaryOperator {
     ADDROF,
     SIZEOF,
 };
+enum class MemberAccessOperator {
+    DOT,
+    ARROW,
+};
 enum class BinaryOperator {
     MULT,       DIVIDE,     MODULO,
     PLUS,       MINUS,
@@ -135,7 +140,8 @@ enum class BinaryOperator {
     BITAND,     BITXOR,     BITOR,
     LOGAND,     LOGOR,
 };
-enum class ArithmeticAssignmentOperator {
+enum class AssignmentOperator {
+    ASSIGN,
     MULT,       DIVIDE,     MODULO,
     PLUS,       MINUS,
     LSHIFT,     RSHIFT,
@@ -176,6 +182,11 @@ struct FloatLiteralExpr {
 struct StringLiteralExpr {
     std::string value;
 };
+struct MemberAccessExpr {
+    std::unique_ptr<IExpression> expr;
+    std::string member;
+    MemberAccessOperator oper;
+};
 
 
 /*
@@ -187,19 +198,15 @@ struct IfStatement {
     IExpression condition;
     std::vector<std::unique_ptr<IStatement>> body;
 };
-struct AssignmentStatement {
-    std::unique_ptr<IExpression> left;
-    std::unique_ptr<IExpression> right;
-};
 struct VariableDeclarationStatement {
     bool operator==(const VariableDeclarationStatement&) const = default;
     TypeIdentifier type;
     std::string varName;
     std::unique_ptr<IExpression> expression;
 };
-struct ArithmeticAssignmentStatement {
+struct AssignmentStatement {
     std::unique_ptr<IExpression> left;
-    ArithmeticAssignmentOperator oper;
+    AssignmentOperator oper;
     std::unique_ptr<IExpression> right;
 };
 struct ReturnStatement {

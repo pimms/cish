@@ -282,7 +282,20 @@ std::optional<StructDeclaration> Parser::parseStructDeclaration()
 
 std::unique_ptr<IStatement> Parser::parseStatement()
 {
-    Throw(ParseError, "TODO");
+    switch (_context.peek()->getType()) {
+        case tok::TokenType::IF:
+            break;
+        case tok::TokenType::RETURN:
+            break;
+        case tok::TokenType::FOR:
+            break;
+        case tok::TokenType::WHILE:
+            break;
+        case tok::TokenType::DO:
+            break;
+    }
+    // TODO
+    assert(0);
 }
 
 std::unique_ptr<IExpression> Parser::parseExpression(BinaryPrecedence minBP)
@@ -298,7 +311,7 @@ std::unique_ptr<IExpression> Parser::parseExpression(BinaryPrecedence minBP)
 
     if (!left) return nullptr;
 
-    while (true) {
+    while (!_context.atEnd()) {
         // Handle subscript operators
         if (_context.peek()->getType() == tok::TokenType::SQPAREN_L) {
             _context.take();
@@ -310,6 +323,21 @@ std::unique_ptr<IExpression> Parser::parseExpression(BinaryPrecedence minBP)
                 Throw(ParseError, "Expected ']', found %s", _context.peek()->toString().c_str());
             }
             left = std::make_unique<IExpression>(SubscriptExpr(std::move(left), std::move(subscript)));
+            continue;
+        }
+
+        // Handle member access operator
+        if (_context.peek()->getType() == tok::TokenType::DOT || _context.peek()->getType() == tok::TokenType::ARROW) {
+            auto maToken = _context.take();
+            auto memToken = _context.takeIf(tok::TokenType::IDENTIFIER);
+            if (!memToken) {
+                Throw(ParseError, "Expected member identifier, found %s", _context.peek()->toString().c_str());
+            }
+            left = std::make_unique<IExpression>(MemberAccessExpr(
+                std::move(left),
+                memToken->getLexeme(),
+                (maToken->getType() == tok::TokenType::DOT ? MemberAccessOperator::DOT : MemberAccessOperator::ARROW)
+            ));
             continue;
         }
 
