@@ -6,6 +6,7 @@ namespace cish::parse
 {
 
 DECLARE_EXCEPTION(TokenContextInvalidTransaction);
+DECLARE_EXCEPTION(UnexpectedToken);
 
 /*
 ================
@@ -57,6 +58,16 @@ const tok::Token* TokenContext::peek() const
     return &_tokens[_index];
 }
 
+const tok::Token* TokenContext::peekAhead(unsigned int offset) const
+{
+    if (_index + offset < _tokens.size()) {
+        return &_tokens[_index + offset];
+    }
+
+    // Return the EOF token
+    return &_tokens[_tokens.size() - 1];
+}
+
 const tok::Token* TokenContext::take()
 {
     if (!atEnd()) {
@@ -71,6 +82,15 @@ const tok::Token* TokenContext::takeIf(tok::TokenType type)
         return &_tokens[_index++];
     }
     return nullptr;
+}
+
+const tok::Token* TokenContext::require(tok::TokenType type)
+{
+    auto token = takeIf(type);
+    if (!token) {
+        Throw(UnexpectedToken, "Unexpected token: %s", peek()->toString().c_str());
+    }
+    return token;
 }
 
 void TokenContext::exhaustSemicolons()

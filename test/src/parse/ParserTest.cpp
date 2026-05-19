@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
 #include <tok/TokenType.h>
 #include <variant>
+#include <filesystem>
+#include <fstream>
 
 #include "parse/Parser.h"
 #include "tok/Tokenizer.h"
@@ -140,4 +142,48 @@ TEST(ParserTest, ParseGlobalVariables)
         .expression = nullptr
     };
     ASSERT_EQ(expected, decl);
+}
+
+TEST(ParserTest, ParseGccComparisonSuite)
+{
+    // This test may not actually work, and that is fine.
+    // Traverse the directories upwards to find the 'gcc_compare/'-directory.
+    // Unless we're running from a different hierarchy entirely, we should begin
+    // able to find it within 5 parent dirs.
+    const int maxDirs = 5;
+    int steps = 0;
+
+    std::string dir = "./";
+
+    while (!std::filesystem::exists(dir + "gcc_compare/")) {
+        dir += "../";
+        steps++;
+        if (steps >= maxDirs) {
+            printf("Max directory attempts reached (%d), aborting test\n", maxDirs);
+            return;
+        }
+    }
+
+    for (const auto& file: std::filesystem::directory_iterator(dir + "gcc_compare/")) {
+        if (file.path().extension() == ".c") {
+            printf("Testing file '%s'\n", file.path().filename().c_str());
+            std::ifstream ifs(file.path());
+            ifs.seekg(0, std::ios::end);
+            const size_t size = ifs.tellg();
+            ifs.seekg(0);
+            std::string buffer(size, '\0');
+            ifs.read(&buffer[0], size);
+
+            // We have no idea what the file contains, we only know that
+            // it shouldn't throw an error to tokenize it.
+            Tokenizer s(buffer);
+            std::vector<Token> tokens;
+            ASSERT_NO_THROW(tokens = s.tokenize());
+            ASSERT_NE(0, tokens.size());
+
+            Parser parser(tokens);
+            ParseTree tree;
+            ASSERT_NO_THROW(tree = parser.parse());
+        }
+    }
 }

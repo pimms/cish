@@ -18,9 +18,7 @@ Executor::Executor(Memory *memory, ast::Ast::Ptr ast):
 
 Executor::~Executor()
 {
-    if (isRunning()) {
-        Throw(Exception, "terminate() must be manually called before deleting Executor");
-    }
+    assert(!isRunning());
 }
 
 void Executor::setCliArgs(const std::vector<ast::ExpressionValue> &args)

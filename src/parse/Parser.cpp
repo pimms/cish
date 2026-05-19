@@ -5,6 +5,12 @@
 #include <cassert>
 #include <optional>
 #include <map>
+#include <iostream>
+
+#include "../ast/ForLoopStatement.h"
+
+#define DLOG(_C, _M)  \
+    std::cout << "[" << #_C << "] " << _M << std::endl;
 
 namespace cish::parse
 {
@@ -36,6 +42,17 @@ std::optional<BinaryOperator> binaryOperatorFromToken(const tok::TokenType& type
         case tok::TokenType::PIPE: return BinaryOperator::BITOR;
         case tok::TokenType::LOG_AND: return BinaryOperator::LOGAND;
         case tok::TokenType::LOG_OR: return BinaryOperator::LOGOR;
+        case tok::TokenType::EQUAL: return BinaryOperator::ASSIGN;
+        case tok::TokenType::MUL_ASSIGN: return BinaryOperator::ASS_MULT;
+        case tok::TokenType::DIV_ASSIGN: return BinaryOperator::ASS_DIVIDE;
+        case tok::TokenType::MOD_ASSIGN: return BinaryOperator::ASS_MODULO;
+        case tok::TokenType::PLUS_ASSIGN: return BinaryOperator::ASS_PLUS;
+        case tok::TokenType::MINUS_ASSIGN: return BinaryOperator::ASS_MINUS;
+        case tok::TokenType::LS_ASSIGN: return BinaryOperator::ASS_LSHIFT;
+        case tok::TokenType::RS_ASSIGN: return BinaryOperator::ASS_RSHIFT;
+        case tok::TokenType::BWAND_ASSIGN: return BinaryOperator::ASS_BITAND;
+        case tok::TokenType::BXOR_ASSIGN: return BinaryOperator::ASS_BITXOR;
+        case tok::TokenType::BWOR_ASSIGN: return BinaryOperator::ASS_BITOR;
         default: return std::nullopt;
     }
 }
@@ -43,6 +60,17 @@ std::optional<BinaryOperator> binaryOperatorFromToken(const tok::TokenType& type
 BinaryPrecedence binaryPrecedenceValue(BinaryOperator type)
 {
     switch (type) {
+        case BinaryOperator::ASSIGN:
+        case BinaryOperator::ASS_MULT:
+        case BinaryOperator::ASS_DIVIDE:
+        case BinaryOperator::ASS_MODULO:
+        case BinaryOperator::ASS_PLUS:
+        case BinaryOperator::ASS_MINUS:
+        case BinaryOperator::ASS_LSHIFT:
+        case BinaryOperator::ASS_RSHIFT:
+        case BinaryOperator::ASS_BITAND:
+        case BinaryOperator::ASS_BITXOR:
+        case BinaryOperator::ASS_BITOR: return 14;
         case BinaryOperator::LOGOR: return 12;
         case BinaryOperator::LOGAND: return 11;
         case BinaryOperator::BITOR: return 10;
@@ -56,9 +84,11 @@ BinaryPrecedence binaryPrecedenceValue(BinaryOperator type)
         case BinaryOperator::GT: return 6;
         case BinaryOperator::LSHIFT:
         case BinaryOperator::RSHIFT: return 5;
+        case BinaryOperator::PLUS:
+        case BinaryOperator::MINUS: return 4;
         case BinaryOperator::MULT:
         case BinaryOperator::DIVIDE:
-        case BinaryOperator::MODULO: return 4;
+        case BinaryOperator::MODULO: return 3;
         default:
             Throw(InternalError, "Unhandled operator: %d", type);
     }
@@ -100,10 +130,13 @@ std::optional<IRootItem> Parser::parseRootItem()
     _context.exhaustSemicolons();
     switch (_context.peek()->getType()) {
         case tok::TokenType::END_OF_FILE:
+            DLOG(ROOT, "reached EOF");
             return std::nullopt;
         case tok::TokenType::INCLUDE_SYS:
+            DLOG(ROOT, "parsing sys include");
             return parseSystemInclude();
         case tok::TokenType::STRUCT:
+            DLOG(ROOT, "parsing struct decl");
             return parseStructDeclaration();
         default:
             break;
@@ -120,15 +153,13 @@ std::optional<IRootItem> Parser::parseRootItem()
         Throw(ParseError, "Expected type identifier, found %s", _context.peek()->toString().c_str());
     }
 
-    auto identifier = _context.takeIf(tok::TokenType::IDENTIFIER);
-    if (!identifier) {
-        Throw(ParseError, "Expected identifier, found %s", _context.peek()->toString().c_str());
-    }
+    auto identifier = _context.require(tok::TokenType::IDENTIFIER);
 
     // If we now encounter either a semicolon or an equal sign, we know it's
     // a variable.
     switch (_context.peek()->getType()) {
         case tok::TokenType::SEMICOLON: {
+            DLOG(ROOT, "parsed variable decl");
             _context.take();
             return VariableDeclarationStatement {
                 .type = typeIdentifier.value(),
@@ -142,9 +173,8 @@ std::optional<IRootItem> Parser::parseRootItem()
             if (!expression) {
                 Throw(ParseError, "Expected expression");
             }
-            if (!_context.takeIf(tok::TokenType::SEMICOLON)) {
-                Throw(ParseError, "Expected semicolon");
-            }
+            _context.require(tok::TokenType::SEMICOLON);
+            DLOG(ROOT, "parsed variable decl w assign");
             return VariableDeclarationStatement {
                 .type = typeIdentifier.value(),
                 .varName = identifier->getLexeme(),
@@ -156,9 +186,7 @@ std::optional<IRootItem> Parser::parseRootItem()
     }
 
     // We now know that it's either a func decl or def.
-    if (!_context.takeIf(tok::TokenType::PAREN_L)) {
-        Throw(ParseError, "Expected '(', found %s", _context.peek()->toString().c_str());
-    }
+    _context.require(tok::TokenType::PAREN_L);
 
     std::vector<FunctionParameter> params;
     std::optional<FunctionParameter> param = parseFunctionParameter();
@@ -173,9 +201,7 @@ std::optional<IRootItem> Parser::parseRootItem()
         }
     }
 
-    if (!_context.takeIf(tok::TokenType::PAREN_R)) {
-        Throw(ParseError, "Expected ')', found %s", _context.peek()->toString().c_str());
-    }
+    _context.require(tok::TokenType::PAREN_R);
 
     FunctionDeclaration fdecl = FunctionDeclaration {
         .returnType = typeIdentifier.value(),
@@ -184,19 +210,19 @@ std::optional<IRootItem> Parser::parseRootItem()
     };
 
     if (_context.takeIf(tok::TokenType::SEMICOLON)) {
+        DLOG(ROOT, "parsed function decl");
         return fdecl;
     }
 
-    if (!_context.takeIf(tok::TokenType::CBRACE_L)) {
-        Throw(ParseError, "Expected '{', found %s", _context.peek()->toString().c_str());
-    }
+    DLOG(ROOT, "parsing function def");
+    _context.require(tok::TokenType::CBRACE_L);
     std::vector<std::unique_ptr<IStatement>> statements;
     while (auto statement = parseStatement()) {
         statements.push_back(std::move(statement));
     }
-    if (!_context.takeIf(tok::TokenType::CBRACE_R)) {
-        Throw(ParseError, "Expected '}', found %s", _context.peek()->toString().c_str());
-    }
+    _context.require(tok::TokenType::CBRACE_R);
+
+    DLOG(ROOT, "parsed function def");
 
     return FunctionDefinition {
         .declaration = fdecl,
@@ -232,14 +258,9 @@ std::optional<StructDeclaration> Parser::parseStructDeclaration()
         return std::nullopt;
     }
 
-    auto structIdentifier = _context.takeIf(tok::TokenType::IDENTIFIER);
-    if (!structIdentifier) {
-        Throw(ParseError, "Expected identifier, found '%s'", _context.peek()->toString().c_str());
-    }
+    auto structIdentifier = _context.require(tok::TokenType::IDENTIFIER);
 
-    if (!_context.takeIf(tok::TokenType::CBRACE_L)) {
-        Throw(ParseError, "Expected '{', found '%s'", _context.peek()->toString().c_str());
-    }
+    _context.require(tok::TokenType::CBRACE_L);
 
     std::vector<StructFieldDeclaration> fields;
     while (!_context.atEnd() && _context.peek()->getType() != tok::TokenType::CBRACE_R) {
@@ -249,14 +270,8 @@ std::optional<StructDeclaration> Parser::parseStructDeclaration()
             Throw(ParseError, "Expected type identifier, found %s", _context.peek()->toString().c_str());
         }
 
-        auto fieldIdentifier = _context.takeIf(tok::TokenType::IDENTIFIER);
-        if (!fieldIdentifier) {
-            Throw(ParseError, "Expected identifier");
-        }
-
-        if (!_context.takeIf(tok::TokenType::SEMICOLON)) {
-            Throw(ParseError, "Expected semicolon");
-        }
+        auto fieldIdentifier = _context.require(tok::TokenType::IDENTIFIER);
+        _context.require(tok::TokenType::SEMICOLON);
 
         StructFieldDeclaration field = {
             .type = typeIdentifier.value(),
@@ -284,18 +299,220 @@ std::unique_ptr<IStatement> Parser::parseStatement()
 {
     switch (_context.peek()->getType()) {
         case tok::TokenType::IF:
-            break;
+            DLOG(STMT, "Parsing if statement");
+            return parseIfStatement();
         case tok::TokenType::RETURN:
-            break;
+            DLOG(STMT, "Parsing return statement");
+            return parseReturnStatement();
         case tok::TokenType::FOR:
-            break;
+            DLOG(STMT, "Parsing for statement");
+            return parseForStatement();
         case tok::TokenType::WHILE:
-            break;
+            DLOG(STMT, "Parsing while statement");
+            return parseWhileStatement();
         case tok::TokenType::DO:
+            DLOG(STMT, "Parsing do-while statement");
+            return parseDoWhileStatement();
+        case tok::TokenType::CBRACE_L:
+            DLOG(STMT, "Parsing scope statement");
+            return parseScope();
+        default:
             break;
     }
-    // TODO
-    assert(0);
+
+    if (auto varDecl = parseVariableDeclarationStatement()) {
+        DLOG(STMT, "parsed variable declaration statement");
+        return varDecl;
+    }
+    if (auto expr = parseExpression(BP_NONE)) {
+        _context.require(tok::TokenType::SEMICOLON);
+        DLOG(STMT, "parsed expression statement");
+        return std::make_unique<IStatement>(
+            ExpressionStatement(std::move(expr))
+        );
+    }
+
+    DLOG(STMT, "failed to parse statement");
+    return nullptr;
+}
+
+std::unique_ptr<IStatement> Parser::parseIfStatement()
+{
+    _context.require(tok::TokenType::IF);
+    _context.require(tok::TokenType::PAREN_L);
+    std::unique_ptr<IExpression> condition = parseExpression(BP_NONE);
+    _context.require(tok::TokenType::PAREN_R);
+    std::unique_ptr<IStatement> trueScope = parseScope();
+
+    std::unique_ptr<IStatement> falseScope = nullptr;
+    if (_context.takeIf(tok::TokenType::ELSE)) {
+        std::unique_ptr<IStatement> elseScope;
+        if (_context.peek()->getType() == tok::TokenType::IF) {
+            falseScope = parseIfStatement();
+        } else {
+            falseScope = parseScope();
+        }
+    }
+
+    return std::make_unique<IStatement>(
+        IfStatement(
+            std::move(condition),
+            std::move(trueScope),
+            std::move(falseScope)
+        )
+    );
+}
+
+std::unique_ptr<IStatement> Parser::parseReturnStatement()
+{
+    _context.require(tok::TokenType::RETURN);
+    auto expr = parseExpression(BP_NONE);
+    _context.require(tok::TokenType::SEMICOLON);
+    return std::make_unique<IStatement>(ReturnStatement(std::move(expr)));
+}
+
+std::unique_ptr<IStatement> Parser::parseForStatement()
+{
+    _context.require(tok::TokenType::FOR);
+    _context.require(tok::TokenType::PAREN_L);
+
+    std::unique_ptr<IForLoopInitializer> init;
+    std::unique_ptr<IExpression> condition;
+    std::unique_ptr<IExpression> update;
+
+    if (!_context.takeIf(tok::TokenType::SEMICOLON)) {
+        init = parseForLoopInitializer();
+    }
+    if (!_context.takeIf(tok::TokenType::SEMICOLON)) {
+        condition = parseExpression(BP_NONE);
+        _context.require(tok::TokenType::SEMICOLON);
+    }
+    update = parseExpression(BP_NONE);
+
+    _context.require(tok::TokenType::PAREN_R);
+    auto body = parseScope();
+
+    return std::make_unique<IStatement>(
+        ForStatement(
+            std::move(init),
+            std::move(condition),
+            std::move(update),
+            std::move(body)
+        )
+    );
+}
+
+std::unique_ptr<IForLoopInitializer> Parser::parseForLoopInitializer()
+{
+    auto decl = parseVariableDeclarationStatement();
+    if (decl) {
+        return std::make_unique<IForLoopInitializer>(std::move(decl));
+    }
+
+    auto expression = parseExpression(BP_NONE);
+    if (expression) {
+        _context.require(tok::TokenType::SEMICOLON);
+        return std::make_unique<IForLoopInitializer>(std::move(expression));
+    }
+
+    Throw(ParseError,
+        "Expected expression, assignment or declaration in for loop initializer at line",
+        _context.peek()->getLine());
+}
+
+std::unique_ptr<IStatement> Parser::parseWhileStatement()
+{
+    _context.require(tok::TokenType::WHILE);
+    _context.require(tok::TokenType::PAREN_L);
+    auto condition = parseExpression(BP_NONE);
+    _context.require(tok::TokenType::PAREN_R);
+    auto body = parseScope();
+
+    return std::make_unique<IStatement>(
+        WhileStatement(
+            std::move(condition),
+            std::move(body)
+        )
+    );
+}
+
+std::unique_ptr<IStatement> Parser::parseDoWhileStatement()
+{
+    _context.require(::cish::tok::TokenType::DO);
+    auto body = parseScope();
+    _context.require(tok::TokenType::WHILE);
+    _context.require(tok::TokenType::PAREN_L);
+    auto condition = parseExpression(BP_NONE);
+    _context.require(tok::TokenType::PAREN_R);
+    _context.require(tok::TokenType::SEMICOLON);
+
+    return std::make_unique<IStatement>(
+        DoWhileStatement(
+            std::move(condition),
+            std::move(body)
+        )
+    );
+}
+
+std::unique_ptr<IStatement> Parser::parseVariableDeclarationStatement()
+{
+    auto transaction = _context.beginTransaction();
+
+    auto type = parseTypeIdentifier();
+    if (!type.has_value()) {
+        return nullptr;
+    }
+
+    auto identifier = _context.takeIf(tok::TokenType::IDENTIFIER);
+    if (!identifier) {
+        return nullptr;
+    }
+
+    std::unique_ptr<IExpression> expr = nullptr;
+    if (_context.takeIf(tok::TokenType::EQUAL)) {
+        expr = parseExpression(BP_NONE);
+        if (!expr) {
+            return nullptr;
+        }
+    }
+
+
+    if (!_context.takeIf(tok::TokenType::SEMICOLON)) {
+        return nullptr;
+    }
+
+    transaction.commit();
+
+    return std::make_unique<IStatement>(
+        VariableDeclarationStatement(
+            type.value(),
+            identifier->getLexeme(),
+            std::move(expr)
+        )
+    );
+}
+
+std::unique_ptr<IStatement> Parser::parseScope()
+{
+    std::vector<std::unique_ptr<IStatement>> body;
+
+    if (_context.takeIf(tok::TokenType::SEMICOLON)) {
+        // Cool - we need support completely empty scopes for all loops.
+        // Example:  while (true);
+    } else if (_context.takeIf(tok::TokenType::CBRACE_L)) {
+        while (!_context.takeIf(tok::TokenType::CBRACE_R)) {
+            auto statement = parseStatement();
+            body.push_back(std::move(statement));
+        }
+    } else {
+        auto statement = parseStatement();
+        if (!statement) {
+            Throw(ParseError, "Expected statement, found %s", _context.peek()->toString().c_str());
+        }
+        body.push_back(std::move(statement));
+    }
+
+    return std::make_unique<IStatement>(ScopeStatement(std::move(body)));
 }
 
 std::unique_ptr<IExpression> Parser::parseExpression(BinaryPrecedence minBP)
@@ -304,7 +521,12 @@ std::unique_ptr<IExpression> Parser::parseExpression(BinaryPrecedence minBP)
     std::unique_ptr<IExpression> left;
     if (prefixOperator.has_value()) {
         auto operand = parseExpression(BP_PREFIX);
+        if (!operand) return nullptr;
         left = std::make_unique<IExpression>(UnaryExpr(prefixOperator.value(), std::move(operand)));
+    } else if (auto typeCast = parseTypeCastOperator(); typeCast.has_value()) {
+        auto operand = parseExpression(BP_PREFIX);
+        if (!operand) return nullptr;
+        left = std::make_unique<IExpression>(TypeCastExpr(typeCast.value(), std::move(operand)));
     } else {
         left = parseExpressionAtom();
     }
@@ -319,9 +541,7 @@ std::unique_ptr<IExpression> Parser::parseExpression(BinaryPrecedence minBP)
             if (!subscript) {
                 Throw(ParseError, "Expected expression in subscript, found %s", _context.peek()->toString().c_str());
             }
-            if (!_context.takeIf(tok::TokenType::SQPAREN_R)) {
-                Throw(ParseError, "Expected ']', found %s", _context.peek()->toString().c_str());
-            }
+            _context.require(tok::TokenType::SQPAREN_R);
             left = std::make_unique<IExpression>(SubscriptExpr(std::move(left), std::move(subscript)));
             continue;
         }
@@ -329,10 +549,7 @@ std::unique_ptr<IExpression> Parser::parseExpression(BinaryPrecedence minBP)
         // Handle member access operator
         if (_context.peek()->getType() == tok::TokenType::DOT || _context.peek()->getType() == tok::TokenType::ARROW) {
             auto maToken = _context.take();
-            auto memToken = _context.takeIf(tok::TokenType::IDENTIFIER);
-            if (!memToken) {
-                Throw(ParseError, "Expected member identifier, found %s", _context.peek()->toString().c_str());
-            }
+            auto memToken = _context.require(tok::TokenType::IDENTIFIER);
             left = std::make_unique<IExpression>(MemberAccessExpr(
                 std::move(left),
                 memToken->getLexeme(),
@@ -356,6 +573,7 @@ std::unique_ptr<IExpression> Parser::parseExpression(BinaryPrecedence minBP)
         if (nextBp <= minBP) {
             break;
         }
+        _context.take();
         auto right = parseExpression(nextBp);
         if (!right) {
             Throw(ParseError, "Expected expression, found '%s'", _context.peek()->toString().c_str());
@@ -371,7 +589,7 @@ std::unique_ptr<IExpression> Parser::parseExpressionAtom()
     if (_context.takeIf(tok::TokenType::PAREN_L)) {
         auto inner = parseExpression(BP_NONE);
         if (!inner) Throw(ParseError, "Expected expression after '('");
-        if (!_context.takeIf(tok::TokenType::PAREN_R)) Throw(ParseError, "Expected ')'");
+        _context.require(tok::TokenType::PAREN_R);
         return inner;
     }
 
@@ -487,18 +705,18 @@ std::unique_ptr<IExpression> Parser::parseIntLiteralExpr()
         return nullptr;
     }
 
-    int64_t value = 0;
+    uint64_t value = 0;
     size_t parsed = 0;
 
     const auto& lexeme = token->getLexeme();
     if (lexeme.starts_with("0x") || lexeme.starts_with("0X")) {
-        value = std::stoi(lexeme.c_str()+2, &parsed, 16);
+        value = std::stoll(lexeme.substr(2), &parsed, 16);
         parsed += 2;
     } else if (lexeme.starts_with("0b") || lexeme.starts_with("0B")) {
-        value = std::stoi(lexeme.c_str()+2, &parsed, 2);
+        value = std::stoll(lexeme.substr(2), &parsed, 2);
         parsed += 2;
-    } else if (lexeme.starts_with("0")) {
-        value = std::stoi(lexeme.c_str()+1, &parsed, 8);
+    } else if (lexeme.starts_with("0") && lexeme.length() > 1) {
+        value = std::stoll(lexeme.substr(1), &parsed, 8);
         parsed += 1;
     } else {
         value = std::stoi(lexeme, &parsed, 10);
@@ -591,6 +809,26 @@ std::optional<UnaryOperator> Parser::parsePostfixUnaryOperator()
 
     _context.take();
     return oper;
+}
+
+std::optional<TypeIdentifier> Parser::parseTypeCastOperator()
+{
+    auto transaction = _context.beginTransaction();
+
+    if (!_context.takeIf(tok::TokenType::PAREN_L)) {
+        return std::nullopt;
+    }
+
+    auto type = parseTypeIdentifier();
+    if (!type.has_value()) {
+        return std::nullopt;
+    }
+
+    if (!_context.takeIf(tok::TokenType::PAREN_R)) {
+        return std::nullopt;
+    }
+    transaction.commit();
+    return type;
 }
 
 std::optional<TypeIdentifier> Parser::parseTypeIdentifier()

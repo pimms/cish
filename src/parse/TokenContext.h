@@ -44,8 +44,10 @@ public:
 
     bool atEnd() const { return _tokens[_index].getType() == tok::TokenType::END_OF_FILE; }
     const tok::Token* peek() const;
+    const tok::Token* peekAhead(unsigned int offset) const;
     const tok::Token* take();
     const tok::Token* takeIf(tok::TokenType type);
+    const tok::Token* require(tok::TokenType type);
 
     void exhaustSemicolons();
 

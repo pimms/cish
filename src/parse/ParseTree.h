@@ -9,12 +9,12 @@
 namespace cish::parse
 {
 
-
 // Expressions
 struct SubscriptExpr;
 struct FunctionCallExpr;
 struct VarRefExpr;
 struct BinaryExpr;
+struct TypeCastExpr;
 struct UnaryExpr;
 struct BoolLiteralExpr;
 struct CharLiteralExpr;
@@ -25,14 +25,13 @@ struct MemberAccessExpr;
 
 // Statements
 struct IfStatement;
-struct AssignmentStatement;
 struct VariableDeclarationStatement;
-struct ArithmeticAssignmentStatement;
 struct ReturnStatement;
 struct ForStatement;
 struct WhileStatement;
 struct DoWhileStatement;
 struct ExpressionStatement;
+struct ScopeStatement;
 
 // Root items
 struct FunctionDeclaration;
@@ -40,23 +39,12 @@ struct FunctionDefinition;
 struct SystemInclude;
 struct StructDeclaration;
 
-bool operator==(const SubscriptExpr& lhs, const SubscriptExpr& rhs);
-bool operator==(const FunctionCallExpr& lhs, const FunctionCallExpr& rhs);
-bool operator==(const VarRefExpr& lhs, const VarRefExpr& rhs);
-bool operator==(const BinaryExpr& lhs, const BinaryExpr& rhs);
-bool operator==(const UnaryExpr& lhs, const UnaryExpr& rhs);
-bool operator==(const BoolLiteralExpr& lhs, const BoolLiteralExpr& rhs);
-bool operator==(const CharLiteralExpr& lhs, const CharLiteralExpr& rhs);
-bool operator==(const IntLiteralExpr& lhs, const IntLiteralExpr& rhs);
-bool operator==(const FloatLiteralExpr& lhs, const FloatLiteralExpr& rhs);
-bool operator==(const StringLiteralExpr& lhs, const StringLiteralExpr& rhs);
-bool operator==(const MemberAccessExpr& lhs, const MemberAccessExpr& rhs);
-
 // Variants
 using IExpression = std::variant<
     SubscriptExpr,
     FunctionCallExpr,
     BinaryExpr,
+    TypeCastExpr,
     UnaryExpr,
     VarRefExpr,
     BoolLiteralExpr,
@@ -68,18 +56,17 @@ using IExpression = std::variant<
 >;
 using IStatement = std::variant<
     IfStatement,
-    AssignmentStatement,
     VariableDeclarationStatement,
     ReturnStatement,
     ForStatement,
     WhileStatement,
     DoWhileStatement,
-    ExpressionStatement
+    ExpressionStatement,
+    ScopeStatement
 >;
 using IForLoopInitializer = std::variant<
     std::unique_ptr<IExpression>,
-    AssignmentStatement,
-    VariableDeclarationStatement
+    std::unique_ptr<IStatement>
 >;
 using IRootItem = std::variant<
     VariableDeclarationStatement,
@@ -139,13 +126,12 @@ enum class BinaryOperator {
     EQUALS,     NEQUALS,
     BITAND,     BITXOR,     BITOR,
     LOGAND,     LOGOR,
-};
-enum class AssignmentOperator {
+
     ASSIGN,
-    MULT,       DIVIDE,     MODULO,
-    PLUS,       MINUS,
-    LSHIFT,     RSHIFT,
-    BITAND,     BITXOR,     BITOR,
+    ASS_MULT,       ASS_DIVIDE,     ASS_MODULO,
+    ASS_PLUS,       ASS_MINUS,
+    ASS_LSHIFT,     ASS_RSHIFT,
+    ASS_BITAND,     ASS_BITXOR,     ASS_BITOR,
 };
 struct SubscriptExpr {
     std::unique_ptr<IExpression> ptrExpression;
@@ -162,6 +148,10 @@ struct BinaryExpr {
     std::unique_ptr<IExpression> left;
     std::unique_ptr<IExpression> right;
     BinaryOperator oper;
+};
+struct TypeCastExpr {
+    TypeIdentifier type;
+    std::unique_ptr<IExpression> expr;
 };
 struct UnaryExpr {
     UnaryOperator oper;
@@ -195,8 +185,9 @@ STATEMENTS
 ================
 */
 struct IfStatement {
-    IExpression condition;
-    std::vector<std::unique_ptr<IStatement>> body;
+    std::unique_ptr<IExpression> condition;
+    std::unique_ptr<IStatement> positiveBody;
+    std::unique_ptr<IStatement> negativeBody;
 };
 struct VariableDeclarationStatement {
     bool operator==(const VariableDeclarationStatement&) const = default;
@@ -204,29 +195,28 @@ struct VariableDeclarationStatement {
     std::string varName;
     std::unique_ptr<IExpression> expression;
 };
-struct AssignmentStatement {
-    std::unique_ptr<IExpression> left;
-    AssignmentOperator oper;
-    std::unique_ptr<IExpression> right;
-};
 struct ReturnStatement {
     std::unique_ptr<IExpression> expression;
 };
 struct ForStatement {
-    std::optional<IForLoopInitializer> initializer;
+    std::unique_ptr<IForLoopInitializer> initializer;
     std::unique_ptr<IExpression> condition;
     std::unique_ptr<IExpression> update;
+    std::unique_ptr<IStatement> body;
 };
 struct WhileStatement {
     std::unique_ptr<IExpression> condition;
-    std::vector<std::unique_ptr<IStatement>> body;
+    std::unique_ptr<IStatement> body;
 };
 struct DoWhileStatement {
     std::unique_ptr<IExpression> condition;
-    std::vector<std::unique_ptr<IStatement>> body;
+    std::unique_ptr<IStatement> body;
 };
 struct ExpressionStatement {
     std::unique_ptr<IExpression> expression;
+};
+struct ScopeStatement {
+    std::vector<std::unique_ptr<IStatement>> body;
 };
 
 /*

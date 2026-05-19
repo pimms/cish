@@ -36,6 +36,15 @@ private:
     std::optional<StructDeclaration> parseStructDeclaration();
 
     std::unique_ptr<IStatement> parseStatement();
+    std::unique_ptr<IStatement> parseIfStatement();
+    std::unique_ptr<IStatement> parseReturnStatement();
+    std::unique_ptr<IStatement> parseForStatement();
+    std::unique_ptr<IForLoopInitializer> parseForLoopInitializer();
+    std::unique_ptr<IStatement> parseWhileStatement();
+    std::unique_ptr<IStatement> parseDoWhileStatement();
+    std::unique_ptr<IStatement> parseVariableDeclarationStatement();
+
+    std::unique_ptr<IStatement> parseScope();
 
     std::unique_ptr<IExpression> parseExpression(internal::BinaryPrecedence minBP);
 
@@ -51,6 +60,7 @@ private:
     std::optional<BinaryOperator> parseBinaryOperator();
     std::optional<UnaryOperator> parsePostfixUnaryOperator();
 
+    std::optional<TypeIdentifier> parseTypeCastOperator();
     std::optional<TypeIdentifier> parseTypeIdentifier();
     std::optional<FunctionParameter> parseFunctionParameter();
 };

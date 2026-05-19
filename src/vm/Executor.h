@@ -15,7 +15,7 @@ class Executor: public ExecutionContext, public ExecutionThread
 {
 public:
     Executor(Memory *memory, ast::Ast::Ptr ast);
-    ~Executor();
+    ~Executor() override;
 
     void setCliArgs(const std::vector<ast::ExpressionValue> &args);
 
