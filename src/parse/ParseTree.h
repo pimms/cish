@@ -40,7 +40,7 @@ struct SystemInclude;
 struct StructDeclaration;
 
 // Variants
-using IExpression = std::variant<
+    using IExpression = std::variant<
     SubscriptExpr,
     FunctionCallExpr,
     BinaryExpr,

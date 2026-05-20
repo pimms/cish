@@ -1,4 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
+
+set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE STRING "Vcpkg toolchain file")
+
 project(cish CXX)
 
 option(build_cish_test "Build all tests" ON)
@@ -69,14 +72,6 @@ endif()
 
 target_link_libraries(cish ${ANTLR_LIBRARY})
 include_directories(${ANTLR_INCLUDE_DIR})
-
-
-# -- Handle Installation -- #
-install(TARGETS cish DESTINATION lib)
-install(DIRECTORY ${CISH_HEADER_PATH}
-        DESTINATION include/cish
-        FILES_MATCHING PATTERN "*.h")
-
 
 if (build_cish_cli)
     add_subdirectory(cli)

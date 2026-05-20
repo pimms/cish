@@ -1,6 +1,7 @@
 build/
 make/
 xcode/
+vcpkg_installed/
 .vscode/
 .idea/
 src/ast/antlr
