@@ -3,9 +3,10 @@ project(cish CXX)
 
 option(build_cish_test "Build all tests" ON)
 option(build_cish_cli "Build the cish CLI tool" ON)
+option(build_tokvis "Build the token visualizer" ON)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 set(CMAKE_CXX_FLAGS_DEBUG "-DDEBUG ${CMAKE_CXX_FLAGS_DEBUG} -g")
 
@@ -24,7 +25,7 @@ file(GLOB_RECURSE CISH_SRCS src/**.cpp)
 file(GLOB_RECURSE CISH_HDRS src/**.h)
 
 add_library(cish ${CISH_SRCS} ${CISH_HDRS})
-set_property(TARGET cish PROPERTY CXX_STANDARD 20)
+set_property(TARGET cish PROPERTY CXX_STANDARD 23)
 set_property(TARGET cish PROPERTY CXX_STANDARD_REQUIRED ON)
 
 set(CISH_LIBRARY "cish")
@@ -82,4 +83,7 @@ if (build_cish_cli)
 endif()
 if (build_cish_test)
     add_subdirectory(test)
+endif()
+if (build_tokvis)
+    add_subdirectory(tokvis)
 endif()

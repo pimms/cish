@@ -367,7 +367,7 @@ static const char* getPointerName(const TypeDecl *type)
     static const int STRLEN = 100;
     static const int numNameBufs = 15;
     static char nameBufs[numNameBufs][STRLEN] = {{""}};
-    static std::atomic_int nextIndex = 0;
+    static std::atomic<int> nextIndex = 0;
 
     const uint32_t bufIdx = (nextIndex++) % numNameBufs;
     char *buf = nameBufs[bufIdx];
@@ -403,7 +403,7 @@ static const char* getStructName(const TypeDecl *type)
     static const int STRLEN = 100;
     static const int numNameBufs = 15;
     static char nameBufs[numNameBufs][STRLEN] = {{""}};
-    static std::atomic_int nextIndex = 0;
+    static std::atomic<int> nextIndex = 0;
 
     const uint32_t bufIdx = (nextIndex++) % numNameBufs;
     char *buf = nameBufs[bufIdx];
