@@ -40,7 +40,7 @@ struct SystemInclude;
 struct StructDeclaration;
 
 // Variants
-    using IExpression = std::variant<
+using IExpression = std::variant<
     SubscriptExpr,
     FunctionCallExpr,
     BinaryExpr,
@@ -88,6 +88,8 @@ struct TypeIdentifier {
     std::string type;
     // The number of *'s in the type. E.g., for "char**", pointerLevel is 2.
     int pointerLevel {};
+
+    std::string toString() const;
 };
 struct FunctionParameter {
     bool operator==(const FunctionParameter&) const = default;
@@ -155,15 +157,17 @@ struct TypeCastExpr {
 };
 struct UnaryExpr {
     UnaryOperator oper;
-    std::unique_ptr<IExpression> expression;
+    std::unique_ptr<IExpression> expr;
 };
 struct BoolLiteralExpr {
     bool value;
 };
 struct CharLiteralExpr {
+    // TODO: Use union or similar to properly handle signedness
     uint8_t value;
 };
 struct IntLiteralExpr {
+    // TODO: Use union or similar to properly handle signedness
     int64_t value;
 };
 struct FloatLiteralExpr {

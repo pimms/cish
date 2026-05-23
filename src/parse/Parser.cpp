@@ -101,7 +101,7 @@ Parser::Parser(std::vector<tok::Token>& tokens)
     : _context(tokens)
 { }
 
-ParseTree Parser::parse()
+std::unique_ptr<ParseTree> Parser::parse()
 {
     reset();
 
@@ -115,9 +115,7 @@ ParseTree Parser::parse()
         rootItems.push_back(std::move(rootItem).value());
     }
 
-    return ParseTree {
-        .rootItems = std::move(rootItems)
-    };
+    return std::make_unique<ParseTree>(std::move(rootItems));
 }
 
 void Parser::reset()

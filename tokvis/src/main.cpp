@@ -1,7 +1,9 @@
-#include <stdio.h>
+#include <fstream>
 #include <memory>
 
+#include "TreeRenderer.h"
 #include "parse/Parser.h"
+#include "tok/Tokenizer.h"
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_opengl.h>
@@ -15,6 +17,44 @@ struct SDLContext
     SDL_GLContext glContext{};
     float windowScale{};
 };
+
+std::unique_ptr<cish::parse::ParseTree> loadParseTree(int argc, char **argv)
+{
+    if (argc != 2) {
+        fprintf(stderr, "Usage: %s <my-sweet-file.c>\n", argv[0]);
+        return nullptr;
+    }
+
+    auto path = std::filesystem::current_path();
+    printf("CURRENT PATH: %s\n", path.c_str());
+
+    std::ifstream ifs(argv[1]);
+    if (!ifs.is_open()) {
+        fprintf(stderr, "Failed to open file '%s'", argv[1]);
+        return nullptr;
+    }
+
+    ifs.seekg(0, std::ios::end);
+    const std::streamsize size = ifs.tellg();
+    ifs.seekg(0);
+    std::string sourceBuffer(size, '\0');
+    ifs.read(&sourceBuffer[0], size);
+
+    try {
+        cish::tok::Tokenizer tokenizer(sourceBuffer);
+        auto tokens = tokenizer.tokenize();
+        if (tokens.empty()) {
+            fprintf(stderr, "File contains zero tokens. Let's assume this is an error in cish.");
+            return nullptr;
+        }
+
+        cish::parse::Parser parser(tokens);
+        return parser.parse();
+    } catch (const std::exception &e) {
+        fprintf(stderr, "Failed to parse '%s':\n%s\n", argv[1], e.what());
+    }
+    return nullptr;
+}
 
 std::unique_ptr<SDLContext> setupSDL()
 {
@@ -73,15 +113,74 @@ void setupImGui(const SDLContext* context)
     ImGui_ImplOpenGL3_Init("#version 150");
 }
 
+void render()
+{
+    constexpr ImGuiWindowFlags flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings;
+    const auto viewport = ImGui::GetMainViewport();
+    ImGui::SetNextWindowSize({ viewport->Size.x, viewport->Size.y });
+    ImGui::SetNextWindowPos({ viewport->WorkPos.x, viewport->WorkPos.y });
+
+    {
+        ImGui::Begin("Tokvis", nullptr, flags);
+
+        if (ImGui::BeginTable("table", 2, ImGuiTableFlags_BordersV | ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_Resizable | ImGuiTableFlags_RowBg | ImGuiTableFlags_NoBordersInBody)) {
+            ImGui::TableSetupColumn("Type");
+            ImGui::TableSetupColumn("Value");
+            ImGui::TableHeadersRow();
+
+            ImGui::TableNextRow();
+            ImGui::TableNextColumn();
+            if (ImGui::TreeNodeEx("root", ImGuiTreeNodeFlags_DrawLinesFull, "Root")) {
+
+                // CHILD A
+                ImGui::TableNextRow();
+                ImGui::TableNextColumn();
+                ImGui::TreeNodeEx("ca", ImGuiTreeNodeFlags_DrawLinesFull | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet | ImGuiTreeNodeFlags_NoTreePushOnOpen, "Child");
+                ImGui::TableNextColumn();
+                ImGui::Text("1");
+
+                // CHILD B
+                ImGui::TableNextRow();
+                ImGui::TableNextColumn();
+                ImGui::TreeNodeEx("CB", ImGuiTreeNodeFlags_DrawLinesFull | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet | ImGuiTreeNodeFlags_NoTreePushOnOpen);
+                ImGui::TableNextColumn();
+                ImGui::Text("2");
+
+                ImGui::TableNextRow();
+                ImGui::TableNextColumn();
+                if (ImGui::TreeNodeEx("childc", ImGuiTreeNodeFlags_DrawLinesFull, "Child C")) {
+                    ImGui::TableNextRow();
+                    ImGui::TableNextColumn();
+                    ImGui::TreeNodeEx("CD", ImGuiTreeNodeFlags_DrawLinesFull | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet | ImGuiTreeNodeFlags_NoTreePushOnOpen);
+                    ImGui::TableNextColumn();
+                    ImGui::Text("4");
+
+                    ImGui::TreePop();
+                }
+
+                ImGui::TreePop();
+            }
+            ImGui::EndTable();
+        }
+
+        ImGui::ShowDemoWindow();
+        ImGui::End();
+    }
+}
+
 int main(int argc, char **argv)
 {
+    auto parseTree = loadParseTree(argc, argv);
+    if (!parseTree) return 1;
+    cish::tokvis::TreeRenderer treeRenderer(std::move(parseTree));
+
     auto sdlContext = setupSDL();
     if (!sdlContext) return 1;
     setupImGui(sdlContext.get());
 
     auto& io = ImGui::GetIO();
+    io.IniFilename = nullptr;
     bool running = true;
-    bool showDemoWindow = true;
 
     while (running) {
         SDL_Event e;
@@ -97,27 +196,12 @@ int main(int argc, char **argv)
         ImGui_ImplSDL3_NewFrame();
         ImGui::NewFrame();
 
-        if (showDemoWindow) {
-            ImGui::ShowDemoWindow(&showDemoWindow);
-        }
-
-        {
-            ImGui::Begin("Test");
-            ImGui::Text("This is some nice ass text");
-            ImGui::Checkbox("Show demo window", &showDemoWindow);
-            if (ImGui::TreeNode("Parent Node")) {
-                ImGui::Text("Child Item 1");
-                ImGui::Text("Child Item 2");
-
-                if (ImGui::TreeNode("Sub-Parent")) {
-                    ImGui::BulletText("Deep Item");
-                    ImGui::TreePop(); // Always Pop if TreeNode returned true
-                }
-
-                ImGui::TreePop(); // Balance the "Parent Node"
-            }
-            ImGui::End();
-        }
+        const auto viewport = ImGui::GetMainViewport();
+        ImGui::SetNextWindowSize({ viewport->Size.x, viewport->Size.y });
+        ImGui::SetNextWindowPos({ viewport->WorkPos.x, viewport->WorkPos.y });
+        ImGui::Begin("Tokvis", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
+        treeRenderer.render();
+        ImGui::End();
 
         ImGui::EndFrame();
         ImGui::Render();

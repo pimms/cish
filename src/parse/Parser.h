@@ -19,12 +19,14 @@ BinaryPrecedence binaryPrecedenceValue(BinaryOperator type);
 class Parser {
 public:
     explicit Parser(std::vector<tok::Token>& tokens);
+    ~Parser() = default;
+    Parser() = delete;
     Parser(const Parser& o) = delete;
     Parser(Parser&&) = delete;
     Parser& operator=(Parser&&) = delete;
     Parser& operator=(const Parser&) = delete;
 
-    ParseTree parse();
+    std::unique_ptr<ParseTree> parse();
 
 private:
     TokenContext _context;

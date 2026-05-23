@@ -14,7 +14,8 @@ DECLARE_EXCEPTION(TokenizerError);
 class Tokenizer
 {
 public:
-    Tokenizer(const std::string& source);
+    explicit Tokenizer(const std::string& source);
+    Tokenizer() = delete;
     Tokenizer(const Tokenizer&) = delete;
     Tokenizer(Tokenizer&&) = delete;
     Tokenizer& operator=(const Tokenizer&) = delete;
