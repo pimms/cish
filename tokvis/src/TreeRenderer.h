@@ -64,6 +64,7 @@ private:
     void renderFloatLiteralExpression(const parse::FloatLiteralExpr& node);
     void renderStringLIteralExpression(const parse::StringLiteralExpr& node);
     void renderMemberAccessExpression(const parse::MemberAccessExpr& node);
+    void renderSizeofExpression(const parse::SizeofExpr& node);
 };
 
 };

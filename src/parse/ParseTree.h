@@ -9,73 +9,6 @@
 namespace cish::parse
 {
 
-// Expressions
-struct SubscriptExpr;
-struct FunctionCallExpr;
-struct VarRefExpr;
-struct BinaryExpr;
-struct TypeCastExpr;
-struct UnaryExpr;
-struct BoolLiteralExpr;
-struct CharLiteralExpr;
-struct IntLiteralExpr;
-struct FloatLiteralExpr;
-struct StringLiteralExpr;
-struct MemberAccessExpr;
-
-// Statements
-struct IfStatement;
-struct VariableDeclarationStatement;
-struct ReturnStatement;
-struct ForStatement;
-struct WhileStatement;
-struct DoWhileStatement;
-struct ExpressionStatement;
-struct ScopeStatement;
-
-// Root items
-struct FunctionDeclaration;
-struct FunctionDefinition;
-struct SystemInclude;
-struct StructDeclaration;
-
-// Variants
-using IExpression = std::variant<
-    SubscriptExpr,
-    FunctionCallExpr,
-    BinaryExpr,
-    TypeCastExpr,
-    UnaryExpr,
-    VarRefExpr,
-    BoolLiteralExpr,
-    CharLiteralExpr,
-    IntLiteralExpr,
-    FloatLiteralExpr,
-    StringLiteralExpr,
-    MemberAccessExpr
->;
-using IStatement = std::variant<
-    IfStatement,
-    VariableDeclarationStatement,
-    ReturnStatement,
-    ForStatement,
-    WhileStatement,
-    DoWhileStatement,
-    ExpressionStatement,
-    ScopeStatement
->;
-using IForLoopInitializer = std::variant<
-    std::unique_ptr<IExpression>,
-    std::unique_ptr<IStatement>
->;
-using IRootItem = std::variant<
-    VariableDeclarationStatement,
-    FunctionDeclaration,
-    FunctionDefinition,
-    SystemInclude,
-    StructDeclaration
->;
-
 /*
 ================
 BUILDING BLOCKS
@@ -100,6 +33,79 @@ struct StructFieldDeclaration {
     TypeIdentifier type;
     std::string name;
 };
+
+// Expressions fwd
+struct SubscriptExpr;
+struct FunctionCallExpr;
+struct VarRefExpr;
+struct BinaryExpr;
+struct TypeCastExpr;
+struct UnaryExpr;
+struct BoolLiteralExpr;
+struct CharLiteralExpr;
+struct IntLiteralExpr;
+struct FloatLiteralExpr;
+struct StringLiteralExpr;
+struct MemberAccessExpr;
+struct SizeofExpr;
+
+// Statements fwd
+struct IfStatement;
+struct VariableDeclarationStatement;
+struct ReturnStatement;
+struct ForStatement;
+struct WhileStatement;
+struct DoWhileStatement;
+struct ExpressionStatement;
+struct ScopeStatement;
+
+// Root items fwd
+struct FunctionDeclaration;
+struct FunctionDefinition;
+struct SystemInclude;
+struct StructDeclaration;
+
+// Variants
+using IExpression = std::variant<
+    SubscriptExpr,
+    FunctionCallExpr,
+    BinaryExpr,
+    TypeCastExpr,
+    UnaryExpr,
+    VarRefExpr,
+    BoolLiteralExpr,
+    CharLiteralExpr,
+    IntLiteralExpr,
+    FloatLiteralExpr,
+    StringLiteralExpr,
+    MemberAccessExpr,
+    SizeofExpr
+>;
+using IStatement = std::variant<
+    IfStatement,
+    VariableDeclarationStatement,
+    ReturnStatement,
+    ForStatement,
+    WhileStatement,
+    DoWhileStatement,
+    ExpressionStatement,
+    ScopeStatement
+>;
+using IForLoopInitializer = std::variant<
+    std::unique_ptr<IExpression>,
+    std::unique_ptr<IStatement>
+>;
+using ISizeofTerm = std::variant<
+    std::unique_ptr<IExpression>,
+    TypeIdentifier
+>;
+using IRootItem = std::variant<
+    VariableDeclarationStatement,
+    FunctionDeclaration,
+    FunctionDefinition,
+    SystemInclude,
+    StructDeclaration
+>;
 
 /*
 ================
@@ -181,7 +187,9 @@ struct MemberAccessExpr {
     std::string member;
     MemberAccessOperator oper;
 };
-
+struct SizeofExpr {
+    ISizeofTerm term;
+};
 
 /*
 ================

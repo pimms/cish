@@ -3,39 +3,38 @@
 #include <format>
 
 namespace cish::tokvis {
-
 namespace
 {
-    // Thanks to https://andreasfertig.com/blog/2023/07/visiting-a-stdvariant-safely/
-    template<class... Ts> struct Visitor: Ts...
-    {
-        using Ts::operator()...;
-        consteval void operator()(auto) const { static_assert(false, "Unsupported type"); }
-    };
-    template<class... Ts>
-    Visitor(Ts...) -> Visitor<Ts...>;
+// Thanks to https://andreasfertig.com/blog/2023/07/visiting-a-stdvariant-safely/
+template<class... Ts> struct Visitor: Ts...
+{
+    using Ts::operator()...;
+    consteval void operator()(auto) const { static_assert(false, "Unsupported type"); }
+};
+template<class... Ts>
+Visitor(Ts...) -> Visitor<Ts...>;
 
-    std::string toString(const parse::FunctionDeclaration& decl)
-    {
-        std::string value = std::format("{} {}(",
-            decl.returnType.toString(),
-            decl.name);
+std::string toString(const parse::FunctionDeclaration& decl)
+{
+    std::string value = std::format("{} {}(",
+        decl.returnType.toString(),
+        decl.name);
 
-        int nparams = 0;
+    int nparams = 0;
 
-        for (const auto& param: decl.params) {
-            value += std::format("{}{}{}{}",
-                nparams > 0 ? ", " : "",
-                param.type.toString(),
-                param.name.has_value() ? " " : "",
-                param.name.value_or("")
-            );
+    for (const auto& param: decl.params) {
+        value += std::format("{}{}{}{}",
+            nparams > 0 ? ", " : "",
+            param.type.toString(),
+            param.name.has_value() ? " " : "",
+            param.name.value_or("")
+        );
 
-            nparams++;
-        }
-        value += ")";
-        return value;
+        nparams++;
     }
+    value += ")";
+    return value;
+}
 }
 
 TreeRenderer::TreeRenderer(std::unique_ptr<parse::ParseTree> tree)
@@ -271,18 +270,19 @@ EXPRESSIONS
 void TreeRenderer::renderExpression(const parse::IExpression &node)
 {
     std::visit(Visitor {
-    [this](const parse::SubscriptExpr& v) { renderSubscriptExpression(v); },
-    [this](const parse::FunctionCallExpr& v) { renderFunctionCallExpression(v); },
-    [this](const parse::BinaryExpr& v) { renderBinaryExpression(v); },
-    [this](const parse::TypeCastExpr& v) { renderTypeCastExpression(v); },
-    [this](const parse::UnaryExpr& v) { renderUnaryExpression(v); },
-    [this](const parse::VarRefExpr& v) { renderVarRefExpression(v); },
-    [this](const parse::BoolLiteralExpr& v) { renderBoolLiteralExpression(v); },
-    [this](const parse::CharLiteralExpr& v) { renderCharLiteralExpression(v); },
-    [this](const parse::IntLiteralExpr& v) { renderIntLiteralExpr(v); },
-    [this](const parse::FloatLiteralExpr& v) { renderFloatLiteralExpression(v); },
-    [this](const parse::StringLiteralExpr& v) { renderStringLIteralExpression(v); },
-    [this](const parse::MemberAccessExpr& v) { renderMemberAccessExpression(v); }
+        [this](const parse::SubscriptExpr& v) { renderSubscriptExpression(v); },
+        [this](const parse::FunctionCallExpr& v) { renderFunctionCallExpression(v); },
+        [this](const parse::BinaryExpr& v) { renderBinaryExpression(v); },
+        [this](const parse::TypeCastExpr& v) { renderTypeCastExpression(v); },
+        [this](const parse::UnaryExpr& v) { renderUnaryExpression(v); },
+        [this](const parse::VarRefExpr& v) { renderVarRefExpression(v); },
+        [this](const parse::BoolLiteralExpr& v) { renderBoolLiteralExpression(v); },
+        [this](const parse::CharLiteralExpr& v) { renderCharLiteralExpression(v); },
+        [this](const parse::IntLiteralExpr& v) { renderIntLiteralExpr(v); },
+        [this](const parse::FloatLiteralExpr& v) { renderFloatLiteralExpression(v); },
+        [this](const parse::StringLiteralExpr& v) { renderStringLIteralExpression(v); },
+        [this](const parse::MemberAccessExpr& v) { renderMemberAccessExpression(v); },
+        [this](const parse::SizeofExpr& v) { renderSizeofExpression(v); }
         }, node
     );
 }
@@ -434,6 +434,21 @@ void TreeRenderer::renderMemberAccessExpression(const parse::MemberAccessExpr &n
             endParentNode();
         }
     }
+}
+
+void TreeRenderer::renderSizeofExpression(const parse::SizeofExpr &node)
+{
+    std::visit(Visitor {
+        [this](const std::unique_ptr<parse::IExpression>& e) {
+            if (renderParentNode("sizeof", "")) {
+                renderExpression(*e);
+                endParentNode();
+            }
+        },
+        [this](const parse::TypeIdentifier& t) {
+            renderLeafNode("sizeof", t.toString());
+        }
+    }, node.term);
 }
 
 }

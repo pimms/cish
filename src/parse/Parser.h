@@ -49,7 +49,6 @@ private:
     std::unique_ptr<IStatement> parseScope();
 
     std::unique_ptr<IExpression> parseExpression(internal::BinaryPrecedence minBP);
-
     std::unique_ptr<IExpression> parseExpressionAtom();
     std::unique_ptr<IExpression> parseFunctionCallExpr();
     std::unique_ptr<IExpression> parseVarRefExpr();
@@ -57,6 +56,7 @@ private:
     std::unique_ptr<IExpression> parseIntLiteralExpr();
     std::unique_ptr<IExpression> parseFloatLiteralExpr();
     std::unique_ptr<IExpression> parseStringLiteralExpr();
+    std::optional<ISizeofTerm> parseSizeofTerm();
 
     std::optional<UnaryOperator> parsePrefixUnaryOperator();
     std::optional<BinaryOperator> parseBinaryOperator();

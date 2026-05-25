@@ -518,9 +518,15 @@ std::unique_ptr<IExpression> Parser::parseExpression(BinaryPrecedence minBP)
     auto prefixOperator = parsePrefixUnaryOperator();
     std::unique_ptr<IExpression> left;
     if (prefixOperator.has_value()) {
-        auto operand = parseExpression(BP_PREFIX);
-        if (!operand) return nullptr;
-        left = std::make_unique<IExpression>(UnaryExpr(prefixOperator.value(), std::move(operand)));
+        if (prefixOperator.value() == UnaryOperator::SIZEOF) {
+            auto term = parseSizeofTerm();
+            if (!term.has_value()) return nullptr;
+            left = std::make_unique<IExpression>(SizeofExpr(std::move(term.value())));
+        } else {
+            auto operand = parseExpression(BP_PREFIX);
+            if (!operand) return nullptr;
+            left = std::make_unique<IExpression>(UnaryExpr(prefixOperator.value(), std::move(operand)));
+        }
     } else if (auto typeCast = parseTypeCastOperator(); typeCast.has_value()) {
         auto operand = parseExpression(BP_PREFIX);
         if (!operand) return nullptr;
@@ -764,6 +770,21 @@ std::unique_ptr<IExpression> Parser::parseStringLiteralExpr()
     return std::make_unique<IExpression>(
         StringLiteralExpr(value)
     );
+}
+
+std::optional<ISizeofTerm> Parser::parseSizeofTerm()
+{
+    auto expr = parseExpressionAtom();
+    if (expr) {
+        return expr;
+    }
+
+    auto type = parseTypeIdentifier();
+    if (type.has_value()) {
+        return type;
+    }
+
+    return std::nullopt;
 }
 
 std::optional<UnaryOperator> Parser::parsePrefixUnaryOperator()
