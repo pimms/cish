@@ -123,6 +123,8 @@ void render()
     {
         ImGui::Begin("Tokvis", nullptr, flags);
 
+        ImGui::Button("Close");
+
         if (ImGui::BeginTable("table", 2, ImGuiTableFlags_BordersV | ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_Resizable | ImGuiTableFlags_RowBg | ImGuiTableFlags_NoBordersInBody)) {
             ImGui::TableSetupColumn("Type");
             ImGui::TableSetupColumn("Value");

@@ -60,6 +60,7 @@ std::optional<BinaryOperator> binaryOperatorFromToken(const tok::TokenType& type
 BinaryPrecedence binaryPrecedenceValue(BinaryOperator type)
 {
     switch (type) {
+        // = += -= *= etc.  (right-associative)
         case BinaryOperator::ASSIGN:
         case BinaryOperator::ASS_MULT:
         case BinaryOperator::ASS_DIVIDE:
@@ -70,27 +71,59 @@ BinaryPrecedence binaryPrecedenceValue(BinaryOperator type)
         case BinaryOperator::ASS_RSHIFT:
         case BinaryOperator::ASS_BITAND:
         case BinaryOperator::ASS_BITXOR:
-        case BinaryOperator::ASS_BITOR: return 14;
-        case BinaryOperator::LOGOR: return 12;
-        case BinaryOperator::LOGAND: return 11;
-        case BinaryOperator::BITOR: return 10;
-        case BinaryOperator::BITXOR: return 9;
-        case BinaryOperator::BITAND: return 8;
+        case BinaryOperator::ASS_BITOR:
+            return 1;
+
+        case BinaryOperator::LOGOR:
+            return 2;
+        case BinaryOperator::LOGAND:
+            return 3;
+        case BinaryOperator::BITOR:
+            return 4;
+        case BinaryOperator::BITXOR:
+            return 5;
+        case BinaryOperator::BITAND:
+            return 6;
         case BinaryOperator::EQUALS:
-        case BinaryOperator::NEQUALS: return 7;
+        case BinaryOperator::NEQUALS:
+            return 7;
         case BinaryOperator::LTE:
         case BinaryOperator::GTE:
         case BinaryOperator::LT:
-        case BinaryOperator::GT: return 6;
+        case BinaryOperator::GT:
+            return 8;
         case BinaryOperator::LSHIFT:
-        case BinaryOperator::RSHIFT: return 5;
+        case BinaryOperator::RSHIFT:
+            return 9;
         case BinaryOperator::PLUS:
-        case BinaryOperator::MINUS: return 4;
+        case BinaryOperator::MINUS:
+            return 10;
         case BinaryOperator::MULT:
         case BinaryOperator::DIVIDE:
-        case BinaryOperator::MODULO: return 3;
+        case BinaryOperator::MODULO:
+            return 11;
         default:
             Throw(InternalError, "Unhandled operator: %d", type);
+    }
+}
+
+bool isAssignmentOperator(BinaryOperator op)
+{
+    switch (op) {
+        case BinaryOperator::ASSIGN:
+        case BinaryOperator::ASS_MULT:
+        case BinaryOperator::ASS_DIVIDE:
+        case BinaryOperator::ASS_MODULO:
+        case BinaryOperator::ASS_PLUS:
+        case BinaryOperator::ASS_MINUS:
+        case BinaryOperator::ASS_LSHIFT:
+        case BinaryOperator::ASS_RSHIFT:
+        case BinaryOperator::ASS_BITAND:
+        case BinaryOperator::ASS_BITXOR:
+        case BinaryOperator::ASS_BITOR:
+            return true;
+        default:
+            return false;
     }
 }
 }
@@ -517,6 +550,7 @@ std::unique_ptr<IExpression> Parser::parseExpression(BinaryPrecedence minBP)
 {
     auto prefixOperator = parsePrefixUnaryOperator();
     std::unique_ptr<IExpression> left;
+
     if (prefixOperator.has_value()) {
         if (prefixOperator.value() == UnaryOperator::SIZEOF) {
             auto term = parseSizeofTerm();
@@ -527,7 +561,7 @@ std::unique_ptr<IExpression> Parser::parseExpression(BinaryPrecedence minBP)
             if (!operand) return nullptr;
             left = std::make_unique<IExpression>(UnaryExpr(prefixOperator.value(), std::move(operand)));
         }
-    } else if (auto typeCast = parseTypeCastOperator(); typeCast.has_value()) {
+    } else if (auto typeCast = parseTypeCastOperator()) {
         auto operand = parseExpression(BP_PREFIX);
         if (!operand) return nullptr;
         left = std::make_unique<IExpression>(TypeCastExpr(typeCast.value(), std::move(operand)));
@@ -573,12 +607,18 @@ std::unique_ptr<IExpression> Parser::parseExpression(BinaryPrecedence minBP)
         if (!binop.has_value()) {
             break;
         }
-        BinaryPrecedence nextBp = binaryPrecedenceValue(binop.value());
-        if (nextBp <= minBP) {
+        BinaryPrecedence opPrec = binaryPrecedenceValue(binop.value());
+        if (opPrec < minBP) {
             break;
         }
         _context.take();
-        auto right = parseExpression(nextBp);
+
+        // Assignments are right-associative (a = b = c  →  a = (b = c)).
+        // All other binary operators are left-associative.
+        BinaryPrecedence rightMinBP = isAssignmentOperator(binop.value())
+                                        ? opPrec
+                                        : opPrec + 1;
+        auto right = parseExpression(rightMinBP);
         if (!right) {
             Throw(ParseError, "Expected expression, found '%s'", _context.peek()->toString().c_str());
         }
@@ -774,14 +814,22 @@ std::unique_ptr<IExpression> Parser::parseStringLiteralExpr()
 
 std::optional<ISizeofTerm> Parser::parseSizeofTerm()
 {
-    auto expr = parseExpressionAtom();
-    if (expr) {
-        return expr;
+    if (_context.peek()->getType() == (tok::TokenType::PAREN_L)) {
+        auto transaction = _context.beginTransaction();
+        _context.take();
+
+        // Note: we may still receive variable references here, because we don't
+        // yet have a way of separating "myVar" from "int".
+        if (auto type = parseTypeIdentifier(); type.has_value()) {
+            if (_context.takeIf(tok::TokenType::PAREN_R)) {
+                transaction.commit();
+                return type.value();
+            }
+        }
     }
 
-    auto type = parseTypeIdentifier();
-    if (type.has_value()) {
-        return type;
+    if (auto expr = parseExpression(BP_SIZEOF)) {
+        return expr;
     }
 
     return std::nullopt;

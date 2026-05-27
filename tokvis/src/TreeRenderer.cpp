@@ -73,6 +73,8 @@ bool TreeRenderer::renderNode(const std::string &name, const std::string &value,
         flags |= ImGuiTreeNodeFlags_Leaf;
         flags |= ImGuiTreeNodeFlags_Bullet;
         flags |= ImGuiTreeNodeFlags_NoTreePushOnOpen;
+    } else {
+        flags |= ImGuiTreeNodeFlags_DefaultOpen;
     }
 
     ImGui::TableNextRow();

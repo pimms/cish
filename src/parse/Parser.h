@@ -10,8 +10,15 @@ namespace cish::parse
 namespace internal
 {
 using BinaryPrecedence = int;
-const BinaryPrecedence BP_NONE = 0;
-const BinaryPrecedence BP_PREFIX = 13;
+
+// Precedence levels using the common convention: higher value = tighter binding.
+// These roughly follow C operator precedence levels for easy reference.
+// Only binary operators go through binaryPrecedenceValue(); prefixes, casts,
+// postfixes, and sizeof are handled specially outside the binary climber.
+const BinaryPrecedence BP_NONE     = 0;
+const BinaryPrecedence BP_PREFIX   = 12;  // unary prefix operators + casts
+const BinaryPrecedence BP_SIZEOF   = 13;  // "operand" context for sizeof expr form (stronger than prefix)
+
 std::optional<BinaryOperator> binaryOperatorFromToken(const tok::TokenType& type);
 BinaryPrecedence binaryPrecedenceValue(BinaryOperator type);
 }

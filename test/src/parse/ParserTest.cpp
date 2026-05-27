@@ -186,3 +186,256 @@ TEST(ParserTest, ParseGccComparisonSuite)
         }
     }
 }
+
+// --- Precedence and associativity tests ---
+
+static const BinaryExpr* getBinary(const IExpression& e) {
+    return std::get_if<BinaryExpr>(&e);
+}
+
+static const VarRefExpr* getVar(const IExpression& e) {
+    return std::get_if<VarRefExpr>(&e);
+}
+
+static const IntLiteralExpr* getInt(const IExpression& e) {
+    return std::get_if<IntLiteralExpr>(&e);
+}
+
+TEST(ParserTest, AssignmentRightAssociativity) {
+    // a = b = c = 1  must parse as  a = (b = (c = 1))
+    auto tree = parse(R"(
+        int dummy = a = b = c = 1;
+    )");
+    ASSERT_EQ(1, tree->rootItems.size());
+    auto* varDecl = std::get_if<VariableDeclarationStatement>(&tree->rootItems[0]);
+    ASSERT_NE(nullptr, varDecl);
+    ASSERT_NE(nullptr, varDecl->expression);
+
+    // Top level of initializer: a = (b = (c = 1))
+    const BinaryExpr* top = getBinary(*varDecl->expression);
+    ASSERT_NE(nullptr, top);
+    ASSERT_EQ(BinaryOperator::ASSIGN, top->oper);
+
+    const VarRefExpr* leftA = getVar(*top->left);
+    ASSERT_NE(nullptr, leftA);
+    EXPECT_EQ("a", leftA->identifier);
+
+    // Right of top must itself be an assignment
+    const BinaryExpr* mid = getBinary(*top->right);
+    ASSERT_NE(nullptr, mid);
+    ASSERT_EQ(BinaryOperator::ASSIGN, mid->oper);
+
+    const VarRefExpr* leftB = getVar(*mid->left);
+    ASSERT_NE(nullptr, leftB);
+    EXPECT_EQ("b", leftB->identifier);
+
+    // Right of mid must be the innermost assignment
+    const BinaryExpr* inner = getBinary(*mid->right);
+    ASSERT_NE(nullptr, inner);
+    ASSERT_EQ(BinaryOperator::ASSIGN, inner->oper);
+
+    const VarRefExpr* leftC = getVar(*inner->left);
+    ASSERT_NE(nullptr, leftC);
+    EXPECT_EQ("c", leftC->identifier);
+
+    const IntLiteralExpr* one = getInt(*inner->right);
+    ASSERT_NE(nullptr, one);
+    EXPECT_EQ(1, one->value);
+}
+
+TEST(ParserTest, MixedPrecedenceWithAssignment) {
+    // x = y + z * 2 + 3   should be  x = ((y + (z * 2)) + 3)
+    auto tree = parse(R"(
+        int dummy = x = y + z * 2 + 3;
+    )");
+    ASSERT_EQ(1, tree->rootItems.size());
+    auto* varDecl = std::get_if<VariableDeclarationStatement>(&tree->rootItems[0]);
+    ASSERT_NE(nullptr, varDecl);
+    ASSERT_NE(nullptr, varDecl->expression);
+
+    // Outermost: x = (the add chain)
+    const BinaryExpr* assign = getBinary(*varDecl->expression);
+    ASSERT_NE(nullptr, assign);
+    ASSERT_EQ(BinaryOperator::ASSIGN, assign->oper);
+    const VarRefExpr* x = getVar(*assign->left);
+    ASSERT_NE(nullptr, x);
+    EXPECT_EQ("x", x->identifier);
+
+    // Right side of = is the top-level +
+    const BinaryExpr* add1 = getBinary(*assign->right);
+    ASSERT_NE(nullptr, add1);
+    ASSERT_EQ(BinaryOperator::PLUS, add1->oper);
+
+    // Left of that + should be another +
+    const BinaryExpr* add2 = getBinary(*add1->left);
+    ASSERT_NE(nullptr, add2);
+    ASSERT_EQ(BinaryOperator::PLUS, add2->oper);
+
+    // Right of inner + must be the * (higher precedence)
+    const BinaryExpr* mul = getBinary(*add2->right);
+    ASSERT_NE(nullptr, mul);
+    ASSERT_EQ(BinaryOperator::MULT, mul->oper);
+
+    const VarRefExpr* z = getVar(*mul->left);
+    ASSERT_NE(nullptr, z);
+    EXPECT_EQ("z", z->identifier);
+
+    const IntLiteralExpr* two = getInt(*mul->right);
+    ASSERT_NE(nullptr, two);
+    EXPECT_EQ(2, two->value);
+}
+
+// --- Sizeof tests ---
+
+static const SizeofExpr* getSizeof(const IExpression& e) {
+    return std::get_if<SizeofExpr>(&e);
+}
+
+static bool holdsExpr(const ISizeofTerm& term) {
+    return std::holds_alternative<std::unique_ptr<IExpression>>(term);
+}
+
+static bool holdsType(const ISizeofTerm& term) {
+    return std::holds_alternative<TypeIdentifier>(term);
+}
+
+static const IExpression* getSizeofInnerExpr(const ISizeofTerm& term) {
+    if (auto* p = std::get_if<std::unique_ptr<IExpression>>(&term)) {
+        return p->get();
+    }
+    return nullptr;
+}
+
+static const TypeIdentifier* getSizeofTypeId(const ISizeofTerm& term) {
+    return std::get_if<TypeIdentifier>(&term);
+}
+
+TEST(ParserTest, SizeofExpressionForms) {
+    // sizeof x
+    {
+        auto tree = parse("int dummy = sizeof x;");
+        auto* varDecl = std::get_if<VariableDeclarationStatement>(&tree->rootItems[0]);
+        ASSERT_NE(nullptr, varDecl);
+        const SizeofExpr* so = getSizeof(*varDecl->expression);
+        ASSERT_NE(nullptr, so);
+        ASSERT_TRUE(holdsExpr(so->term));
+        const VarRefExpr* v = getVar(*getSizeofInnerExpr(so->term));
+        ASSERT_NE(nullptr, v);
+        EXPECT_EQ("x", v->identifier);
+    }
+
+    // sizeof (x + 1)  -- parenthesized expression
+    {
+        auto tree = parse("int dummy = sizeof (x + 1);");
+        auto* varDecl = std::get_if<VariableDeclarationStatement>(&tree->rootItems[0]);
+        const SizeofExpr* so = getSizeof(*varDecl->expression);
+        ASSERT_NE(nullptr, so);
+        ASSERT_TRUE(holdsExpr(so->term));
+        const BinaryExpr* bin = getBinary(*getSizeofInnerExpr(so->term));
+        ASSERT_NE(nullptr, bin);
+        ASSERT_EQ(BinaryOperator::PLUS, bin->oper);
+    }
+
+    // sizeof x + 1   should be (sizeof x) + 1
+    {
+        auto tree = parse("int dummy = sizeof x + 1;");
+        auto* varDecl = std::get_if<VariableDeclarationStatement>(&tree->rootItems[0]);
+        const BinaryExpr* add = getBinary(*varDecl->expression);
+        ASSERT_NE(nullptr, add);
+        ASSERT_EQ(BinaryOperator::PLUS, add->oper);
+
+        const SizeofExpr* so = getSizeof(*add->left);
+        ASSERT_NE(nullptr, so);
+        ASSERT_TRUE(holdsExpr(so->term));
+    }
+
+    // sizeof &p
+    {
+        auto tree = parse("int dummy = sizeof &p;");
+        auto* varDecl = std::get_if<VariableDeclarationStatement>(&tree->rootItems[0]);
+        const SizeofExpr* so = getSizeof(*varDecl->expression);
+        ASSERT_NE(nullptr, so);
+        ASSERT_TRUE(holdsExpr(so->term));
+        const UnaryExpr* un = std::get_if<UnaryExpr>(getSizeofInnerExpr(so->term));
+        ASSERT_NE(nullptr, un);
+        EXPECT_EQ(UnaryOperator::ADDROF, un->oper);
+    }
+}
+
+TEST(ParserTest, SizeofTypeForms) {
+    // sizeof (int)
+    {
+        auto tree = parse("int dummy = sizeof (int);");
+        auto* varDecl = std::get_if<VariableDeclarationStatement>(&tree->rootItems[0]);
+        const SizeofExpr* so = getSizeof(*varDecl->expression);
+        ASSERT_NE(nullptr, so);
+        ASSERT_TRUE(holdsType(so->term));
+
+        const TypeIdentifier* tid = getSizeofTypeId(so->term);
+        ASSERT_NE(nullptr, tid);
+        EXPECT_EQ("int", tid->type);
+        EXPECT_EQ(0, tid->pointerLevel);
+        EXPECT_FALSE(tid->isStruct);
+    }
+
+    // sizeof (int *)
+    {
+        auto tree = parse("int dummy = sizeof (int *);");
+        auto* varDecl = std::get_if<VariableDeclarationStatement>(&tree->rootItems[0]);
+        const SizeofExpr* so = getSizeof(*varDecl->expression);
+        ASSERT_NE(nullptr, so);
+        ASSERT_TRUE(holdsType(so->term));
+
+        const TypeIdentifier* tid = getSizeofTypeId(so->term);
+        ASSERT_NE(nullptr, tid);
+        EXPECT_EQ("int", tid->type);
+        EXPECT_EQ(1, tid->pointerLevel);
+    }
+
+    // sizeof (struct foo)
+    {
+        auto tree = parse("int dummy = sizeof (struct foo);");
+        auto* varDecl = std::get_if<VariableDeclarationStatement>(&tree->rootItems[0]);
+        const SizeofExpr* so = getSizeof(*varDecl->expression);
+        ASSERT_NE(nullptr, so);
+        ASSERT_TRUE(holdsType(so->term));
+
+        const TypeIdentifier* tid = getSizeofTypeId(so->term);
+        ASSERT_NE(nullptr, tid);
+        EXPECT_EQ("foo", tid->type);
+        EXPECT_TRUE(tid->isStruct);
+        EXPECT_EQ(0, tid->pointerLevel);
+    }
+
+    // sizeof (const char **)
+    {
+        auto tree = parse("int dummy = sizeof (const char **);");
+        auto* varDecl = std::get_if<VariableDeclarationStatement>(&tree->rootItems[0]);
+        const SizeofExpr* so = getSizeof(*varDecl->expression);
+        ASSERT_NE(nullptr, so);
+        ASSERT_TRUE(holdsType(so->term));
+
+        const TypeIdentifier* tid = getSizeofTypeId(so->term);
+        ASSERT_NE(nullptr, tid);
+        EXPECT_EQ("char", tid->type);
+        EXPECT_TRUE(tid->isConst);
+        EXPECT_EQ(2, tid->pointerLevel);
+    }
+
+    // sizeof (int) * 4   -- multiplication must be outside the sizeof
+    {
+        auto tree = parse("int dummy = sizeof (int) * 4;");
+        auto* varDecl = std::get_if<VariableDeclarationStatement>(&tree->rootItems[0]);
+        const BinaryExpr* mul = getBinary(*varDecl->expression);
+        ASSERT_NE(nullptr, mul);
+        ASSERT_EQ(BinaryOperator::MULT, mul->oper);
+
+        const SizeofExpr* so = getSizeof(*mul->left);
+        ASSERT_NE(nullptr, so);
+        ASSERT_TRUE(holdsType(so->term));
+        const TypeIdentifier* tid = getSizeofTypeId(so->term);
+        EXPECT_EQ("int", tid->type);
+    }
+}
+
+
