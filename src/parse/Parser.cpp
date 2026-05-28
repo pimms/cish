@@ -167,8 +167,12 @@ std::optional<IRootItem> Parser::parseRootItem()
             DLOG(ROOT, "parsing sys include");
             return parseSystemInclude();
         case tok::TokenType::STRUCT:
-            DLOG(ROOT, "parsing struct decl");
-            return parseStructDeclaration();
+            DLOG(ROOT, "parsing struct decl (attempt)");
+            if (auto structDecl = parseStructDeclaration()) {
+                DLOG(ROOT, "parsed struct decl");
+                return structDecl;
+            }
+            DLOG(ROOT, "struct decl attempt failed");
         default:
             break;
     }
@@ -291,7 +295,10 @@ std::optional<StructDeclaration> Parser::parseStructDeclaration()
 
     auto structIdentifier = _context.require(tok::TokenType::IDENTIFIER);
 
-    _context.require(tok::TokenType::CBRACE_L);
+    if (!_context.takeIf(tok::TokenType::CBRACE_L)) {
+        // This is likely a function returning a struct, not a declaration.
+        return std::nullopt;
+    }
 
     std::vector<StructFieldDeclaration> fields;
     while (!_context.atEnd() && _context.peek()->getType() != tok::TokenType::CBRACE_R) {
@@ -632,7 +639,8 @@ std::unique_ptr<IExpression> Parser::parseExpressionAtom()
 {
     if (_context.takeIf(tok::TokenType::PAREN_L)) {
         auto inner = parseExpression(BP_NONE);
-        if (!inner) Throw(ParseError, "Expected expression after '('");
+        if (!inner)
+            Throw(ParseError, "Expected expression after '('");
         _context.require(tok::TokenType::PAREN_R);
         return inner;
     }

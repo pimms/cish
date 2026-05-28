@@ -34,13 +34,14 @@ private:
     void reset();
 
     bool readToken();
-    uint32_t readRegexToken(const std::string& strExpr);
+    std::optional<std::tuple<TokenType,uint32_t>> readRegexToken();
+    std::optional<TokenType> keywordFromIdentifier(std::string_view identifier);
     void addToken(TokenType type, uint32_t len);
 
     void skipToNextNonWS();
     bool skipToNextOccurence(std::string_view needle);
     char peek(int n) const;
-    bool match(const std::string_view s);
+    bool match(std::string_view s);
 };
 
 }

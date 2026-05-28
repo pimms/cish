@@ -59,18 +59,6 @@ Tokenizer::Tokenizer(const std::string& source)
     _trie.insert("/*", TokenType::COMMENT_BLOCK);
     _trie.insert("//", TokenType::COMMENT_LINE);
     _trie.insert("/*", TokenType::COMMENT_BLOCK);
-    _trie.insert("do", TokenType::DO);
-    _trie.insert("while", TokenType::WHILE);
-    _trie.insert("for", TokenType::FOR);
-    _trie.insert("if", TokenType::IF);
-    _trie.insert("else", TokenType::ELSE);
-    _trie.insert("return", TokenType::RETURN);
-    _trie.insert("break", TokenType::BREAK);
-    _trie.insert("continue", TokenType::CONTINUE);
-    _trie.insert("typedef", TokenType::TYPEDEF);
-    _trie.insert("struct", TokenType::STRUCT);
-    _trie.insert("const", TokenType::CONST);
-    _trie.insert("sizeof", TokenType::SIZEOF);
 }
 
 std::vector<Token> Tokenizer::tokenize()
@@ -111,31 +99,14 @@ bool Tokenizer::readToken()
         // Special handling of comments
         if (type == TokenType::COMMENT_LINE) {
             return skipToNextOccurence("\n");
-        } else if (type == TokenType::COMMENT_BLOCK) {
+        }
+        if (type == TokenType::COMMENT_BLOCK) {
             return skipToNextOccurence("*/");
         }
         trieResult = { type, len };
     }
 
-    static std::vector<std::tuple<TokenType, std::string>> patterns = {
-        { TokenType::IDENTIFIER, "[_a-zA-Z][_a-zA-Z0-9]*" },
-        { TokenType::LIT_FLOAT, "[0-9]+\\.[0-9]*[fF]?" },
-        { TokenType::LIT_FLOAT, "\\.[0-9]+[fF]?" },
-        { TokenType::LIT_INT, "0b[01]+" },
-        { TokenType::LIT_INT, "0x[a-fA-F0-9]+" },
-        { TokenType::LIT_INT, "0[0-7]+" },
-        { TokenType::LIT_INT, "[0-9]+" },
-        { TokenType::LIT_CHAR, R"('(?:\\'|[^\r\n]|\\[^\r\n ])')" },
-        { TokenType::LIT_STRING, R"("(?:\\[^\r\n ]|[^"\r\n])*")" },
-        { TokenType::INCLUDE_SYS, "#include\\s*<[a-zA-Z0-9/._-]+>" },
-    };
-
-    for (const auto& [type, expr]: patterns) {
-        if (const uint32_t len = readRegexToken(expr)) {
-            regexResult = { type, len };
-            break;
-        }
-    }
+    regexResult = readRegexToken();
 
     // Certain tokens can be interpreted as both a "primitive" and as a dynamic token.
     // Consider for example the float literal ".15f"; this will be interpreted by the
@@ -144,12 +115,18 @@ bool Tokenizer::readToken()
     //
     // We do however need to distinguish between keywords (return, break, etc) and IDENTIFIERs.
     if (regexResult.has_value()) {
-        const auto& [rtype, rlen] = regexResult.value();
-        if (rtype == TokenType::IDENTIFIER && trieResult.has_value()) {
-            const auto& [ttype, tlen] = trieResult.value();
-            addToken(ttype, tlen);
+        const auto& [regexType, regexLen] = regexResult.value();
+        if (regexType == TokenType::IDENTIFIER && trieResult.has_value()) {
+            const auto& [trieType, trieLen] = trieResult.value();
+            addToken(trieType, trieLen);
         } else {
-            addToken(rtype, rlen);
+            auto identifier = std::string_view(_source.c_str() + _pos, regexLen);
+            auto keyword = keywordFromIdentifier(identifier);
+            if (keyword.has_value()) {
+                addToken(keyword.value(), regexLen);
+            } else {
+                addToken(regexType, regexLen);
+            }
         }
         return true;
     } else if (trieResult.has_value()) {
@@ -161,18 +138,57 @@ bool Tokenizer::readToken()
     Throw(TokenizerError, "Unrecognized token at line %d col %d", _line, _col);
 }
 
-uint32_t Tokenizer::readRegexToken(const std::string& strExpr)
+std::optional<std::tuple<TokenType,uint32_t>> Tokenizer::readRegexToken()
 {
-    std::regex regex(strExpr);
-    std::cmatch match;
-    std::regex_search(_source.c_str() + _pos, match, regex, std::regex_constants::match_continuous);
+    static std::vector<std::tuple<TokenType, std::string>> patterns = {
+        { TokenType::LIT_FLOAT, "[0-9]+\\.[0-9]*[fF]?" },
+        { TokenType::LIT_FLOAT, "\\.[0-9]+[fF]?" },
+        { TokenType::LIT_INT, "0b[01]+" },
+        { TokenType::LIT_INT, "0x[a-fA-F0-9]+" },
+        { TokenType::LIT_INT, "0[0-7]+" },
+        { TokenType::LIT_INT, "[0-9]+" },
+        { TokenType::LIT_CHAR, R"('(?:\\'|[^\r\n]|\\[^\r\n ])')" },
+        { TokenType::LIT_STRING, R"("(?:\\[^\r\n ]|[^"\r\n])*")" },
+        { TokenType::INCLUDE_SYS, "#include\\s*<[a-zA-Z0-9/._-]+>" },
+        { TokenType::IDENTIFIER, "[_a-zA-Z][_a-zA-Z0-9]*" },
+    };
 
-    assert(match.size() < 2 && "The expression should not contain a capture group");
+    for (const auto& [type, expr]: patterns) {
+        std::regex regex(expr);
+        std::cmatch match;
+        std::regex_search(_source.c_str() + _pos, match, regex, std::regex_constants::match_continuous);
+        assert(match.size() < 2 && "The expression should not contain a capture group");
 
-    if (match.size() == 1) {
-        return match[0].length();
+        if (match.size() == 1) {
+            return std::tuple { type, match[0].length() };
+        }
     }
-    return 0;
+    return std::nullopt;
+}
+
+std::optional<TokenType> Tokenizer::keywordFromIdentifier(std::string_view identifier)
+{
+    static std::vector<std::tuple<TokenType, std::string>> patterns = {
+        { TokenType::DO, "do" },
+        { TokenType::WHILE, "while" },
+        { TokenType::FOR, "for" },
+        { TokenType::IF, "if" },
+        { TokenType::ELSE, "else" },
+        { TokenType::RETURN, "return" },
+        { TokenType::BREAK, "break" },
+        { TokenType::CONTINUE, "continue" },
+        { TokenType::TYPEDEF, "typedef" },
+        { TokenType::STRUCT, "struct" },
+        { TokenType::CONST, "const" },
+        { TokenType::SIZEOF, "sizeof" },
+    };
+
+    for (const auto& [type, keyword]: patterns) {
+        if (identifier == keyword) {
+            return type;
+        }
+    }
+    return std::nullopt;
 }
 
 void Tokenizer::addToken(TokenType type, uint32_t len)
@@ -258,7 +274,7 @@ char Tokenizer::peek(int n) const
     }
 }
 
-bool Tokenizer::match(const std::string_view s)
+bool Tokenizer::match(std::string_view s)
 {
     const int n = s.size();
     for (int i=0; i<n; i++) {
