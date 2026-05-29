@@ -1,14 +1,8 @@
 #pragma once
 
 #include "parse/ParseTree.h"
-
+#include "Exception.h"
 #include <format>
-#include <utility>
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_opengl.h>
-#include <imgui.h>
-#include <imgui_impl_sdl3.h>
-#include <imgui_impl_opengl3.h>
 
 
 namespace cish::tokvis {
@@ -16,20 +10,22 @@ namespace cish::tokvis {
 class TreeRenderer final
 {
 public:
-    explicit TreeRenderer(std::unique_ptr<parse::ParseTree> tree);
+    explicit TreeRenderer() = default;
     ~TreeRenderer() = default;
-    TreeRenderer() = delete;
     TreeRenderer(const TreeRenderer&) = delete;
     TreeRenderer(TreeRenderer&&) = delete;
     TreeRenderer& operator=(const TreeRenderer&) = delete;
     TreeRenderer& operator=(TreeRenderer&&) = delete;
 
-    void render();
+    void loadFile(const std::string& filepath);
+    bool render();
 
 private:
-    std::unique_ptr<parse::ParseTree> _tree;
+    std::unique_ptr<parse::ParseTree> _tree{};
+    std::optional<std::string> _textContent{};
     int _idCounter = 0;
 
+    void renderTree();
     bool renderNode(const std::string& name, const std::string& value, bool hasChildren);
     void renderLeafNode(const std::string& name, const std::string& value);
     bool renderParentNode(const std::string& name, const std::string& value);

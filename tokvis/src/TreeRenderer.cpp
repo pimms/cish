@@ -1,5 +1,10 @@
 #include "TreeRenderer.h"
+#include "tok/Tokenizer.h"
+#include "parse/Parser.h"
 
+#include <utility>
+#include <imgui.h>
+#include <fstream>
 #include <format>
 
 namespace cish::tokvis {
@@ -37,10 +42,38 @@ std::string toString(const parse::FunctionDeclaration& decl)
 }
 }
 
-TreeRenderer::TreeRenderer(std::unique_ptr<parse::ParseTree> tree)
-    : _tree(std::move(tree))
-{
 
+void TreeRenderer::loadFile(const std::string &filepath)
+{
+    _tree = nullptr;
+    _textContent = std::nullopt;
+
+    std::ifstream ifs(filepath);
+    if (!ifs.is_open()) {
+        _textContent = std::format("Failed to open file '{}'", filepath);
+        return;
+    }
+
+    ifs.seekg(0, std::ios::end);
+    const std::streamsize size = ifs.tellg();
+    ifs.seekg(0);
+    std::string sourceBuffer(size, '\0');
+    ifs.read(&sourceBuffer[0], size);
+
+    try {
+        tok::Tokenizer tokenizer(sourceBuffer);
+        auto tokens = tokenizer.tokenize();
+        if (tokens.empty()) {
+            _textContent = "File contains zero tokens. Let's assume this is an error in cish.";
+            return;
+        }
+
+        parse::Parser parser(tokens);
+        _textContent = sourceBuffer;
+        _tree = parser.parse();
+    } catch (const std::exception &e) {
+        _textContent = std::format("Failed to parse '{}':\n{}\n", filepath, e.what());
+    }
 }
 
 /*
@@ -49,18 +82,43 @@ DRAWING METHODS
 ================
 */
 
-void TreeRenderer::render()
+bool TreeRenderer::render()
 {
-    _idCounter = 0;
-    if (ImGui::BeginTable("table", 2, ImGuiTableFlags_BordersV | ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_Resizable | ImGuiTableFlags_RowBg | ImGuiTableFlags_NoBordersInBody)) {
-        ImGui::TableSetupColumn("Type");
-        ImGui::TableSetupColumn("Value");
-        ImGui::TableHeadersRow();
+    const auto viewport = ImGui::GetMainViewport();
+    ImGui::SetNextWindowSize({ viewport->Size.x, viewport->Size.y });
+    ImGui::SetNextWindowPos({ viewport->WorkPos.x, viewport->WorkPos.y });
+    ImGui::Begin("Tokvis", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
 
-        for (const auto& rootItem: _tree->rootItems) {
-            renderRootItem(rootItem);
+    bool close = ImGui::Button("CLOSE??");
+
+    _idCounter = 0;
+
+    ImGui::BeginGroup();
+    if (_textContent.has_value()) {
+        ImGui::Text("%s", _textContent.value().c_str());
+        ImGui::SameLine();
+    }
+    renderTree();
+
+    ImGui::EndGroup();
+
+    ImGui::End();
+    return close;
+}
+
+void TreeRenderer::renderTree()
+{
+    if (_tree != nullptr) {
+        if (ImGui::BeginTable("table", 2, ImGuiTableFlags_BordersV | ImGuiTableFlags_BordersOuterH | ImGuiTableFlags_Resizable | ImGuiTableFlags_RowBg | ImGuiTableFlags_NoBordersInBody)) {
+            ImGui::TableSetupColumn("Type");
+            ImGui::TableSetupColumn("Value");
+            ImGui::TableHeadersRow();
+
+            for (const auto& rootItem: _tree->rootItems) {
+                renderRootItem(rootItem);
+            }
+            ImGui::EndTable();
         }
-        ImGui::EndTable();
     }
 }
 

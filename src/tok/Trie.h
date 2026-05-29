@@ -73,7 +73,7 @@ private:
 
         Node* getOrCreate(char ch)
         {
-            const char idx = ch - 32;
+            const char idx = ch - MinVal;
             if (children[idx] == nullptr) {
                 children[idx] = std::make_unique<Node>();
             }
@@ -82,7 +82,7 @@ private:
 
         const Node* get(char ch) const
         {
-            const char idx = ch - 32;
+            const char idx = ch - MinVal;
             if (children[idx] == nullptr) {
                 return nullptr;
             }
