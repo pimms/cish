@@ -68,7 +68,7 @@ std::vector<Token> Tokenizer::tokenize()
     while (readToken()) {
         // Not much to do here except ignor
     }
-    _tokens.emplace_back(TokenType::END_OF_FILE, "", _line, _col);
+    _tokens.emplace_back(TokenType::END_OF_FILE, "", _line, _col, _pos);
     return _tokens;
 }
 
@@ -196,13 +196,13 @@ void Tokenizer::addToken(TokenType type, uint32_t len)
     // This is a slightly awkward method of checking if both the current and previous token is a semicolon.
     // If so, we don't add it to the token list.
     if (_tokens.empty() || _tokens.back().getType() != TokenType::SEMICOLON || type != TokenType::SEMICOLON) {
-        Token token {
+        _tokens.emplace_back(
             type,
             std::string_view(_source.c_str() + _pos, len),
             _line,
-            _col
-        };
-        _tokens.push_back(token);
+            _col,
+            _pos
+        );
     }
 
     _pos += len;

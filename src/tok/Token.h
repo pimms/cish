@@ -7,10 +7,10 @@
 namespace cish::tok
 {
 
-struct Token 
+class Token
 {
 public:
-    Token(TokenType type, std::string_view lexeme, int line, int col);
+    explicit Token(TokenType type, std::string_view lexeme, int line, int col, int charOffset);
 
     bool operator==(const Token& o) const = default;
 
@@ -18,6 +18,7 @@ public:
     const std::string& getLexeme() const;
     int getLine() const;
     int getCol() const;
+    int getCharOffset() const;
 
     std::string toString() const;
 
@@ -26,6 +27,7 @@ private:
     std::string _lexeme;
     int _line;
     int _col;
+    int _charOffset;
 };
 
 std::ostream& operator<<(std::ostream&, const Token&);

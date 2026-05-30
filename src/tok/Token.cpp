@@ -4,11 +4,12 @@
 namespace cish::tok 
 {
 
-Token::Token(TokenType type, std::string_view lexeme, int line, int col)
+Token::Token(TokenType type, std::string_view lexeme, int line, int col, int charOffset)
     : _type(type)
     , _lexeme(lexeme)
     , _line(line)
     , _col(col)
+    , _charOffset(charOffset)
 {
 
 }
@@ -31,6 +32,11 @@ int Token::getLine() const
 int Token::getCol() const 
 {
     return _col;
+}
+
+int Token::getCharOffset() const
+{
+    return _charOffset;
 }
 
 std::string Token::toString() const

@@ -362,11 +362,12 @@ std::unique_ptr<IStatement> Parser::parseStatement()
         DLOG(STMT, "parsed variable declaration statement");
         return varDecl;
     }
+    auto interval = _context.getIntervalReader();
     if (auto expr = parseExpression(BP_NONE)) {
         _context.require(tok::TokenType::SEMICOLON);
         DLOG(STMT, "parsed expression statement");
         return std::make_unique<IStatement>(
-            ExpressionStatement(std::move(expr))
+            ExpressionStatement(interval.getInterval(), std::move(expr))
         );
     }
 
@@ -376,6 +377,7 @@ std::unique_ptr<IStatement> Parser::parseStatement()
 
 std::unique_ptr<IStatement> Parser::parseIfStatement()
 {
+    auto interval = _context.getIntervalReader();
     _context.require(tok::TokenType::IF);
     _context.require(tok::TokenType::PAREN_L);
     std::unique_ptr<IExpression> condition = parseExpression(BP_NONE);
@@ -394,6 +396,7 @@ std::unique_ptr<IStatement> Parser::parseIfStatement()
 
     return std::make_unique<IStatement>(
         IfStatement(
+            interval.getInterval(),
             std::move(condition),
             std::move(trueScope),
             std::move(falseScope)
@@ -403,14 +406,22 @@ std::unique_ptr<IStatement> Parser::parseIfStatement()
 
 std::unique_ptr<IStatement> Parser::parseReturnStatement()
 {
+    auto interval = _context.getIntervalReader();
+
     _context.require(tok::TokenType::RETURN);
     auto expr = parseExpression(BP_NONE);
     _context.require(tok::TokenType::SEMICOLON);
-    return std::make_unique<IStatement>(ReturnStatement(std::move(expr)));
+
+    return std::make_unique<IStatement>(ReturnStatement(
+        interval.getInterval(),
+        std::move(expr)
+    ));
 }
 
 std::unique_ptr<IStatement> Parser::parseForStatement()
 {
+    auto interval = _context.getIntervalReader();
+
     _context.require(tok::TokenType::FOR);
     _context.require(tok::TokenType::PAREN_L);
 
@@ -432,6 +443,7 @@ std::unique_ptr<IStatement> Parser::parseForStatement()
 
     return std::make_unique<IStatement>(
         ForStatement(
+            interval.getInterval(),
             std::move(init),
             std::move(condition),
             std::move(update),
@@ -460,6 +472,8 @@ std::unique_ptr<IForLoopInitializer> Parser::parseForLoopInitializer()
 
 std::unique_ptr<IStatement> Parser::parseWhileStatement()
 {
+    auto interval = _context.getIntervalReader();
+
     _context.require(tok::TokenType::WHILE);
     _context.require(tok::TokenType::PAREN_L);
     auto condition = parseExpression(BP_NONE);
@@ -468,6 +482,7 @@ std::unique_ptr<IStatement> Parser::parseWhileStatement()
 
     return std::make_unique<IStatement>(
         WhileStatement(
+            interval.getInterval(),
             std::move(condition),
             std::move(body)
         )
@@ -476,6 +491,8 @@ std::unique_ptr<IStatement> Parser::parseWhileStatement()
 
 std::unique_ptr<IStatement> Parser::parseDoWhileStatement()
 {
+    auto interval = _context.getIntervalReader();
+
     _context.require(::cish::tok::TokenType::DO);
     auto body = parseScope();
     _context.require(tok::TokenType::WHILE);
@@ -486,6 +503,7 @@ std::unique_ptr<IStatement> Parser::parseDoWhileStatement()
 
     return std::make_unique<IStatement>(
         DoWhileStatement(
+            interval.getInterval(),
             std::move(condition),
             std::move(body)
         )
@@ -494,6 +512,7 @@ std::unique_ptr<IStatement> Parser::parseDoWhileStatement()
 
 std::unique_ptr<IStatement> Parser::parseVariableDeclarationStatement()
 {
+    auto interval = _context.getIntervalReader();
     auto transaction = _context.beginTransaction();
 
     auto type = parseTypeIdentifier();
@@ -523,6 +542,7 @@ std::unique_ptr<IStatement> Parser::parseVariableDeclarationStatement()
 
     return std::make_unique<IStatement>(
         VariableDeclarationStatement(
+            interval.getInterval(),
             type.value(),
             identifier->getLexeme(),
             std::move(expr)
@@ -532,6 +552,7 @@ std::unique_ptr<IStatement> Parser::parseVariableDeclarationStatement()
 
 std::unique_ptr<IStatement> Parser::parseScope()
 {
+    auto interval = _context.getIntervalReader();
     std::vector<std::unique_ptr<IStatement>> body;
 
     if (_context.takeIf(tok::TokenType::SEMICOLON)) {
@@ -550,11 +571,16 @@ std::unique_ptr<IStatement> Parser::parseScope()
         body.push_back(std::move(statement));
     }
 
-    return std::make_unique<IStatement>(ScopeStatement(std::move(body)));
+    return std::make_unique<IStatement>(ScopeStatement(
+        interval.getInterval(),
+        std::move(body)
+    ));
 }
 
 std::unique_ptr<IExpression> Parser::parseExpression(BinaryPrecedence minBP)
 {
+    auto interval = _context.getIntervalReader();
+
     auto prefixOperator = parsePrefixUnaryOperator();
     std::unique_ptr<IExpression> left;
 
@@ -562,16 +588,27 @@ std::unique_ptr<IExpression> Parser::parseExpression(BinaryPrecedence minBP)
         if (prefixOperator.value() == UnaryOperator::SIZEOF) {
             auto term = parseSizeofTerm();
             if (!term.has_value()) return nullptr;
-            left = std::make_unique<IExpression>(SizeofExpr(std::move(term.value())));
+            left = std::make_unique<IExpression>(SizeofExpr(
+                interval.getInterval(),
+                std::move(term.value())
+            ));
         } else {
             auto operand = parseExpression(BP_PREFIX);
             if (!operand) return nullptr;
-            left = std::make_unique<IExpression>(UnaryExpr(prefixOperator.value(), std::move(operand)));
+            left = std::make_unique<IExpression>(UnaryExpr(
+                interval.getInterval(),
+                prefixOperator.value(),
+                std::move(operand)
+            ));
         }
     } else if (auto typeCast = parseTypeCastOperator()) {
         auto operand = parseExpression(BP_PREFIX);
         if (!operand) return nullptr;
-        left = std::make_unique<IExpression>(TypeCastExpr(typeCast.value(), std::move(operand)));
+        left = std::make_unique<IExpression>(TypeCastExpr(
+            interval.getInterval(),
+            typeCast.value(),
+            std::move(operand)
+        ));
     } else {
         left = parseExpressionAtom();
     }
@@ -587,15 +624,21 @@ std::unique_ptr<IExpression> Parser::parseExpression(BinaryPrecedence minBP)
                 Throw(ParseError, "Expected expression in subscript, found %s", _context.peek()->toString().c_str());
             }
             _context.require(tok::TokenType::SQPAREN_R);
-            left = std::make_unique<IExpression>(SubscriptExpr(std::move(left), std::move(subscript)));
+            left = std::make_unique<IExpression>(SubscriptExpr(
+                interval.getInterval(),
+                std::move(left),
+                std::move(subscript)
+            ));
             continue;
         }
 
         // Handle member access operator
         if (_context.peek()->getType() == tok::TokenType::DOT || _context.peek()->getType() == tok::TokenType::ARROW) {
+            auto memberInterval =_context.getIntervalReader();
             auto maToken = _context.take();
             auto memToken = _context.require(tok::TokenType::IDENTIFIER);
             left = std::make_unique<IExpression>(MemberAccessExpr(
+                memberInterval.getInterval(),
                 std::move(left),
                 memToken->getLexeme(),
                 (maToken->getType() == tok::TokenType::DOT ? MemberAccessOperator::DOT : MemberAccessOperator::ARROW)
@@ -606,7 +649,11 @@ std::unique_ptr<IExpression> Parser::parseExpression(BinaryPrecedence minBP)
         // Handle postfix operators
         auto postfixOperator = parsePostfixUnaryOperator();
         if (postfixOperator.has_value()) {
-            left = std::make_unique<IExpression>(UnaryExpr(postfixOperator.value(), std::move(left)));
+            left = std::make_unique<IExpression>(UnaryExpr(
+                interval.getInterval(),
+                postfixOperator.value(),
+                std::move(left)
+            ));
         }
 
         // Handle infix operators
@@ -622,14 +669,17 @@ std::unique_ptr<IExpression> Parser::parseExpression(BinaryPrecedence minBP)
 
         // Assignments are right-associative (a = b = c  →  a = (b = c)).
         // All other binary operators are left-associative.
-        BinaryPrecedence rightMinBP = isAssignmentOperator(binop.value())
-                                        ? opPrec
-                                        : opPrec + 1;
+        BinaryPrecedence rightMinBP = isAssignmentOperator(binop.value()) ? opPrec : opPrec + 1;
         auto right = parseExpression(rightMinBP);
         if (!right) {
             Throw(ParseError, "Expected expression, found '%s'", _context.peek()->toString().c_str());
         }
-        left = std::make_unique<IExpression>(BinaryExpr(std::move(left), std::move(right), binop.value()));
+        left = std::make_unique<IExpression>(BinaryExpr(
+            interval.getInterval(),
+            std::move(left),
+            std::move(right),
+            binop.value()
+        ));
     }
 
     return left;
@@ -661,6 +711,7 @@ std::unique_ptr<IExpression> Parser::parseExpressionAtom()
 
 std::unique_ptr<IExpression> Parser::parseFunctionCallExpr()
 {
+    auto interval = _context.getIntervalReader();
     auto transaction = _context.beginTransaction();
 
     auto functionName = _context.takeIf(tok::TokenType::IDENTIFIER);
@@ -691,6 +742,7 @@ std::unique_ptr<IExpression> Parser::parseFunctionCallExpr()
     transaction.commit();
     return std::make_unique<IExpression>(
         FunctionCallExpr(
+            interval.getInterval(),
             functionName->getLexeme(),
             std::move(params)
         )
@@ -699,18 +751,20 @@ std::unique_ptr<IExpression> Parser::parseFunctionCallExpr()
 
 std::unique_ptr<IExpression> Parser::parseVarRefExpr()
 {
+    auto interval = _context.getIntervalReader();
     auto identifier = _context.takeIf(tok::TokenType::IDENTIFIER);
     if (!identifier) {
         return nullptr;
     }
 
     return std::make_unique<IExpression>(
-        VarRefExpr(identifier->getLexeme())
+        VarRefExpr(interval.getInterval(), identifier->getLexeme())
     );
 }
 
 std::unique_ptr<IExpression> Parser::parseCharLiteralExpr()
 {
+    auto interval = _context.getIntervalReader();
     const auto& token = _context.takeIf(tok::TokenType::LIT_CHAR);
     if (!token) {
         return nullptr;
@@ -746,12 +800,13 @@ std::unique_ptr<IExpression> Parser::parseCharLiteralExpr()
     }
 
     return std::make_unique<IExpression>(
-        CharLiteralExpr(value)
+        CharLiteralExpr(interval.getInterval(), value)
     );
 }
 
 std::unique_ptr<IExpression> Parser::parseIntLiteralExpr()
 {
+    auto interval = _context.getIntervalReader();
     const auto& token = _context.takeIf(tok::TokenType::LIT_INT);
     if (!token) {
         return nullptr;
@@ -779,12 +834,13 @@ std::unique_ptr<IExpression> Parser::parseIntLiteralExpr()
     }
 
     return std::make_unique<IExpression>(
-        IntLiteralExpr(value)
+        IntLiteralExpr(interval.getInterval(), value)
     );
 }
 
 std::unique_ptr<IExpression> Parser::parseFloatLiteralExpr()
 {
+    auto interval = _context.getIntervalReader();
     const auto& token = _context.takeIf(tok::TokenType::LIT_FLOAT);
     if (!token) {
         return nullptr;
@@ -801,12 +857,13 @@ std::unique_ptr<IExpression> Parser::parseFloatLiteralExpr()
     }
 
     return std::make_unique<IExpression>(
-        FloatLiteralExpr(value)
+        FloatLiteralExpr(interval.getInterval(), value)
     );
 }
 
 std::unique_ptr<IExpression> Parser::parseStringLiteralExpr()
 {
+    auto interval = _context.getIntervalReader();
     const auto& token = _context.takeIf(tok::TokenType::LIT_STRING);
     if (!token) {
         return nullptr;
@@ -816,7 +873,7 @@ std::unique_ptr<IExpression> Parser::parseStringLiteralExpr()
     assert(lexeme.size() >= 2);
     std::string value = lexeme.substr(1, lexeme.size() - 2);
     return std::make_unique<IExpression>(
-        StringLiteralExpr(value)
+        StringLiteralExpr(interval.getInterval(), value)
     );
 }
 

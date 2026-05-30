@@ -14,19 +14,54 @@ TokenContext::Transaction
 ================
 */
 TokenContext::Transaction::Transaction(TokenContext* context, int index, int contextId)
-    : context(context)
-    , index(index)
-    , contextId(contextId)
+    : _context(context)
+    , _index(index)
+    , _contextId(contextId)
 { }
 
 TokenContext::Transaction::~Transaction()
 {
-    context->endTransaction(*this);
+    _context->endTransaction(*this);
 }
 
 void TokenContext::Transaction::commit()
 {
     action = TransactionAction::COMMIT;
+}
+
+/*
+================
+TokenContext::CodeIntervalReporter
+================
+*/
+TokenContext::CodeIntervalReader::CodeIntervalReader(TokenContext *context)
+    : _context(context)
+{
+    const tok::Token* token = context->peek();
+    _begin = CodeMarker {
+        .line = token->getLine(),
+        .col = token->getCol(),
+        .charOffset = token->getCharOffset()
+    };
+}
+
+CodeInterval TokenContext::CodeIntervalReader::getInterval() const
+{
+    const tok::Token *token{};
+    if (_context->peek()->getCharOffset() == _begin.charOffset) {
+        // Only one token was consumed. The end is the end of this token.
+        token = _context->peek();
+    } else {
+        // Multiple tokens consumed. Consider the end of the last token the end of the interval.
+        token = _context->peekRelative(-1);
+    }
+
+    CodeMarker end = CodeMarker {
+        .line = token->getLine(),
+        .col = token->getCol(),
+        .charOffset = token->getCharOffset() + (int)token->getLexeme().length()
+    };
+    return CodeInterval(_begin, end);
 }
 
 /*
@@ -53,13 +88,20 @@ TokenContext::Transaction TokenContext::beginTransaction()
     return Transaction(this, _index, _contextId);
 }
 
+TokenContext::CodeIntervalReader TokenContext::getIntervalReader()
+{
+    return CodeIntervalReader(this);
+}
+
 const tok::Token* TokenContext::peek() const
 {
     return &_tokens[_index];
 }
 
-const tok::Token* TokenContext::peekAhead(unsigned int offset) const
+const tok::Token* TokenContext::peekRelative(int offset) const
 {
+    assert(_index + offset >= 0);
+
     if (_index + offset < _tokens.size()) {
         return &_tokens[_index + offset];
     }
@@ -100,10 +142,10 @@ void TokenContext::exhaustSemicolons()
 
 void TokenContext::endTransaction(const Transaction& transaction)
 {
-    assert(transaction.contextId == _contextId);
+    assert(transaction._contextId == _contextId);
     switch (transaction.action) {
         case TransactionAction::REVERT:
-            _index = transaction.index;
+            _index = transaction._index;
             break;
         case TransactionAction::COMMIT:
             break;
