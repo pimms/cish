@@ -3,6 +3,7 @@
 #include <exception>
 #include <sstream>
 #include <cassert>
+#include <cstdarg>
 
 #ifdef DEBUG
     #define DBGPRINT_EXCEPTION(_name) \

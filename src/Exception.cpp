@@ -1,4 +1,5 @@
 #include "Exception.h"
+#include <cstdarg>
 
 namespace cish
 {

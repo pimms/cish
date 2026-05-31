@@ -45,7 +45,7 @@ std::vector<FSEntry> FileBrowser::loadDirectory(const std::string &path)
 void FileBrowser::renderEntry(FSEntry &entry)
 {
     if (!entry.loaded) {
-        entry.children = loadDirectory(entry.entry.path());
+        entry.children = loadDirectory(entry.entry.path().string());
         entry.loaded = true;
     }
 
@@ -60,7 +60,7 @@ void FileBrowser::renderEntry(FSEntry &entry)
     ImGui::TableNextRow();
     ImGui::TableNextColumn();
 
-    const std::string id = entry.entry.path();
+    const std::string id = entry.entry.path().string();
     const std::string name = std::format(
         "{}{}",
         isDir ? "[DIR] " : "",

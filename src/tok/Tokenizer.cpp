@@ -1,6 +1,7 @@
 #include "Tokenizer.h"
 #include <cassert>
 #include <optional>
+#include <cwctype>
 #include <regex>
 
 namespace cish::tok 
@@ -84,7 +85,7 @@ bool Tokenizer::readToken()
 {
     skipToNextNonWS();
 
-    if (_pos >= _source.size()) {
+    if (_pos >= _source.size() || _source[_pos] == '\0') {
         return false;
     }
 

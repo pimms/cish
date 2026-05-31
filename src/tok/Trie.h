@@ -2,6 +2,7 @@
 
 #include <array>
 #include <vector>
+#include <optional>
 #include <span>
 #include <cassert>
 #include "TokenType.h"

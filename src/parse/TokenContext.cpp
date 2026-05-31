@@ -1,6 +1,5 @@
 #include "TokenContext.h"
 #include "../Exception.h"
-#include <_strings.h>
 
 namespace cish::parse
 {
