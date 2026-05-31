@@ -183,6 +183,7 @@ std::optional<IRootItem> Parser::parseRootItem()
     //  - function definition
     //
     // All of them begin with a type identifier, so we can start looking for that.
+    auto interval = _context.getIntervalReader();
     auto typeIdentifier = parseTypeIdentifier();
     if (!typeIdentifier.has_value()) {
         Throw(ParseError, "Expected type identifier, found %s", _context.peek()->toString().c_str());
@@ -197,9 +198,10 @@ std::optional<IRootItem> Parser::parseRootItem()
             DLOG(ROOT, "parsed variable decl");
             _context.take();
             return VariableDeclarationStatement {
-                .type = typeIdentifier.value(),
-                .varName = identifier->getLexeme(),
-                .expression = nullptr
+                interval.getInterval(),
+                typeIdentifier.value(),
+                identifier->getLexeme(),
+                nullptr
            };
         }
         case tok::TokenType::EQUAL: {
@@ -211,9 +213,10 @@ std::optional<IRootItem> Parser::parseRootItem()
             _context.require(tok::TokenType::SEMICOLON);
             DLOG(ROOT, "parsed variable decl w assign");
             return VariableDeclarationStatement {
-                .type = typeIdentifier.value(),
-                .varName = identifier->getLexeme(),
-                .expression = std::move(expression)
+                interval.getInterval(),
+                typeIdentifier.value(),
+                identifier->getLexeme(),
+                std::move(expression)
             };
         }
         default:
@@ -239,9 +242,10 @@ std::optional<IRootItem> Parser::parseRootItem()
     _context.require(tok::TokenType::PAREN_R);
 
     FunctionDeclaration fdecl = FunctionDeclaration {
-        .returnType = typeIdentifier.value(),
-        .name = identifier->getLexeme(),
-        .params = params
+        interval.getInterval(),
+        typeIdentifier.value(),
+        identifier->getLexeme(),
+        params
     };
 
     if (_context.takeIf(tok::TokenType::SEMICOLON)) {
@@ -260,13 +264,15 @@ std::optional<IRootItem> Parser::parseRootItem()
     DLOG(ROOT, "parsed function def");
 
     return FunctionDefinition {
-        .declaration = fdecl,
-        .body = std::move(statements)
+        interval.getInterval(),
+        fdecl,
+        std::move(statements)
     };
 }
 
 std::optional<SystemInclude> Parser::parseSystemInclude()
 {
+    auto interval = _context.getIntervalReader();
     const auto token = _context.takeIf(tok::TokenType::INCLUDE_SYS);
     if (!token) {
         return std::nullopt;
@@ -274,14 +280,15 @@ std::optional<SystemInclude> Parser::parseSystemInclude()
 
     auto it = token->getLexeme().begin();
     while (*it++ != '<') { }
-    auto last = token->getLexeme().end() - 1;
-    std::string moduleName(it, last);
+    const auto last = token->getLexeme().end() - 1;
+    const std::string moduleName(it, last);
     if (moduleName.empty()) {
         return std::nullopt;
     }
 
     return SystemInclude {
-        .moduleName = moduleName
+        interval.getInterval(),
+        moduleName
     };
 }
 

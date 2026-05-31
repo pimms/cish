@@ -93,19 +93,18 @@ bool TreeRenderer::render()
 
     _idCounter = 0;
 
-    ImGui::BeginGroup();
 
     // Render source on the left. We use previous-frame highlight (set by tree hovers
     // in the previous frame). This is simple, robust, and gives smooth hover feedback.
     if (_textContent.has_value()) {
+        ImGui::BeginGroup();
         renderSourceText();
+        ImGui::EndGroup();
         ImGui::SameLine();
     }
 
     _highlightedInterval = std::nullopt;
     renderTree();
-
-    ImGui::EndGroup();
 
     ImGui::End();
     return close;
@@ -212,8 +211,6 @@ bool TreeRenderer::renderNode(const parse::CodeInterval& interval, const std::st
         flags |= ImGuiTreeNodeFlags_Leaf;
         flags |= ImGuiTreeNodeFlags_Bullet;
         flags |= ImGuiTreeNodeFlags_NoTreePushOnOpen;
-    } else {
-        flags |= ImGuiTreeNodeFlags_DefaultOpen;
     }
 
     ImGui::TableNextRow();
@@ -228,7 +225,7 @@ bool TreeRenderer::renderNode(const parse::CodeInterval& interval, const std::st
     }
 
     ImGui::SameLine(0.0f, 0.0f);
-    bool result = ImGui::TreeNodeEx(nameWithId.c_str(), flags);
+    const bool result = ImGui::TreeNodeEx(nameWithId.c_str(), flags);
     ImGui::TableNextColumn();
     ImGui::Text("%s", value.c_str());
 
