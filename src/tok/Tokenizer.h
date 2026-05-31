@@ -39,7 +39,7 @@ private:
     void addToken(TokenType type, uint32_t len);
 
     void skipToNextNonWS();
-    bool skipToNextOccurence(std::string_view needle);
+    bool skipToNextOccurrence(std::string_view needle);
     char peek(int n) const;
     bool match(std::string_view s);
 };

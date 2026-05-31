@@ -9,7 +9,6 @@ namespace cish::tok
 
 Tokenizer::Tokenizer(const std::string& source)
     : _source(source)
-    , _pos(0)
 {
     _trie.insert("(", TokenType::PAREN_L);
     _trie.insert(")", TokenType::PAREN_R);
@@ -98,10 +97,10 @@ bool Tokenizer::readToken()
         auto& [type, len] = result.value();
         // Special handling of comments
         if (type == TokenType::COMMENT_LINE) {
-            return skipToNextOccurence("\n");
+            return skipToNextOccurrence("\n");
         }
         if (type == TokenType::COMMENT_BLOCK) {
-            return skipToNextOccurence("*/");
+            return skipToNextOccurrence("*/");
         }
         trieResult = { type, len };
     }
@@ -231,7 +230,7 @@ void Tokenizer::skipToNextNonWS()
     }
 }
 
-bool Tokenizer::skipToNextOccurence(std::string_view needle)
+bool Tokenizer::skipToNextOccurrence(std::string_view needle)
 {
     const int needleLen = needle.size();
     const int upperLimit =  _source.size() - needleLen;
