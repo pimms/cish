@@ -183,7 +183,7 @@ std::optional<IRootItem> Parser::parseRootItem()
     //  - function definition
     //
     // All of them begin with a type identifier, so we can start looking for that.
-    auto interval = _context.getIntervalReader();
+    const auto interval = _context.getIntervalReader();
     auto typeIdentifier = parseTypeIdentifier();
     if (!typeIdentifier.has_value()) {
         Throw(ParseError, "Expected type identifier, found %s", _context.peek()->toString().c_str());
@@ -272,7 +272,7 @@ std::optional<IRootItem> Parser::parseRootItem()
 
 std::optional<SystemInclude> Parser::parseSystemInclude()
 {
-    auto interval = _context.getIntervalReader();
+    const auto interval = _context.getIntervalReader();
     const auto token = _context.takeIf(tok::TokenType::INCLUDE_SYS);
     if (!token) {
         return std::nullopt;
@@ -311,19 +311,19 @@ std::optional<StructDeclaration> Parser::parseStructDeclaration()
     while (!_context.atEnd() && _context.peek()->getType() != tok::TokenType::CBRACE_R) {
         _context.exhaustSemicolons();
 
-        auto interval = _context.getIntervalReader();
+        const auto interval = _context.getIntervalReader();
         auto typeIdentifier = parseTypeIdentifier();
         if (!typeIdentifier.has_value()) {
             Throw(ParseError, "Expected type identifier, found %s", _context.peek()->toString().c_str());
         }
 
-        auto fieldIdentifier = _context.require(tok::TokenType::IDENTIFIER);
+        const auto fieldIdentifier = _context.require(tok::TokenType::IDENTIFIER);
         _context.require(tok::TokenType::SEMICOLON);
 
         StructFieldDeclaration field = {
-            .interval = interval.getInterval(),
-            .type = typeIdentifier.value(),
-            .name = fieldIdentifier->getLexeme()
+            interval.getInterval(),
+            typeIdentifier.value(),
+            fieldIdentifier->getLexeme()
         };
         fields.push_back(field);
     }
@@ -372,7 +372,7 @@ std::unique_ptr<IStatement> Parser::parseStatement()
         DLOG(STMT, "parsed variable declaration statement");
         return varDecl;
     }
-    auto interval = _context.getIntervalReader();
+    const auto interval = _context.getIntervalReader();
     if (auto expr = parseExpression(BP_NONE)) {
         _context.require(tok::TokenType::SEMICOLON);
         DLOG(STMT, "parsed expression statement");
@@ -387,7 +387,7 @@ std::unique_ptr<IStatement> Parser::parseStatement()
 
 std::unique_ptr<IStatement> Parser::parseIfStatement()
 {
-    auto interval = _context.getIntervalReader();
+    const auto interval = _context.getIntervalReader();
     _context.require(tok::TokenType::IF);
     _context.require(tok::TokenType::PAREN_L);
     std::unique_ptr<IExpression> condition = parseExpression(BP_NONE);
@@ -416,7 +416,7 @@ std::unique_ptr<IStatement> Parser::parseIfStatement()
 
 std::unique_ptr<IStatement> Parser::parseReturnStatement()
 {
-    auto interval = _context.getIntervalReader();
+    const auto interval = _context.getIntervalReader();
 
     _context.require(tok::TokenType::RETURN);
     auto expr = parseExpression(BP_NONE);
@@ -430,7 +430,7 @@ std::unique_ptr<IStatement> Parser::parseReturnStatement()
 
 std::unique_ptr<IStatement> Parser::parseForStatement()
 {
-    auto interval = _context.getIntervalReader();
+    const auto interval = _context.getIntervalReader();
 
     _context.require(tok::TokenType::FOR);
     _context.require(tok::TokenType::PAREN_L);
@@ -482,7 +482,7 @@ std::unique_ptr<IForLoopInitializer> Parser::parseForLoopInitializer()
 
 std::unique_ptr<IStatement> Parser::parseWhileStatement()
 {
-    auto interval = _context.getIntervalReader();
+    const auto interval = _context.getIntervalReader();
 
     _context.require(tok::TokenType::WHILE);
     _context.require(tok::TokenType::PAREN_L);
@@ -501,7 +501,7 @@ std::unique_ptr<IStatement> Parser::parseWhileStatement()
 
 std::unique_ptr<IStatement> Parser::parseDoWhileStatement()
 {
-    auto interval = _context.getIntervalReader();
+    const auto interval = _context.getIntervalReader();
 
     _context.require(::cish::tok::TokenType::DO);
     auto body = parseScope();
@@ -522,7 +522,7 @@ std::unique_ptr<IStatement> Parser::parseDoWhileStatement()
 
 std::unique_ptr<IStatement> Parser::parseVariableDeclarationStatement()
 {
-    auto interval = _context.getIntervalReader();
+    const auto interval = _context.getIntervalReader();
     auto transaction = _context.beginTransaction();
 
     auto type = parseTypeIdentifier();
@@ -562,7 +562,7 @@ std::unique_ptr<IStatement> Parser::parseVariableDeclarationStatement()
 
 std::unique_ptr<IStatement> Parser::parseScope()
 {
-    auto interval = _context.getIntervalReader();
+    const auto interval = _context.getIntervalReader();
     std::vector<std::unique_ptr<IStatement>> body;
 
     if (_context.takeIf(tok::TokenType::SEMICOLON)) {
@@ -589,7 +589,7 @@ std::unique_ptr<IStatement> Parser::parseScope()
 
 std::unique_ptr<IExpression> Parser::parseExpression(BinaryPrecedence minBP)
 {
-    auto interval = _context.getIntervalReader();
+    const auto interval = _context.getIntervalReader();
 
     auto prefixOperator = parsePrefixUnaryOperator();
     std::unique_ptr<IExpression> left;
@@ -721,7 +721,7 @@ std::unique_ptr<IExpression> Parser::parseExpressionAtom()
 
 std::unique_ptr<IExpression> Parser::parseFunctionCallExpr()
 {
-    auto interval = _context.getIntervalReader();
+    const auto interval = _context.getIntervalReader();
     auto transaction = _context.beginTransaction();
 
     auto functionName = _context.takeIf(tok::TokenType::IDENTIFIER);
@@ -761,7 +761,7 @@ std::unique_ptr<IExpression> Parser::parseFunctionCallExpr()
 
 std::unique_ptr<IExpression> Parser::parseVarRefExpr()
 {
-    auto interval = _context.getIntervalReader();
+    const auto interval = _context.getIntervalReader();
     auto identifier = _context.takeIf(tok::TokenType::IDENTIFIER);
     if (!identifier) {
         return nullptr;
@@ -774,7 +774,7 @@ std::unique_ptr<IExpression> Parser::parseVarRefExpr()
 
 std::unique_ptr<IExpression> Parser::parseCharLiteralExpr()
 {
-    auto interval = _context.getIntervalReader();
+    const auto interval = _context.getIntervalReader();
     const auto& token = _context.takeIf(tok::TokenType::LIT_CHAR);
     if (!token) {
         return nullptr;
@@ -816,7 +816,7 @@ std::unique_ptr<IExpression> Parser::parseCharLiteralExpr()
 
 std::unique_ptr<IExpression> Parser::parseIntLiteralExpr()
 {
-    auto interval = _context.getIntervalReader();
+    const auto interval = _context.getIntervalReader();
     const auto& token = _context.takeIf(tok::TokenType::LIT_INT);
     if (!token) {
         return nullptr;
@@ -850,7 +850,7 @@ std::unique_ptr<IExpression> Parser::parseIntLiteralExpr()
 
 std::unique_ptr<IExpression> Parser::parseFloatLiteralExpr()
 {
-    auto interval = _context.getIntervalReader();
+    const auto interval = _context.getIntervalReader();
     const auto& token = _context.takeIf(tok::TokenType::LIT_FLOAT);
     if (!token) {
         return nullptr;
@@ -873,7 +873,7 @@ std::unique_ptr<IExpression> Parser::parseFloatLiteralExpr()
 
 std::unique_ptr<IExpression> Parser::parseStringLiteralExpr()
 {
-    auto interval = _context.getIntervalReader();
+    const auto interval = _context.getIntervalReader();
     const auto& token = _context.takeIf(tok::TokenType::LIT_STRING);
     if (!token) {
         return nullptr;
@@ -1009,12 +1009,13 @@ std::optional<TypeIdentifier> Parser::parseTypeIdentifier()
 
 std::optional<FunctionParameter> Parser::parseFunctionParameter()
 {
-    auto type = parseTypeIdentifier();
+    const auto interval = _context.getIntervalReader();
+    const auto type = parseTypeIdentifier();
     if (!type.has_value()) {
         return std::nullopt;
     }
 
-    auto idToken = _context.takeIf(tok::TokenType::IDENTIFIER);
+    const auto idToken = _context.takeIf(tok::TokenType::IDENTIFIER);
 
     std::optional<std::string> identifier;
     if (idToken) {
@@ -1022,8 +1023,9 @@ std::optional<FunctionParameter> Parser::parseFunctionParameter()
     }
 
     return FunctionParameter {
-        .type = type.value(),
-        .name = identifier
+        interval.getInterval(),
+        type.value(),
+        identifier
     };
 }
 

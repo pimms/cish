@@ -27,6 +27,7 @@ struct TypeIdentifier {
 };
 struct FunctionParameter {
     bool operator==(const FunctionParameter&) const = default;
+    CodeInterval interval;
     TypeIdentifier type;
     std::optional<std::string> name;
 };
