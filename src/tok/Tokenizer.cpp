@@ -93,7 +93,6 @@ bool Tokenizer::readToken()
     const auto result = _trie.search(span);
 
     std::optional<std::tuple<TokenType,uint32_t>> trieResult;
-    std::optional<std::tuple<TokenType,uint32_t>> regexResult;
 
     if (result.has_value()) {
         auto& [type, len] = result.value();
@@ -107,7 +106,7 @@ bool Tokenizer::readToken()
         trieResult = { type, len };
     }
 
-    regexResult = readRegexToken();
+    const std::optional<std::tuple<TokenType, uint32_t>> regexResult = readRegexToken();
 
     // Certain tokens can be interpreted as both a "primitive" and as a dynamic token.
     // Consider for example the float literal ".15f"; this will be interpreted by the
@@ -121,8 +120,8 @@ bool Tokenizer::readToken()
             const auto& [trieType, trieLen] = trieResult.value();
             addToken(trieType, trieLen);
         } else {
-            auto identifier = std::string_view(_source.c_str() + _pos, regexLen);
-            auto keyword = keywordFromIdentifier(identifier);
+            const auto identifier = std::string_view(_source.c_str() + _pos, regexLen);
+            const auto keyword = keywordFromIdentifier(identifier);
             if (keyword.has_value()) {
                 addToken(keyword.value(), regexLen);
             } else {
