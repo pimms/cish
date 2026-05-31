@@ -36,7 +36,7 @@ TokenContext::CodeIntervalReporter
 TokenContext::CodeIntervalReader::CodeIntervalReader(TokenContext *context)
     : _context(context)
 {
-    const tok::Token* token = context->peek();
+    const lex::Token* token = context->peek();
     _begin = CodeMarker {
         .line = token->getLine(),
         .col = token->getCol(),
@@ -46,7 +46,7 @@ TokenContext::CodeIntervalReader::CodeIntervalReader(TokenContext *context)
 
 CodeInterval TokenContext::CodeIntervalReader::getInterval() const
 {
-    const tok::Token *token{};
+    const lex::Token *token{};
     if (_context->peek()->getCharOffset() == _begin.charOffset) {
         // Only one token was consumed. The end is the end of this token.
         token = _context->peek();
@@ -68,12 +68,12 @@ CodeInterval TokenContext::CodeIntervalReader::getInterval() const
 TokenContext
 ================
 */
-TokenContext::TokenContext(const std::vector<tok::Token>& tokens)
+TokenContext::TokenContext(const std::vector<lex::Token>& tokens)
     : _tokens(tokens)
     , _index(0)
     , _contextId(0)
 {
-    assert(_tokens.size() > 0 && _tokens.back().getType() == tok::TokenType::END_OF_FILE);
+    assert(_tokens.size() > 0 && _tokens.back().getType() == lex::TokenType::END_OF_FILE);
 }
 
 void TokenContext::reset()
@@ -92,12 +92,12 @@ TokenContext::CodeIntervalReader TokenContext::getIntervalReader()
     return CodeIntervalReader(this);
 }
 
-const tok::Token* TokenContext::peek() const
+const lex::Token* TokenContext::peek() const
 {
     return &_tokens[_index];
 }
 
-const tok::Token* TokenContext::peekRelative(int offset) const
+const lex::Token* TokenContext::peekRelative(int offset) const
 {
     assert(_index + offset >= 0);
 
@@ -109,7 +109,7 @@ const tok::Token* TokenContext::peekRelative(int offset) const
     return &_tokens[_tokens.size() - 1];
 }
 
-const tok::Token* TokenContext::take()
+const lex::Token* TokenContext::take()
 {
     if (!atEnd()) {
         return &_tokens[_index++];
@@ -117,7 +117,7 @@ const tok::Token* TokenContext::take()
     return nullptr;
 }
 
-const tok::Token* TokenContext::takeIf(tok::TokenType type)
+const lex::Token* TokenContext::takeIf(lex::TokenType type)
 {
     if (!atEnd() && _tokens[_index].getType() == type) {
         return &_tokens[_index++];
@@ -125,7 +125,7 @@ const tok::Token* TokenContext::takeIf(tok::TokenType type)
     return nullptr;
 }
 
-const tok::Token* TokenContext::require(tok::TokenType type)
+const lex::Token* TokenContext::require(lex::TokenType type)
 {
     auto token = takeIf(type);
     if (!token) {
@@ -136,7 +136,7 @@ const tok::Token* TokenContext::require(tok::TokenType type)
 
 void TokenContext::exhaustSemicolons()
 {
-    while (!atEnd() && takeIf(tok::TokenType::SEMICOLON)) { }
+    while (!atEnd() && takeIf(lex::TokenType::SEMICOLON)) { }
 }
 
 void TokenContext::endTransaction(const Transaction& transaction)

@@ -4,14 +4,14 @@
 #include <filesystem>
 #include <fstream>
 
-#include "tok/Tokenizer.h"
+#include "lex/Lexer.h"
 
-using namespace cish::tok;
+using namespace cish::lex;
 
-TEST(TokenizerTest, BasicPrimitives)
+TEST(LexerTest, BasicPrimitives)
 {
     const std::string src = "(+-";
-    Tokenizer tokenizer(src);
+    Lexer tokenizer(src);
     const auto tokens = tokenizer.tokenize();
 
     ASSERT_EQ(4, tokens.size());
@@ -21,10 +21,10 @@ TEST(TokenizerTest, BasicPrimitives)
     ASSERT_EQ(Token(TokenType::END_OF_FILE, "", 1, 3), tokens[3]);
 }
 
-TEST(TokenizerTest, SimpleTokenizerTest)
+TEST(LexerTest, SimpleLexerTest)
 {
     const std::string src = "int a = 5";
-    Tokenizer tokenizer(src);
+    Lexer tokenizer(src);
     const auto tokens = tokenizer.tokenize();
 
     ASSERT_EQ(5, tokens.size());
@@ -36,10 +36,10 @@ TEST(TokenizerTest, SimpleTokenizerTest)
     ASSERT_EQ(Token(TokenType::END_OF_FILE, "", 1, 9), tokens[4]);
 }
 
-TEST(TokenizerTest, StringLiterals)
+TEST(LexerTest, StringLiterals)
 {
     const std::string src = R"("wtf \"er\" dette??"   )";
-    Tokenizer tokenizer(src);
+    Lexer tokenizer(src);
     const auto tokens = tokenizer.tokenize();
 
     ASSERT_EQ(2, tokens.size());
@@ -49,10 +49,10 @@ TEST(TokenizerTest, StringLiterals)
     ASSERT_EQ(TokenType::END_OF_FILE, tokens[1].getType());
 }
 
-TEST(TokenizerTest, BlockCommentsAreNotReturned)
+TEST(LexerTest, BlockCommentsAreNotReturned)
 {
     const std::string src = "return /* ignore this\nand this\n*/5";
-    Tokenizer tokenizer(src);
+    Lexer tokenizer(src);
     const auto tokens = tokenizer.tokenize();
     ASSERT_EQ(3, tokens.size());
     ASSERT_EQ(Token(TokenType::RETURN, "return", 1, 0), tokens[0]);
@@ -61,10 +61,10 @@ TEST(TokenizerTest, BlockCommentsAreNotReturned)
     ASSERT_EQ(Token(TokenType::END_OF_FILE, "", 3, 3), tokens[2]);
 }
 
-TEST(TokenizerTest, LineCommentsAreNotReturned)
+TEST(LexerTest, LineCommentsAreNotReturned)
 {
     const std::string src = "return // ignore_this\n5";
-    Tokenizer tokenizer(src);
+    Lexer tokenizer(src);
     const auto tokens = tokenizer.tokenize();
     ASSERT_EQ(3, tokens.size());
     ASSERT_EQ(Token(TokenType::RETURN, "return", 1, 0), tokens[0]);
@@ -73,7 +73,7 @@ TEST(TokenizerTest, LineCommentsAreNotReturned)
     ASSERT_EQ(Token(TokenType::END_OF_FILE, "", 2, 1), tokens[2]);
 }
 
-TEST(TokenizerTest, VerifyFullTokenization)
+TEST(LexerTest, VerifyFullTokenization)
 {
     const std::string src = R"(
     #include <std/_lib.h>
@@ -91,7 +91,7 @@ TEST(TokenizerTest, VerifyFullTokenization)
     }
     )";
 
-    Tokenizer tokenizer(src);
+    Lexer tokenizer(src);
     const auto tokens = tokenizer.tokenize();
 
     std::vector<TokenType> actual;
@@ -159,20 +159,20 @@ TEST(TokenizerTest, VerifyFullTokenization)
     ASSERT_EQ(expected, actual);
 }
 
-TEST(TokenizerTest, UnexpectedTokensThrows)
+TEST(LexerTest, UnexpectedTokensThrows)
 {
     const std::string source = "#";
-    Tokenizer tokenizer(source);
-    ASSERT_THROW(tokenizer.tokenize(), cish::tok::TokenizerError);
+    Lexer tokenizer(source);
+    ASSERT_THROW(tokenizer.tokenize(), cish::lex::TokenizerError);
 }
 
-TEST(TokenizerTest, RepeatedSemicolonsAreIgnored)
+TEST(LexerTest, RepeatedSemicolonsAreIgnored)
 {
     const std::string src = R"(
         ;;;; int 5 ;;;
     )";
 
-    Tokenizer tokenizer(src);
+    Lexer tokenizer(src);
     const auto tokens = tokenizer.tokenize();
 
     std::vector<TokenType> actual;
@@ -189,7 +189,7 @@ TEST(TokenizerTest, RepeatedSemicolonsAreIgnored)
     ASSERT_EQ(expected, actual);
 }
 
-TEST(TokenizerTest, VerifyGCCTestSuiteTokenizesCleanly)
+TEST(LexerTest, VerifyGCCTestSuiteTokenizesCleanly)
 {
     // This test may not actually work, and that is fine.
     // Traverse the directories upwards to find the 'gcc_compare/'-directory.
@@ -221,7 +221,7 @@ TEST(TokenizerTest, VerifyGCCTestSuiteTokenizesCleanly)
 
             // We have no idea what the file contains, we only know that
             // it shouldn't throw an error to tokenize it.
-            Tokenizer s(buffer);
+            Lexer s(buffer);
             std::vector<Token> tokens;
             ASSERT_NO_THROW(tokens = s.tokenize());
             ASSERT_NE(0, tokens.size());

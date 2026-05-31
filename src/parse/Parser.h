@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../tok/Token.h"
-#include "TokenContext.h"
+#include "../lex/Token.h"
 #include "ParseTree.h"
+#include "TokenContext.h"
 
 namespace cish::parse
 {
@@ -19,13 +19,13 @@ const BinaryPrecedence BP_NONE     = 0;
 const BinaryPrecedence BP_PREFIX   = 12;  // unary prefix operators + casts
 const BinaryPrecedence BP_SIZEOF   = 13;  // "operand" context for sizeof expr form (stronger than prefix)
 
-std::optional<BinaryOperator> binaryOperatorFromToken(const tok::TokenType& type);
+std::optional<BinaryOperator> binaryOperatorFromToken(const lex::TokenType& type);
 BinaryPrecedence binaryPrecedenceValue(BinaryOperator type);
 }
 
 class Parser {
 public:
-    explicit Parser(std::vector<tok::Token>& tokens);
+    explicit Parser(std::vector<lex::Token>& tokens);
     ~Parser() = default;
     Parser() = delete;
     Parser(const Parser& o) = delete;

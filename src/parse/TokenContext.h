@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-#include "../tok/Token.h"
+#include "../lex/Token.h"
 #include "CodeMarker.h"
 
 namespace cish::parse
@@ -48,7 +48,7 @@ public:
         CodeMarker _begin;
     };
 
-    explicit TokenContext(const std::vector<tok::Token>& tokens);
+    explicit TokenContext(const std::vector<lex::Token>& tokens);
     TokenContext() = delete;
     TokenContext(const TokenContext&) = delete;
     TokenContext& operator=(const TokenContext&) = delete;
@@ -59,12 +59,12 @@ public:
     Transaction beginTransaction();
     CodeIntervalReader getIntervalReader();
 
-    bool atEnd() const { return _tokens[_index].getType() == tok::TokenType::END_OF_FILE; }
-    const tok::Token* peek() const;
-    const tok::Token* peekRelative(int offset) const;
-    const tok::Token* take();
-    const tok::Token* takeIf(tok::TokenType type);
-    const tok::Token* require(tok::TokenType type);
+    bool atEnd() const { return _tokens[_index].getType() == lex::TokenType::END_OF_FILE; }
+    const lex::Token* peek() const;
+    const lex::Token* peekRelative(int offset) const;
+    const lex::Token* take();
+    const lex::Token* takeIf(lex::TokenType type);
+    const lex::Token* require(lex::TokenType type);
 
     void exhaustSemicolons();
 
@@ -73,7 +73,7 @@ protected:
     void endTransaction(const Transaction& transaction);
 
 private:
-    std::vector<tok::Token> _tokens;
+    std::vector<lex::Token> _tokens;
     int _index;
     int _contextId;
 };

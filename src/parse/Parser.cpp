@@ -21,38 +21,38 @@ namespace internal
 {
 DECLARE_EXCEPTION(InternalError);
 
-std::optional<BinaryOperator> binaryOperatorFromToken(const tok::TokenType& type)
+std::optional<BinaryOperator> binaryOperatorFromToken(const lex::TokenType& type)
 {
     switch (type) {
-        case tok::TokenType::STAR: return BinaryOperator::MULT;
-        case tok::TokenType::RSLASH: return BinaryOperator::DIVIDE;
-        case tok::TokenType::MODULO: return BinaryOperator::MODULO;
-        case tok::TokenType::PLUS: return BinaryOperator::PLUS;
-        case tok::TokenType::MINUS: return BinaryOperator::MINUS;
-        case tok::TokenType::LSHIFT: return BinaryOperator::LSHIFT;
-        case tok::TokenType::RSHIFT: return BinaryOperator::RSHIFT;
-        case tok::TokenType::CMP_EQ: return BinaryOperator::EQUALS;
-        case tok::TokenType::CMP_NE: return BinaryOperator::NEQUALS;
-        case tok::TokenType::CMP_GTEQ: return BinaryOperator::GTE;
-        case tok::TokenType::CMP_LTEQ: return BinaryOperator::LTE;
-        case tok::TokenType::ABRACE_L: return BinaryOperator::LT;
-        case tok::TokenType::ABRACE_R: return BinaryOperator::GT;
-        case tok::TokenType::AMPERSAND: return BinaryOperator::BITAND;
-        case tok::TokenType::CARET: return BinaryOperator::BITXOR;
-        case tok::TokenType::PIPE: return BinaryOperator::BITOR;
-        case tok::TokenType::LOG_AND: return BinaryOperator::LOGAND;
-        case tok::TokenType::LOG_OR: return BinaryOperator::LOGOR;
-        case tok::TokenType::EQUAL: return BinaryOperator::ASSIGN;
-        case tok::TokenType::MUL_ASSIGN: return BinaryOperator::ASS_MULT;
-        case tok::TokenType::DIV_ASSIGN: return BinaryOperator::ASS_DIVIDE;
-        case tok::TokenType::MOD_ASSIGN: return BinaryOperator::ASS_MODULO;
-        case tok::TokenType::PLUS_ASSIGN: return BinaryOperator::ASS_PLUS;
-        case tok::TokenType::MINUS_ASSIGN: return BinaryOperator::ASS_MINUS;
-        case tok::TokenType::LS_ASSIGN: return BinaryOperator::ASS_LSHIFT;
-        case tok::TokenType::RS_ASSIGN: return BinaryOperator::ASS_RSHIFT;
-        case tok::TokenType::BWAND_ASSIGN: return BinaryOperator::ASS_BITAND;
-        case tok::TokenType::BXOR_ASSIGN: return BinaryOperator::ASS_BITXOR;
-        case tok::TokenType::BWOR_ASSIGN: return BinaryOperator::ASS_BITOR;
+        case lex::TokenType::STAR: return BinaryOperator::MULT;
+        case lex::TokenType::RSLASH: return BinaryOperator::DIVIDE;
+        case lex::TokenType::MODULO: return BinaryOperator::MODULO;
+        case lex::TokenType::PLUS: return BinaryOperator::PLUS;
+        case lex::TokenType::MINUS: return BinaryOperator::MINUS;
+        case lex::TokenType::LSHIFT: return BinaryOperator::LSHIFT;
+        case lex::TokenType::RSHIFT: return BinaryOperator::RSHIFT;
+        case lex::TokenType::CMP_EQ: return BinaryOperator::EQUALS;
+        case lex::TokenType::CMP_NE: return BinaryOperator::NEQUALS;
+        case lex::TokenType::CMP_GTEQ: return BinaryOperator::GTE;
+        case lex::TokenType::CMP_LTEQ: return BinaryOperator::LTE;
+        case lex::TokenType::ABRACE_L: return BinaryOperator::LT;
+        case lex::TokenType::ABRACE_R: return BinaryOperator::GT;
+        case lex::TokenType::AMPERSAND: return BinaryOperator::BITAND;
+        case lex::TokenType::CARET: return BinaryOperator::BITXOR;
+        case lex::TokenType::PIPE: return BinaryOperator::BITOR;
+        case lex::TokenType::LOG_AND: return BinaryOperator::LOGAND;
+        case lex::TokenType::LOG_OR: return BinaryOperator::LOGOR;
+        case lex::TokenType::EQUAL: return BinaryOperator::ASSIGN;
+        case lex::TokenType::MUL_ASSIGN: return BinaryOperator::ASS_MULT;
+        case lex::TokenType::DIV_ASSIGN: return BinaryOperator::ASS_DIVIDE;
+        case lex::TokenType::MOD_ASSIGN: return BinaryOperator::ASS_MODULO;
+        case lex::TokenType::PLUS_ASSIGN: return BinaryOperator::ASS_PLUS;
+        case lex::TokenType::MINUS_ASSIGN: return BinaryOperator::ASS_MINUS;
+        case lex::TokenType::LS_ASSIGN: return BinaryOperator::ASS_LSHIFT;
+        case lex::TokenType::RS_ASSIGN: return BinaryOperator::ASS_RSHIFT;
+        case lex::TokenType::BWAND_ASSIGN: return BinaryOperator::ASS_BITAND;
+        case lex::TokenType::BXOR_ASSIGN: return BinaryOperator::ASS_BITXOR;
+        case lex::TokenType::BWOR_ASSIGN: return BinaryOperator::ASS_BITOR;
         default: return std::nullopt;
     }
 }
@@ -130,7 +130,7 @@ bool isAssignmentOperator(BinaryOperator op)
 
 using namespace internal;
 
-Parser::Parser(std::vector<tok::Token>& tokens)
+Parser::Parser(std::vector<lex::Token>& tokens)
     : _context(tokens)
 { }
 
@@ -160,13 +160,13 @@ std::optional<IRootItem> Parser::parseRootItem()
 {
     _context.exhaustSemicolons();
     switch (_context.peek()->getType()) {
-        case tok::TokenType::END_OF_FILE:
+        case lex::TokenType::END_OF_FILE:
             DLOG(ROOT, "reached EOF");
             return std::nullopt;
-        case tok::TokenType::INCLUDE_SYS:
+        case lex::TokenType::INCLUDE_SYS:
             DLOG(ROOT, "parsing sys include");
             return parseSystemInclude();
-        case tok::TokenType::STRUCT:
+        case lex::TokenType::STRUCT:
             DLOG(ROOT, "parsing struct decl (attempt)");
             if (auto structDecl = parseStructDeclaration()) {
                 DLOG(ROOT, "parsed struct decl");
@@ -189,12 +189,12 @@ std::optional<IRootItem> Parser::parseRootItem()
         Throw(ParseError, "Expected type identifier, found %s", _context.peek()->toString().c_str());
     }
 
-    auto identifier = _context.require(tok::TokenType::IDENTIFIER);
+    auto identifier = _context.require(lex::TokenType::IDENTIFIER);
 
     // If we now encounter either a semicolon or an equal sign, we know it's
     // a variable.
     switch (_context.peek()->getType()) {
-        case tok::TokenType::SEMICOLON: {
+        case lex::TokenType::SEMICOLON: {
             DLOG(ROOT, "parsed variable decl");
             _context.take();
             return VariableDeclarationStatement {
@@ -204,13 +204,13 @@ std::optional<IRootItem> Parser::parseRootItem()
                 nullptr
            };
         }
-        case tok::TokenType::EQUAL: {
+        case lex::TokenType::EQUAL: {
             _context.take();
             auto expression = parseExpression(BP_NONE);
             if (!expression) {
                 Throw(ParseError, "Expected expression");
             }
-            _context.require(tok::TokenType::SEMICOLON);
+            _context.require(lex::TokenType::SEMICOLON);
             DLOG(ROOT, "parsed variable decl w assign");
             return VariableDeclarationStatement {
                 interval.getInterval(),
@@ -224,13 +224,13 @@ std::optional<IRootItem> Parser::parseRootItem()
     }
 
     // We now know that it's either a func decl or def.
-    _context.require(tok::TokenType::PAREN_L);
+    _context.require(lex::TokenType::PAREN_L);
 
     std::vector<FunctionParameter> params;
     std::optional<FunctionParameter> param = parseFunctionParameter();
     if (param.has_value()) {
         params.push_back(param.value());
-        while (_context.takeIf(tok::TokenType::COMMA)) {
+        while (_context.takeIf(lex::TokenType::COMMA)) {
             param = parseFunctionParameter();
             if (!param.has_value()) {
                 Throw(ParseError, "Expected parameter, found %s", _context.peek()->toString().c_str());
@@ -239,7 +239,7 @@ std::optional<IRootItem> Parser::parseRootItem()
         }
     }
 
-    _context.require(tok::TokenType::PAREN_R);
+    _context.require(lex::TokenType::PAREN_R);
 
     FunctionDeclaration fdecl = FunctionDeclaration {
         interval.getInterval(),
@@ -248,18 +248,18 @@ std::optional<IRootItem> Parser::parseRootItem()
         params
     };
 
-    if (_context.takeIf(tok::TokenType::SEMICOLON)) {
+    if (_context.takeIf(lex::TokenType::SEMICOLON)) {
         DLOG(ROOT, "parsed function decl");
         return fdecl;
     }
 
     DLOG(ROOT, "parsing function def");
-    _context.require(tok::TokenType::CBRACE_L);
+    _context.require(lex::TokenType::CBRACE_L);
     std::vector<std::unique_ptr<IStatement>> statements;
     while (auto statement = parseStatement()) {
         statements.push_back(std::move(statement));
     }
-    _context.require(tok::TokenType::CBRACE_R);
+    _context.require(lex::TokenType::CBRACE_R);
 
     DLOG(ROOT, "parsed function def");
 
@@ -273,7 +273,7 @@ std::optional<IRootItem> Parser::parseRootItem()
 std::optional<SystemInclude> Parser::parseSystemInclude()
 {
     const auto interval = _context.getIntervalReader();
-    const auto token = _context.takeIf(tok::TokenType::INCLUDE_SYS);
+    const auto token = _context.takeIf(lex::TokenType::INCLUDE_SYS);
     if (!token) {
         return std::nullopt;
     }
@@ -296,19 +296,19 @@ std::optional<StructDeclaration> Parser::parseStructDeclaration()
 {
     auto tokenTransaction = _context.beginTransaction();
 
-    if (!_context.takeIf(tok::TokenType::STRUCT)) {
+    if (!_context.takeIf(lex::TokenType::STRUCT)) {
         return std::nullopt;
     }
 
-    auto structIdentifier = _context.require(tok::TokenType::IDENTIFIER);
+    auto structIdentifier = _context.require(lex::TokenType::IDENTIFIER);
 
-    if (!_context.takeIf(tok::TokenType::CBRACE_L)) {
+    if (!_context.takeIf(lex::TokenType::CBRACE_L)) {
         // This is likely a function returning a struct, not a declaration.
         return std::nullopt;
     }
 
     std::vector<StructFieldDeclaration> fields;
-    while (!_context.atEnd() && _context.peek()->getType() != tok::TokenType::CBRACE_R) {
+    while (!_context.atEnd() && _context.peek()->getType() != lex::TokenType::CBRACE_R) {
         _context.exhaustSemicolons();
 
         const auto interval = _context.getIntervalReader();
@@ -317,8 +317,8 @@ std::optional<StructDeclaration> Parser::parseStructDeclaration()
             Throw(ParseError, "Expected type identifier, found %s", _context.peek()->toString().c_str());
         }
 
-        const auto fieldIdentifier = _context.require(tok::TokenType::IDENTIFIER);
-        _context.require(tok::TokenType::SEMICOLON);
+        const auto fieldIdentifier = _context.require(lex::TokenType::IDENTIFIER);
+        _context.require(lex::TokenType::SEMICOLON);
 
         StructFieldDeclaration field = {
             interval.getInterval(),
@@ -328,7 +328,7 @@ std::optional<StructDeclaration> Parser::parseStructDeclaration()
         fields.push_back(field);
     }
 
-    if (!_context.takeIf(tok::TokenType::CBRACE_R) || !_context.takeIf(tok::TokenType::SEMICOLON)) {
+    if (!_context.takeIf(lex::TokenType::CBRACE_R) || !_context.takeIf(lex::TokenType::SEMICOLON)) {
         if (!_context.atEnd()) {
             Throw(ParseError, "Expected '};', found '%s'", _context.peek()->toString().c_str());
         }
@@ -346,22 +346,22 @@ std::optional<StructDeclaration> Parser::parseStructDeclaration()
 std::unique_ptr<IStatement> Parser::parseStatement()
 {
     switch (_context.peek()->getType()) {
-        case tok::TokenType::IF:
+        case lex::TokenType::IF:
             DLOG(STMT, "Parsing if statement");
             return parseIfStatement();
-        case tok::TokenType::RETURN:
+        case lex::TokenType::RETURN:
             DLOG(STMT, "Parsing return statement");
             return parseReturnStatement();
-        case tok::TokenType::FOR:
+        case lex::TokenType::FOR:
             DLOG(STMT, "Parsing for statement");
             return parseForStatement();
-        case tok::TokenType::WHILE:
+        case lex::TokenType::WHILE:
             DLOG(STMT, "Parsing while statement");
             return parseWhileStatement();
-        case tok::TokenType::DO:
+        case lex::TokenType::DO:
             DLOG(STMT, "Parsing do-while statement");
             return parseDoWhileStatement();
-        case tok::TokenType::CBRACE_L:
+        case lex::TokenType::CBRACE_L:
             DLOG(STMT, "Parsing scope statement");
             return parseScope();
         default:
@@ -374,7 +374,7 @@ std::unique_ptr<IStatement> Parser::parseStatement()
     }
     const auto interval = _context.getIntervalReader();
     if (auto expr = parseExpression(BP_NONE)) {
-        _context.require(tok::TokenType::SEMICOLON);
+        _context.require(lex::TokenType::SEMICOLON);
         DLOG(STMT, "parsed expression statement");
         return std::make_unique<IStatement>(
             ExpressionStatement(interval.getInterval(), std::move(expr))
@@ -388,16 +388,16 @@ std::unique_ptr<IStatement> Parser::parseStatement()
 std::unique_ptr<IStatement> Parser::parseIfStatement()
 {
     const auto interval = _context.getIntervalReader();
-    _context.require(tok::TokenType::IF);
-    _context.require(tok::TokenType::PAREN_L);
+    _context.require(lex::TokenType::IF);
+    _context.require(lex::TokenType::PAREN_L);
     std::unique_ptr<IExpression> condition = parseExpression(BP_NONE);
-    _context.require(tok::TokenType::PAREN_R);
+    _context.require(lex::TokenType::PAREN_R);
     std::unique_ptr<IStatement> trueScope = parseScope();
 
     std::unique_ptr<IStatement> falseScope = nullptr;
-    if (_context.takeIf(tok::TokenType::ELSE)) {
+    if (_context.takeIf(lex::TokenType::ELSE)) {
         std::unique_ptr<IStatement> elseScope;
-        if (_context.peek()->getType() == tok::TokenType::IF) {
+        if (_context.peek()->getType() == lex::TokenType::IF) {
             falseScope = parseIfStatement();
         } else {
             falseScope = parseScope();
@@ -418,9 +418,9 @@ std::unique_ptr<IStatement> Parser::parseReturnStatement()
 {
     const auto interval = _context.getIntervalReader();
 
-    _context.require(tok::TokenType::RETURN);
+    _context.require(lex::TokenType::RETURN);
     auto expr = parseExpression(BP_NONE);
-    _context.require(tok::TokenType::SEMICOLON);
+    _context.require(lex::TokenType::SEMICOLON);
 
     return std::make_unique<IStatement>(ReturnStatement(
         interval.getInterval(),
@@ -432,23 +432,23 @@ std::unique_ptr<IStatement> Parser::parseForStatement()
 {
     const auto interval = _context.getIntervalReader();
 
-    _context.require(tok::TokenType::FOR);
-    _context.require(tok::TokenType::PAREN_L);
+    _context.require(lex::TokenType::FOR);
+    _context.require(lex::TokenType::PAREN_L);
 
     std::unique_ptr<IForLoopInitializer> init;
     std::unique_ptr<IExpression> condition;
     std::unique_ptr<IExpression> update;
 
-    if (!_context.takeIf(tok::TokenType::SEMICOLON)) {
+    if (!_context.takeIf(lex::TokenType::SEMICOLON)) {
         init = parseForLoopInitializer();
     }
-    if (!_context.takeIf(tok::TokenType::SEMICOLON)) {
+    if (!_context.takeIf(lex::TokenType::SEMICOLON)) {
         condition = parseExpression(BP_NONE);
-        _context.require(tok::TokenType::SEMICOLON);
+        _context.require(lex::TokenType::SEMICOLON);
     }
     update = parseExpression(BP_NONE);
 
-    _context.require(tok::TokenType::PAREN_R);
+    _context.require(lex::TokenType::PAREN_R);
     auto body = parseScope();
 
     return std::make_unique<IStatement>(
@@ -471,7 +471,7 @@ std::unique_ptr<IForLoopInitializer> Parser::parseForLoopInitializer()
 
     auto expression = parseExpression(BP_NONE);
     if (expression) {
-        _context.require(tok::TokenType::SEMICOLON);
+        _context.require(lex::TokenType::SEMICOLON);
         return std::make_unique<IForLoopInitializer>(std::move(expression));
     }
 
@@ -484,10 +484,10 @@ std::unique_ptr<IStatement> Parser::parseWhileStatement()
 {
     const auto interval = _context.getIntervalReader();
 
-    _context.require(tok::TokenType::WHILE);
-    _context.require(tok::TokenType::PAREN_L);
+    _context.require(lex::TokenType::WHILE);
+    _context.require(lex::TokenType::PAREN_L);
     auto condition = parseExpression(BP_NONE);
-    _context.require(tok::TokenType::PAREN_R);
+    _context.require(lex::TokenType::PAREN_R);
     auto body = parseScope();
 
     return std::make_unique<IStatement>(
@@ -503,13 +503,13 @@ std::unique_ptr<IStatement> Parser::parseDoWhileStatement()
 {
     const auto interval = _context.getIntervalReader();
 
-    _context.require(::cish::tok::TokenType::DO);
+    _context.require(::cish::lex::TokenType::DO);
     auto body = parseScope();
-    _context.require(tok::TokenType::WHILE);
-    _context.require(tok::TokenType::PAREN_L);
+    _context.require(lex::TokenType::WHILE);
+    _context.require(lex::TokenType::PAREN_L);
     auto condition = parseExpression(BP_NONE);
-    _context.require(tok::TokenType::PAREN_R);
-    _context.require(tok::TokenType::SEMICOLON);
+    _context.require(lex::TokenType::PAREN_R);
+    _context.require(lex::TokenType::SEMICOLON);
 
     return std::make_unique<IStatement>(
         DoWhileStatement(
@@ -530,13 +530,13 @@ std::unique_ptr<IStatement> Parser::parseVariableDeclarationStatement()
         return nullptr;
     }
 
-    auto identifier = _context.takeIf(tok::TokenType::IDENTIFIER);
+    auto identifier = _context.takeIf(lex::TokenType::IDENTIFIER);
     if (!identifier) {
         return nullptr;
     }
 
     std::unique_ptr<IExpression> expr = nullptr;
-    if (_context.takeIf(tok::TokenType::EQUAL)) {
+    if (_context.takeIf(lex::TokenType::EQUAL)) {
         expr = parseExpression(BP_NONE);
         if (!expr) {
             return nullptr;
@@ -544,7 +544,7 @@ std::unique_ptr<IStatement> Parser::parseVariableDeclarationStatement()
     }
 
 
-    if (!_context.takeIf(tok::TokenType::SEMICOLON)) {
+    if (!_context.takeIf(lex::TokenType::SEMICOLON)) {
         return nullptr;
     }
 
@@ -565,11 +565,11 @@ std::unique_ptr<IStatement> Parser::parseScope()
     const auto interval = _context.getIntervalReader();
     std::vector<std::unique_ptr<IStatement>> body;
 
-    if (_context.takeIf(tok::TokenType::SEMICOLON)) {
+    if (_context.takeIf(lex::TokenType::SEMICOLON)) {
         // Cool - we need support completely empty scopes for all loops.
         // Example:  while (true);
-    } else if (_context.takeIf(tok::TokenType::CBRACE_L)) {
-        while (!_context.takeIf(tok::TokenType::CBRACE_R)) {
+    } else if (_context.takeIf(lex::TokenType::CBRACE_L)) {
+        while (!_context.takeIf(lex::TokenType::CBRACE_R)) {
             auto statement = parseStatement();
             body.push_back(std::move(statement));
         }
@@ -627,13 +627,13 @@ std::unique_ptr<IExpression> Parser::parseExpression(BinaryPrecedence minBP)
 
     while (!_context.atEnd()) {
         // Handle subscript operators
-        if (_context.peek()->getType() == tok::TokenType::SQPAREN_L) {
+        if (_context.peek()->getType() == lex::TokenType::SQPAREN_L) {
             _context.take();
             auto subscript = parseExpression(BP_NONE);
             if (!subscript) {
                 Throw(ParseError, "Expected expression in subscript, found %s", _context.peek()->toString().c_str());
             }
-            _context.require(tok::TokenType::SQPAREN_R);
+            _context.require(lex::TokenType::SQPAREN_R);
             left = std::make_unique<IExpression>(SubscriptExpr(
                 interval.getInterval(),
                 std::move(left),
@@ -643,15 +643,15 @@ std::unique_ptr<IExpression> Parser::parseExpression(BinaryPrecedence minBP)
         }
 
         // Handle member access operator
-        if (_context.peek()->getType() == tok::TokenType::DOT || _context.peek()->getType() == tok::TokenType::ARROW) {
+        if (_context.peek()->getType() == lex::TokenType::DOT || _context.peek()->getType() == lex::TokenType::ARROW) {
             auto memberInterval =_context.getIntervalReader();
             auto maToken = _context.take();
-            auto memToken = _context.require(tok::TokenType::IDENTIFIER);
+            auto memToken = _context.require(lex::TokenType::IDENTIFIER);
             left = std::make_unique<IExpression>(MemberAccessExpr(
                 memberInterval.getInterval(),
                 std::move(left),
                 memToken->getLexeme(),
-                (maToken->getType() == tok::TokenType::DOT ? MemberAccessOperator::DOT : MemberAccessOperator::ARROW)
+                (maToken->getType() == lex::TokenType::DOT ? MemberAccessOperator::DOT : MemberAccessOperator::ARROW)
             ));
             continue;
         }
@@ -697,11 +697,11 @@ std::unique_ptr<IExpression> Parser::parseExpression(BinaryPrecedence minBP)
 
 std::unique_ptr<IExpression> Parser::parseExpressionAtom()
 {
-    if (_context.takeIf(tok::TokenType::PAREN_L)) {
+    if (_context.takeIf(lex::TokenType::PAREN_L)) {
         auto inner = parseExpression(BP_NONE);
         if (!inner)
             Throw(ParseError, "Expected expression after '('");
-        _context.require(tok::TokenType::PAREN_R);
+        _context.require(lex::TokenType::PAREN_R);
         return inner;
     }
 
@@ -724,24 +724,24 @@ std::unique_ptr<IExpression> Parser::parseFunctionCallExpr()
     const auto interval = _context.getIntervalReader();
     auto transaction = _context.beginTransaction();
 
-    auto functionName = _context.takeIf(tok::TokenType::IDENTIFIER);
+    auto functionName = _context.takeIf(lex::TokenType::IDENTIFIER);
     if (!functionName) return nullptr;
 
-    if (!_context.takeIf(tok::TokenType::PAREN_L)) return nullptr;
+    if (!_context.takeIf(lex::TokenType::PAREN_L)) return nullptr;
 
     std::vector<std::unique_ptr<IExpression>> params;
     std::unique_ptr<IExpression> p;
 
     bool expectParam = false;
 
-    while (!_context.takeIf(tok::TokenType::PAREN_R)) {
+    while (!_context.takeIf(lex::TokenType::PAREN_R)) {
         auto expr = parseExpression(BP_NONE);
         if (!expr) {
             Throw(ParseError, "Unable to parse function parameter");
         }
         params.push_back(std::move(expr));
         expectParam = false;
-        if (_context.takeIf(tok::TokenType::COMMA)) {
+        if (_context.takeIf(lex::TokenType::COMMA)) {
             expectParam = true;
         }
     }
@@ -762,7 +762,7 @@ std::unique_ptr<IExpression> Parser::parseFunctionCallExpr()
 std::unique_ptr<IExpression> Parser::parseVarRefExpr()
 {
     const auto interval = _context.getIntervalReader();
-    auto identifier = _context.takeIf(tok::TokenType::IDENTIFIER);
+    auto identifier = _context.takeIf(lex::TokenType::IDENTIFIER);
     if (!identifier) {
         return nullptr;
     }
@@ -775,7 +775,7 @@ std::unique_ptr<IExpression> Parser::parseVarRefExpr()
 std::unique_ptr<IExpression> Parser::parseCharLiteralExpr()
 {
     const auto interval = _context.getIntervalReader();
-    const auto& token = _context.takeIf(tok::TokenType::LIT_CHAR);
+    const auto& token = _context.takeIf(lex::TokenType::LIT_CHAR);
     if (!token) {
         return nullptr;
     }
@@ -817,7 +817,7 @@ std::unique_ptr<IExpression> Parser::parseCharLiteralExpr()
 std::unique_ptr<IExpression> Parser::parseIntLiteralExpr()
 {
     const auto interval = _context.getIntervalReader();
-    const auto& token = _context.takeIf(tok::TokenType::LIT_INT);
+    const auto& token = _context.takeIf(lex::TokenType::LIT_INT);
     if (!token) {
         return nullptr;
     }
@@ -851,7 +851,7 @@ std::unique_ptr<IExpression> Parser::parseIntLiteralExpr()
 std::unique_ptr<IExpression> Parser::parseFloatLiteralExpr()
 {
     const auto interval = _context.getIntervalReader();
-    const auto& token = _context.takeIf(tok::TokenType::LIT_FLOAT);
+    const auto& token = _context.takeIf(lex::TokenType::LIT_FLOAT);
     if (!token) {
         return nullptr;
     }
@@ -874,7 +874,7 @@ std::unique_ptr<IExpression> Parser::parseFloatLiteralExpr()
 std::unique_ptr<IExpression> Parser::parseStringLiteralExpr()
 {
     const auto interval = _context.getIntervalReader();
-    const auto& token = _context.takeIf(tok::TokenType::LIT_STRING);
+    const auto& token = _context.takeIf(lex::TokenType::LIT_STRING);
     if (!token) {
         return nullptr;
     }
@@ -889,14 +889,14 @@ std::unique_ptr<IExpression> Parser::parseStringLiteralExpr()
 
 std::optional<ISizeofTerm> Parser::parseSizeofTerm()
 {
-    if (_context.peek()->getType() == (tok::TokenType::PAREN_L)) {
+    if (_context.peek()->getType() == (lex::TokenType::PAREN_L)) {
         auto transaction = _context.beginTransaction();
         _context.take();
 
         // Note: we may still receive variable references here, because we don't
         // yet have a way of separating "myVar" from "int".
         if (auto type = parseTypeIdentifier(); type.has_value()) {
-            if (_context.takeIf(tok::TokenType::PAREN_R)) {
+            if (_context.takeIf(lex::TokenType::PAREN_R)) {
                 transaction.commit();
                 return type.value();
             }
@@ -914,14 +914,14 @@ std::optional<UnaryOperator> Parser::parsePrefixUnaryOperator()
 {
     UnaryOperator oper;
     switch (_context.peek()->getType()) {
-        case tok::TokenType::INCREMENT: oper = UnaryOperator::PREINC; break;
-        case tok::TokenType::DECREMENT: oper = UnaryOperator::PREDEC; break;
-        case tok::TokenType::MINUS: oper = UnaryOperator::MINUS; break;
-        case tok::TokenType::BANG: oper = UnaryOperator::NEGATE; break;
-        case tok::TokenType::TILDE: oper = UnaryOperator::ONES_COMPL; break;
-        case tok::TokenType::STAR: oper = UnaryOperator::DEREF; break;
-        case tok::TokenType::AMPERSAND: oper = UnaryOperator::ADDROF; break;
-        case tok::TokenType::SIZEOF: oper = UnaryOperator::SIZEOF; break;
+        case lex::TokenType::INCREMENT: oper = UnaryOperator::PREINC; break;
+        case lex::TokenType::DECREMENT: oper = UnaryOperator::PREDEC; break;
+        case lex::TokenType::MINUS: oper = UnaryOperator::MINUS; break;
+        case lex::TokenType::BANG: oper = UnaryOperator::NEGATE; break;
+        case lex::TokenType::TILDE: oper = UnaryOperator::ONES_COMPL; break;
+        case lex::TokenType::STAR: oper = UnaryOperator::DEREF; break;
+        case lex::TokenType::AMPERSAND: oper = UnaryOperator::ADDROF; break;
+        case lex::TokenType::SIZEOF: oper = UnaryOperator::SIZEOF; break;
         default: return std::nullopt;
     }
 
@@ -944,8 +944,8 @@ std::optional<UnaryOperator> Parser::parsePostfixUnaryOperator()
 {
     UnaryOperator oper;
     switch (_context.peek()->getType()) {
-        case tok::TokenType::INCREMENT: oper = UnaryOperator::POSTINC; break;
-        case tok::TokenType::DECREMENT: oper = UnaryOperator::POSTDEC; break;
+        case lex::TokenType::INCREMENT: oper = UnaryOperator::POSTINC; break;
+        case lex::TokenType::DECREMENT: oper = UnaryOperator::POSTDEC; break;
         default: return std::nullopt;
     }
 
@@ -957,7 +957,7 @@ std::optional<TypeIdentifier> Parser::parseTypeCastOperator()
 {
     auto transaction = _context.beginTransaction();
 
-    if (!_context.takeIf(tok::TokenType::PAREN_L)) {
+    if (!_context.takeIf(lex::TokenType::PAREN_L)) {
         return std::nullopt;
     }
 
@@ -966,7 +966,7 @@ std::optional<TypeIdentifier> Parser::parseTypeCastOperator()
         return std::nullopt;
     }
 
-    if (!_context.takeIf(tok::TokenType::PAREN_R)) {
+    if (!_context.takeIf(lex::TokenType::PAREN_R)) {
         return std::nullopt;
     }
     transaction.commit();
@@ -979,15 +979,15 @@ std::optional<TypeIdentifier> Parser::parseTypeIdentifier()
 
     bool isConst = false;
     bool isStruct = false;
-    if (_context.takeIf(tok::TokenType::CONST)) {
+    if (_context.takeIf(lex::TokenType::CONST)) {
         isConst = true;
     }
 
-    if (_context.takeIf(tok::TokenType::STRUCT)) {
+    if (_context.takeIf(lex::TokenType::STRUCT)) {
         isStruct = true;
     }
 
-    auto identifier = _context.takeIf(tok::TokenType::IDENTIFIER);
+    auto identifier = _context.takeIf(lex::TokenType::IDENTIFIER);
     if (!identifier) {
         return std::nullopt;
     }
@@ -995,7 +995,7 @@ std::optional<TypeIdentifier> Parser::parseTypeIdentifier()
     transaction.commit();
 
     int pointerLevel = 0;
-    while (_context.takeIf(tok::TokenType::STAR)) {
+    while (_context.takeIf(lex::TokenType::STAR)) {
         pointerLevel++;
     }
 
@@ -1015,7 +1015,7 @@ std::optional<FunctionParameter> Parser::parseFunctionParameter()
         return std::nullopt;
     }
 
-    const auto idToken = _context.takeIf(tok::TokenType::IDENTIFIER);
+    const auto idToken = _context.takeIf(lex::TokenType::IDENTIFIER);
 
     std::optional<std::string> identifier;
     if (idToken) {

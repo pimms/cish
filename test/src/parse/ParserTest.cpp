@@ -1,18 +1,18 @@
 #include <gtest/gtest.h>
-#include <tok/TokenType.h>
+#include <lex/TokenType.h>
 #include <variant>
 #include <filesystem>
 #include <fstream>
 
+#include "lex/Lexer.h"
 #include "parse/Parser.h"
-#include "tok/Tokenizer.h"
 
 using namespace cish::parse;
-using namespace cish::tok;
+using namespace cish::lex;
 
 std::unique_ptr<ParseTree> parse(const std::string& source)
 {
-    Tokenizer tokenizer(source);
+    Lexer tokenizer(source);
     auto tokens = tokenizer.tokenize();
     Parser parser(tokens);
     return parser.parse();
@@ -176,7 +176,7 @@ TEST(ParserTest, ParseGccComparisonSuite)
 
             // We have no idea what the file contains, we only know that
             // it shouldn't throw an error to tokenize it.
-            Tokenizer s(buffer);
+            Lexer s(buffer);
             std::vector<Token> tokens;
             ASSERT_NO_THROW(tokens = s.tokenize());
             ASSERT_NE(0, tokens.size());

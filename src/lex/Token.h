@@ -4,7 +4,7 @@
 #include <ostream>
 #include <string>
 
-namespace cish::tok
+namespace cish::lex
 {
 
 class Token

@@ -2,7 +2,7 @@
 
 #include <ostream>
 
-namespace cish::tok
+namespace cish::lex
 {
 
 enum class TokenType 

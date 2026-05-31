@@ -1,7 +1,7 @@
 #include "Token.h"
 #include <sstream>
 
-namespace cish::tok 
+namespace cish::lex
 {
 
 Token::Token(TokenType type, std::string_view lexeme, int line, int col, int charOffset)

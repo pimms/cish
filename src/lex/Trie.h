@@ -7,7 +7,7 @@
 #include <cassert>
 #include "TokenType.h"
 
-namespace cish::tok
+namespace cish::lex
 {
 
 template<typename T, typename C, uint32_t MinVal, uint32_t MaxVal>

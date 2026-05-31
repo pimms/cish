@@ -1,5 +1,5 @@
 #include "TreeRenderer.h"
-#include "tok/Tokenizer.h"
+#include "lex/Lexer.h"
 #include "parse/Parser.h"
 
 #include <utility>
@@ -61,7 +61,7 @@ void TreeRenderer::loadFile(const std::string &filepath)
     ifs.read(&sourceBuffer[0], size);
 
     try {
-        tok::Tokenizer tokenizer(sourceBuffer);
+        lex::Lexer tokenizer(sourceBuffer);
         auto tokens = tokenizer.tokenize();
         if (tokens.empty()) {
             _textContent = "File contains zero tokens. Let's assume this is an error in cish.";

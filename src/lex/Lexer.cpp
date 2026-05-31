@@ -1,13 +1,13 @@
-#include "Tokenizer.h"
 #include <cassert>
-#include <optional>
 #include <cwctype>
+#include <optional>
 #include <regex>
+#include "Lexer.h"
 
-namespace cish::tok 
+namespace cish::lex
 {
 
-Tokenizer::Tokenizer(const std::string& source)
+Lexer::Lexer(const std::string& source)
     : _source(source)
 {
     _trie.insert("(", TokenType::PAREN_L);
@@ -61,7 +61,7 @@ Tokenizer::Tokenizer(const std::string& source)
     _trie.insert("/*", TokenType::COMMENT_BLOCK);
 }
 
-std::vector<Token> Tokenizer::tokenize()
+std::vector<Token> Lexer::tokenize()
 {
     reset();
 
@@ -72,7 +72,7 @@ std::vector<Token> Tokenizer::tokenize()
     return _tokens;
 }
 
-void Tokenizer::reset()
+void Lexer::reset()
 {
     _tokens = {};
     _pos = 0;
@@ -80,7 +80,7 @@ void Tokenizer::reset()
     _col = 0;
 }
 
-bool Tokenizer::readToken()
+bool Lexer::readToken()
 {
     skipToNextNonWS();
 
@@ -137,7 +137,7 @@ bool Tokenizer::readToken()
     Throw(TokenizerError, "Unrecognized token at line %d col %d", _line, _col);
 }
 
-std::optional<std::tuple<TokenType,uint32_t>> Tokenizer::readRegexToken()
+std::optional<std::tuple<TokenType,uint32_t>> Lexer::readRegexToken() const
 {
     static std::vector<std::tuple<TokenType, std::string>> patterns = {
         { TokenType::LIT_FLOAT, "[0-9]+\\.[0-9]*[fF]?" },
@@ -165,7 +165,7 @@ std::optional<std::tuple<TokenType,uint32_t>> Tokenizer::readRegexToken()
     return std::nullopt;
 }
 
-std::optional<TokenType> Tokenizer::keywordFromIdentifier(std::string_view identifier)
+std::optional<TokenType> Lexer::keywordFromIdentifier(std::string_view identifier) const
 {
     static std::vector<std::tuple<TokenType, std::string>> patterns = {
         { TokenType::DO, "do" },
@@ -190,7 +190,7 @@ std::optional<TokenType> Tokenizer::keywordFromIdentifier(std::string_view ident
     return std::nullopt;
 }
 
-void Tokenizer::addToken(TokenType type, uint32_t len)
+void Lexer::addToken(TokenType type, uint32_t len)
 {
     // This is a slightly awkward method of checking if both the current and previous token is a semicolon.
     // If so, we don't add it to the token list.
@@ -208,29 +208,25 @@ void Tokenizer::addToken(TokenType type, uint32_t len)
     _col += len;
 }
 
-void Tokenizer::skipToNextNonWS()
+void Lexer::skipToNextNonWS()
 {
     // We handle newlines explicitly to ensure the lineNo-bookkeeping
     // is in order, but rely on stdlib for other whitespace checking.
     while (const char ch = peek(0)) {
-        switch (ch) {
-            case '\n':
-                _line++;
-                _pos++;
-                _col = 0;
-                break;
-            default:
-                if (std::iswspace(ch)) {
-                    _pos++;
-                    _col++;
-                } else {
-                    return;
-                }
+        if (ch == '\n') {
+            _line++;
+            _pos++;
+            _col = 0;
+        } else if (std::iswspace(ch)) {
+            _pos++;
+            _col++;
+        } else {
+            return;
         }
     }
 }
 
-bool Tokenizer::skipToNextOccurrence(std::string_view needle)
+bool Lexer::skipToNextOccurrence(std::string_view needle)
 {
     const int needleLen = needle.size();
     const int upperLimit =  _source.size() - needleLen;
@@ -264,7 +260,7 @@ bool Tokenizer::skipToNextOccurrence(std::string_view needle)
     return false;
 }
 
-char Tokenizer::peek(int n) const
+char Lexer::peek(int n) const
 {
     if (_pos + n < _source.size()) {
         return _source[_pos+n];
@@ -273,7 +269,7 @@ char Tokenizer::peek(int n) const
     }
 }
 
-bool Tokenizer::match(std::string_view s)
+bool Lexer::match(std::string_view s)
 {
     const int n = s.size();
     for (int i=0; i<n; i++) {

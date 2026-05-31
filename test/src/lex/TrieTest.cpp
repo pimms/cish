@@ -1,9 +1,9 @@
 #include <gtest/gtest.h>
 #include <optional>
 
-#include "tok/Trie.h"
+#include "lex/Trie.h"
 
-using namespace cish::tok;
+using namespace cish::lex;
 
 TEST(TrieTest, TestSingleCharEntries)
 {

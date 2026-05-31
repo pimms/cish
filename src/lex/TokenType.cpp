@@ -1,7 +1,7 @@
 #include "TokenType.h"
 #include <cassert>
 
-namespace cish::tok 
+namespace cish::lex 
 {
 
 std::ostream& operator<<(std::ostream& s, const TokenType& tokenType)
