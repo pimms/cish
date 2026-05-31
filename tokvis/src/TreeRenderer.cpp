@@ -94,10 +94,15 @@ bool TreeRenderer::render()
     _idCounter = 0;
 
     ImGui::BeginGroup();
+
+    // Render source on the left. We use previous-frame highlight (set by tree hovers
+    // in the previous frame). This is simple, robust, and gives smooth hover feedback.
     if (_textContent.has_value()) {
-        ImGui::Text("%s", _textContent.value().c_str());
+        renderSourceText();
         ImGui::SameLine();
     }
+
+    _highlightedInterval = std::nullopt;
     renderTree();
 
     ImGui::EndGroup();
@@ -122,7 +127,83 @@ void TreeRenderer::renderTree()
     }
 }
 
-bool TreeRenderer::renderNode(const std::string &name, const std::string &value, bool hasChildren)
+void TreeRenderer::renderSourceText()
+{
+    const std::string& text = _textContent.value();
+    const bool hasHighlight = _highlightedInterval.has_value();
+    const auto& hl = hasHighlight ? _highlightedInterval.value() : parse::CodeInterval{};
+
+    // Use tight line spacing for source code
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, 0.0f));
+
+    size_t pos = 0;
+    const size_t textSize = text.size();
+
+    while (pos < textSize) {
+        // Find end of current line (excluding the newline itself)
+        size_t lineEnd = text.find('\n', pos);
+        if (lineEnd == std::string::npos) {
+            lineEnd = textSize;
+        }
+
+        const char* lineBegin = text.data() + pos;
+        const char* lineEndPtr = text.data() + lineEnd;
+
+        const int lineStartOffset = static_cast<int>(pos);
+        const int lineEndOffset = static_cast<int>(lineEnd);
+
+        // Record cursor position before drawing this line (for highlight rects)
+        const ImVec2 lineStartScreenPos = ImGui::GetCursorScreenPos();
+        const float lineHeight = ImGui::GetTextLineHeight();
+
+        // Draw background highlight for the portion of this line that overlaps the interval
+        if (hasHighlight) {
+            const int hlStart = hl.start.charOffset;
+            const int hlEnd = hl.end.charOffset;
+
+            const int overlapStart = std::max(lineStartOffset, hlStart);
+            const int overlapEnd = std::min(lineEndOffset, hlEnd);
+
+            if (overlapStart < overlapEnd) {
+                // Measure width of text before the highlighted part on this line
+                const float prefixWidth = (overlapStart > lineStartOffset)
+                    ? ImGui::CalcTextSize(lineBegin, lineBegin + (overlapStart - lineStartOffset)).x
+                    : 0.0f;
+
+                // Measure width of the highlighted segment
+                const float highlightWidth = ImGui::CalcTextSize(
+                    lineBegin + (overlapStart - lineStartOffset),
+                    lineBegin + (overlapEnd - lineStartOffset)
+                ).x;
+
+                const ImVec2 rectMin{ lineStartScreenPos.x + prefixWidth, lineStartScreenPos.y };
+                const ImVec2 rectMax{ lineStartScreenPos.x + prefixWidth + highlightWidth,
+                                      lineStartScreenPos.y + lineHeight };
+
+                // Pleasant semi-transparent highlight (yellowish)
+                ImGui::GetWindowDrawList()->AddRectFilled(
+                    rectMin, rectMax,
+                    IM_COL32(255, 220, 80, 65)
+                );
+            }
+        }
+
+        // Draw the line itself (handles empty lines gracefully)
+        if (lineBegin != lineEndPtr) {
+            ImGui::TextUnformatted(lineBegin, lineEndPtr);
+        } else {
+            // Empty line — still need to advance the cursor
+            ImGui::Dummy(ImVec2(1.0f, lineHeight));
+        }
+
+        // Advance to next line
+        pos = (lineEnd < textSize) ? (lineEnd + 1) : lineEnd;
+    }
+
+    ImGui::PopStyleVar();
+}
+
+bool TreeRenderer::renderNode(const parse::CodeInterval& interval, const std::string &name, const std::string &value, bool hasChildren)
 {
     const std::string nameWithId = std::format("{}##{}", name, _idCounter++);
 
@@ -137,6 +218,16 @@ bool TreeRenderer::renderNode(const std::string &name, const std::string &value,
 
     ImGui::TableNextRow();
     ImGui::TableNextColumn();
+
+    // Whole-row hover detection using the recommended Selectable + SpanAllColumns pattern
+    const std::string rowSelId = std::format("##row{}", _idCounter);
+    if (ImGui::Selectable(rowSelId.c_str(), false, ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowOverlap)) {
+    }
+    if (ImGui::IsItemHovered()) {
+        _highlightedInterval = interval;
+    }
+
+    ImGui::SameLine(0.0f, 0.0f);
     bool result = ImGui::TreeNodeEx(nameWithId.c_str(), flags);
     ImGui::TableNextColumn();
     ImGui::Text("%s", value.c_str());
@@ -144,14 +235,14 @@ bool TreeRenderer::renderNode(const std::string &name, const std::string &value,
     return hasChildren && result;
 }
 
-void TreeRenderer::renderLeafNode(const std::string& name, const std::string& value)
+void TreeRenderer::renderLeafNode(const parse::CodeInterval& interval, const std::string& name, const std::string& value)
 {
-    renderNode(name, value, false);
+    renderNode(interval, name, value, false);
 }
 
-bool TreeRenderer::renderParentNode(const std::string& name, const std::string& value)
+bool TreeRenderer::renderParentNode(const parse::CodeInterval& interval, const std::string& name, const std::string& value)
 {
-    return renderNode(name, value, true);
+    return renderNode(interval, name, value, true);
 }
 
 void TreeRenderer::endParentNode()
@@ -180,7 +271,7 @@ void TreeRenderer::renderVariableDeclaration(const parse::VariableDeclarationSta
 {
     std::string value = std::format("{} {}", node.type.toString(), node.varName);
 
-    if (renderNode("Variable declaration", value, node.expression != nullptr)) {
+    if (renderNode(node.interval, "Variable declaration", value, node.expression != nullptr)) {
         renderExpression(*node.expression);
         endParentNode();
     }
@@ -188,12 +279,12 @@ void TreeRenderer::renderVariableDeclaration(const parse::VariableDeclarationSta
 
 void TreeRenderer::renderFunctionDeclaration(const parse::FunctionDeclaration &node)
 {
-    renderLeafNode("Function declaration", toString(node));
+    renderLeafNode(node.interval, "Function declaration", toString(node));
 }
 
 void TreeRenderer::renderFunctionDefinition(const parse::FunctionDefinition &node)
 {
-    if (renderParentNode("Function def", toString(node.declaration))) {
+    if (renderParentNode(node.interval, "Function def", toString(node.declaration))) {
         for (const auto& s: node.body) {
             renderStatement(*s);
         }
@@ -204,14 +295,14 @@ void TreeRenderer::renderFunctionDefinition(const parse::FunctionDefinition &nod
 
 void TreeRenderer::renderSystemInclude(const parse::SystemInclude &node)
 {
-    renderLeafNode("System include", std::format("#include <{}>", node.moduleName));
+    renderLeafNode(node.interval, "System include", std::format("#include <{}>", node.moduleName));
 }
 
 void TreeRenderer::renderStructDeclaration(const parse::StructDeclaration &node)
 {
-    if (renderParentNode("Struct declaration", node.name)) {
+    if (renderParentNode(node.interval, "Struct declaration", node.name)) {
         for (const auto& field: node.fields) {
-            renderLeafNode(field.type.toString(), field.name);
+            renderLeafNode(field.interval, field.type.toString(), field.name);
         }
         endParentNode();
     }
@@ -240,14 +331,14 @@ void TreeRenderer::renderStatement(const parse::IStatement &node)
 
 void TreeRenderer::renderIfStatement(const parse::IfStatement &node)
 {
-    if (renderParentNode("If statement", "")) {
+    if (renderParentNode(node.interval, "If statement", "")) {
         renderExpression(*node.condition);
 
-        if (renderParentNode("true-body", "")) {
+        if (renderParentNode(node.interval, "true-body", "")) {
             renderStatement(*node.positiveBody);
             endParentNode();
         }
-        if (node.negativeBody != nullptr && renderParentNode("false-body", "")) {
+        if (node.negativeBody != nullptr && renderParentNode(node.interval, "false-body", "")) {
             renderStatement(*node.negativeBody);
             endParentNode();
         }
@@ -258,7 +349,7 @@ void TreeRenderer::renderIfStatement(const parse::IfStatement &node)
 
 void TreeRenderer::renderReturnStatement(const parse::ReturnStatement &node)
 {
-    if (renderNode("Return statement", "", node.expression != nullptr)) {
+    if (renderNode(node.interval, "Return statement", "", node.expression != nullptr)) {
         renderExpression(*node.expression);
         endParentNode();
     }
@@ -266,19 +357,19 @@ void TreeRenderer::renderReturnStatement(const parse::ReturnStatement &node)
 
 void TreeRenderer::renderForStatement(const parse::ForStatement &node)
 {
-    if (renderParentNode("For loop", "")) {
-        if (renderNode("init", node.initializer == nullptr ? "nil" : "", node.initializer != nullptr)) {
+    if (renderParentNode(node.interval, "For loop", "")) {
+        if (renderNode(node.interval, "init", node.initializer == nullptr ? "nil" : "", node.initializer != nullptr)) {
             std::visit(Visitor{
                 [this](const std::unique_ptr<parse::IExpression>& e) { renderExpression(*e); },
                 [this](const std::unique_ptr<parse::IStatement>& s) { renderStatement(*s); },
             }, *node.initializer);
             endParentNode();
         }
-        if (renderNode("condition", node.condition == nullptr ? "nil" : "", node.initializer != nullptr)) {
+        if (renderNode(node.interval, "condition", node.condition == nullptr ? "nil" : "", node.initializer != nullptr)) {
             renderExpression(*node.condition);
             endParentNode();
         }
-        if (renderNode("update", node.update == nullptr ? "nil" : "", node.update != nullptr)) {
+        if (renderNode(node.interval, "update", node.update == nullptr ? "nil" : "", node.update != nullptr)) {
             renderExpression(*node.update);
             endParentNode();
         }
@@ -290,7 +381,7 @@ void TreeRenderer::renderForStatement(const parse::ForStatement &node)
 
 void TreeRenderer::renderWhileStatement(const parse::WhileStatement &node)
 {
-    if (renderParentNode("While statement", "")) {
+    if (renderParentNode(node.interval, "While statement", "")) {
         renderExpression(*node.condition);
         renderStatement(*node.body);
         endParentNode();
@@ -299,7 +390,7 @@ void TreeRenderer::renderWhileStatement(const parse::WhileStatement &node)
 
 void TreeRenderer::renderDoWhileStatement(const parse::DoWhileStatement &node)
 {
-    if (renderParentNode("Do-while statement", "")) {
+    if (renderParentNode(node.interval, "Do-while statement", "")) {
         renderExpression(*node.condition);
         renderStatement(*node.body);
         endParentNode();
@@ -313,7 +404,7 @@ void TreeRenderer::renderExpressionStatement(const parse::ExpressionStatement &n
 
 void TreeRenderer::renderScopeStatement(const parse::ScopeStatement &node)
 {
-    if (renderParentNode("Scope", "")) {
+    if (renderParentNode(node.interval, "Scope", "")) {
         for (const auto& s: node.body) {
             renderStatement(*s);
         }
@@ -349,7 +440,7 @@ void TreeRenderer::renderExpression(const parse::IExpression &node)
 
 void TreeRenderer::renderSubscriptExpression(const parse::SubscriptExpr &node)
 {
-    if (renderParentNode("Subscript expression", "")) {
+    if (renderParentNode(node.interval, "Subscript expression", "")) {
         renderExpression(*node.ptrExpression);
         renderExpression(*node.idxExpression);
         endParentNode();
@@ -358,7 +449,7 @@ void TreeRenderer::renderSubscriptExpression(const parse::SubscriptExpr &node)
 
 void TreeRenderer::renderFunctionCallExpression(const parse::FunctionCallExpr &node)
 {
-    if (renderNode("Function call", node.functionName, !node.params.empty())) {
+    if (renderNode(node.interval, "Function call", node.functionName, !node.params.empty())) {
         for (const auto& param: node.params) {
             renderExpression(*param);
         }
@@ -401,7 +492,7 @@ void TreeRenderer::renderBinaryExpression(const parse::BinaryExpr &node)
         case parse::BinaryOperator::ASS_BITOR: oper = "|="; break;
     }
 
-    if (renderParentNode("Binary expr", oper)) {
+    if (renderParentNode(node.interval, "Binary expr", oper)) {
         renderExpression(*node.left);
         renderExpression(*node.right);
         endParentNode();
@@ -410,7 +501,7 @@ void TreeRenderer::renderBinaryExpression(const parse::BinaryExpr &node)
 
 void TreeRenderer::renderTypeCastExpression(const parse::TypeCastExpr &node)
 {
-    if (renderParentNode("Type cast", node.type.toString())) {
+    if (renderParentNode(node.interval, "Type cast", node.type.toString())) {
         renderExpression(*node.expr);
         endParentNode();
     }
@@ -432,7 +523,7 @@ void TreeRenderer::renderUnaryExpression(const parse::UnaryExpr &node)
         case parse::UnaryOperator::SIZEOF: oper = "sizeof n"; break;
     }
 
-    if (renderParentNode("Unary expr", oper)) {
+    if (renderParentNode(node.interval, "Unary expr", oper)) {
         renderExpression(*node.expr);
         endParentNode();
     }
@@ -440,17 +531,18 @@ void TreeRenderer::renderUnaryExpression(const parse::UnaryExpr &node)
 
 void TreeRenderer::renderVarRefExpression(const parse::VarRefExpr &node)
 {
-    renderLeafNode("Variable ref", node.identifier);
+    renderLeafNode(node.interval, "Variable ref", node.identifier);
 }
 
 void TreeRenderer::renderBoolLiteralExpression(const parse::BoolLiteralExpr &node)
 {
-    renderLeafNode("Bool literal", std::format("{}", node.value));
+    renderLeafNode(node.interval, "Bool literal", std::format("{}", node.value));
 }
 
 void TreeRenderer::renderCharLiteralExpression(const parse::CharLiteralExpr &node)
 {
     renderLeafNode(
+        node.interval,
        "Char literal",
         std::format("{:c} ({:d})", (char)node.value, node.value)
     );
@@ -458,17 +550,17 @@ void TreeRenderer::renderCharLiteralExpression(const parse::CharLiteralExpr &nod
 
 void TreeRenderer::renderIntLiteralExpr(const parse::IntLiteralExpr &node)
 {
-    renderLeafNode("Int literal", std::format("{:d}", node.value));
+    renderLeafNode(node.interval, "Int literal", std::format("{:d}", node.value));
 }
 
 void TreeRenderer::renderFloatLiteralExpression(const parse::FloatLiteralExpr &node)
 {
-    renderLeafNode("Float literal", std::format("{:g}", node.value));
+    renderLeafNode(node.interval, "Float literal", std::format("{:g}", node.value));
 }
 
 void TreeRenderer::renderStringLIteralExpression(const parse::StringLiteralExpr &node)
 {
-    renderLeafNode("String literal", std::format("\"{}\"", node.value));
+    renderLeafNode(node.interval, "String literal", std::format("\"{}\"", node.value));
 }
 
 void TreeRenderer::renderMemberAccessExpression(const parse::MemberAccessExpr &node)
@@ -486,10 +578,10 @@ void TreeRenderer::renderMemberAccessExpression(const parse::MemberAccessExpr &n
     if (std::holds_alternative<parse::VarRefExpr>(*node.expr)) {
         const auto &expr = std::get<parse::VarRefExpr>(*node.expr);
         std::string value = std::format("{}{}{}", expr.identifier, oper, node.member);
-        renderLeafNode("Member access", value);
+        renderLeafNode(node.interval, "Member access", value);
     } else {
         std::string value = std::format("{}{}", oper, node.member);
-        if (renderParentNode("Member access", node.member)) {
+        if (renderParentNode(node.interval, "Member access", node.member)) {
             renderExpression(*node.expr);
             endParentNode();
         }
@@ -499,14 +591,14 @@ void TreeRenderer::renderMemberAccessExpression(const parse::MemberAccessExpr &n
 void TreeRenderer::renderSizeofExpression(const parse::SizeofExpr &node)
 {
     std::visit(Visitor {
-        [this](const std::unique_ptr<parse::IExpression>& e) {
-            if (renderParentNode("sizeof", "")) {
+        [this, &node](const std::unique_ptr<parse::IExpression>& e) {
+            if (renderParentNode(node.interval, "sizeof", "")) {
                 renderExpression(*e);
                 endParentNode();
             }
         },
-        [this](const parse::TypeIdentifier& t) {
-            renderLeafNode("sizeof", t.toString());
+        [this, &node](const parse::TypeIdentifier& t) {
+            renderLeafNode(node.interval, "sizeof", t.toString());
         }
     }, node.term);
 }

@@ -23,12 +23,14 @@ public:
 private:
     std::unique_ptr<parse::ParseTree> _tree{};
     std::optional<std::string> _textContent{};
+    std::optional<parse::CodeInterval> _highlightedInterval;
     int _idCounter = 0;
 
     void renderTree();
-    bool renderNode(const std::string& name, const std::string& value, bool hasChildren);
-    void renderLeafNode(const std::string& name, const std::string& value);
-    bool renderParentNode(const std::string& name, const std::string& value);
+    void renderSourceText();
+    bool renderNode(const parse::CodeInterval& interval, const std::string& name, const std::string& value, bool hasChildren);
+    void renderLeafNode(const parse::CodeInterval& interval, const std::string& name, const std::string& value);
+    bool renderParentNode(const parse::CodeInterval& interval, const std::string& name, const std::string& value);
     void endParentNode();
 
     void renderRootItem(const parse::IRootItem& rootItem);

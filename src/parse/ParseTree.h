@@ -31,6 +31,7 @@ struct FunctionParameter {
     std::optional<std::string> name;
 };
 struct StructFieldDeclaration {
+    CodeInterval interval;
     TypeIdentifier type;
     std::string name;
 };

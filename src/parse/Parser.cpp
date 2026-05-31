@@ -303,6 +303,8 @@ std::optional<StructDeclaration> Parser::parseStructDeclaration()
     std::vector<StructFieldDeclaration> fields;
     while (!_context.atEnd() && _context.peek()->getType() != tok::TokenType::CBRACE_R) {
         _context.exhaustSemicolons();
+
+        auto interval = _context.getIntervalReader();
         auto typeIdentifier = parseTypeIdentifier();
         if (!typeIdentifier.has_value()) {
             Throw(ParseError, "Expected type identifier, found %s", _context.peek()->toString().c_str());
@@ -312,6 +314,7 @@ std::optional<StructDeclaration> Parser::parseStructDeclaration()
         _context.require(tok::TokenType::SEMICOLON);
 
         StructFieldDeclaration field = {
+            .interval = interval.getInterval(),
             .type = typeIdentifier.value(),
             .name = fieldIdentifier->getLexeme()
         };
