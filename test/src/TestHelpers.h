@@ -10,7 +10,6 @@
 #include "vm/ExecutionContext.h"
 #include "vm/VirtualMachine.h"
 #include "vm/Variable.h"
-#include "tok/Token.h"
 
 #include "module/ModuleContext.h"
 

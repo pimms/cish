@@ -54,6 +54,7 @@ std::ostream& operator<<(std::ostream& os, const Token& token)
         << ",lexeme=\"" << token.getLexeme()
         << "\",line=" << token.getLine()
         << ",col=" << token.getCol()
+        << ",charOffset=" << token.getCharOffset()
         << "]";
 }
 

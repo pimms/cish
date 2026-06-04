@@ -59,18 +59,18 @@ TEST(ParserTest, ParseStructDeclaration)
     ASSERT_EQ("Foo", decl.name);
     ASSERT_EQ(3, decl.fields.size());
 
-    auto t = TypeIdentifier { .isConst = false, .isStruct = false, .type = "int", .pointerLevel = 0};
+    auto t = TypeIdentifier { .isConst = false, .isStruct = false, .baseType=  BuiltInType::INT, .pointerLevel = 0};
 
     ASSERT_EQ("n", decl.fields[0].name);
-    ASSERT_EQ(TypeIdentifier(false, false, "int", 0), decl.fields[0].type);
+    ASSERT_EQ(TypeIdentifier(false, false, BuiltInType::INT, 0), decl.fields[0].type);
 
     ASSERT_EQ("x", decl.fields[1].name);
-    ASSERT_EQ(TypeIdentifier(true, false, "int", 0), decl.fields[1].type);
+    ASSERT_EQ(TypeIdentifier(true, false, BuiltInType::INT, 0), decl.fields[1].type);
 
     ASSERT_EQ("arr", decl.fields[2].name);
     ASSERT_EQ(true, decl.fields[2].type.isConst);
     ASSERT_EQ(true, decl.fields[2].type.isStruct);
-    ASSERT_EQ("Foo", decl.fields[2].type.type);
+    ASSERT_EQ(BaseType("Foo"), decl.fields[2].type.baseType);
     ASSERT_EQ(2, decl.fields[2].type.pointerLevel);
 }
 
@@ -90,11 +90,13 @@ TEST(ParserTest, ParseFunctionDeclaration)
     ASSERT_TRUE(std::holds_alternative<FunctionDeclaration>(tree->rootItems[0]));
     FunctionDeclaration fooDecl = std::get<FunctionDeclaration>(tree->rootItems[0]);
     auto fooExp = FunctionDeclaration {
-        .returnType = TypeIdentifier { .isConst = false, .isStruct = false, .type = "void", .pointerLevel = 0 },
+        .interval = CodeInterval {.start={ 2,8,9},.end={2,34,36}},
+        .returnType = TypeIdentifier { .isConst = false, .isStruct = false, .baseType = BuiltInType::VOID, .pointerLevel = 0 },
         .name = "foo",
         .params = {
             FunctionParameter {
-                .type = TypeIdentifier { .isConst=true, .isStruct=true, .type="bar", .pointerLevel=1 },
+                .interval = {.start={2,17,18},.end={2,33,35}},
+                .type = TypeIdentifier { .isConst=true, .isStruct=true, .baseType ="bar", .pointerLevel=1 },
                 .name = std::nullopt
             }
         }
@@ -105,15 +107,18 @@ TEST(ParserTest, ParseFunctionDeclaration)
     ASSERT_TRUE(std::holds_alternative<FunctionDeclaration>(tree->rootItems[1]));
     const auto& mainDecl = std::get<FunctionDeclaration>(tree->rootItems[1]);
     auto mainExp = FunctionDeclaration {
-        .returnType = TypeIdentifier { .isConst = true, .isStruct = false, .type = "int", .pointerLevel = 0 },
+        .interval = {.start={3,8,46},.end={6,28,181}},
+        .returnType = TypeIdentifier { .isConst = true, .isStruct = false, .baseType = BuiltInType::INT, .pointerLevel = 0 },
         .name = "main",
         .params = {
             FunctionParameter {
-                .type = TypeIdentifier { .isConst=false, .isStruct=false, .type="int", .pointerLevel=0 },
+                .interval = {.start={3,24,62},.end={3,28,70}},
+                .type = TypeIdentifier { .isConst=false, .isStruct=false, .baseType = BuiltInType::INT, .pointerLevel=0 },
                 .name = "argc"
             },
             FunctionParameter {
-                .type = TypeIdentifier { .isConst=true, .isStruct=false, .type="char", .pointerLevel=2 },
+                .interval = {.start={3,34,72},.end={6,24,180}},
+                .type = TypeIdentifier { .isConst=true, .isStruct=false, .baseType = BuiltInType::CHAR, .pointerLevel=2 },
                 .name = "argv"
             },
         }
@@ -132,10 +137,11 @@ TEST(ParserTest, ParseGlobalVariables)
 
     const auto& decl = std::get<VariableDeclarationStatement>(tree->rootItems[0]);
     auto expected = VariableDeclarationStatement {
+        .interval = {.start={2,8,9},.end={2,32,34}},
         .type = TypeIdentifier {
             .isConst = true,
             .isStruct = false,
-            .type = "int",
+            .baseType = BuiltInType::INT,
             .pointerLevel = 0
         },
         .varName = "random_ass_var",
@@ -373,7 +379,7 @@ TEST(ParserTest, SizeofTypeForms) {
 
         const TypeIdentifier* tid = getSizeofTypeId(so->term);
         ASSERT_NE(nullptr, tid);
-        EXPECT_EQ("int", tid->type);
+        EXPECT_EQ(BaseType(BuiltInType::INT), tid->baseType);
         EXPECT_EQ(0, tid->pointerLevel);
         EXPECT_FALSE(tid->isStruct);
     }
@@ -388,7 +394,7 @@ TEST(ParserTest, SizeofTypeForms) {
 
         const TypeIdentifier* tid = getSizeofTypeId(so->term);
         ASSERT_NE(nullptr, tid);
-        EXPECT_EQ("int", tid->type);
+        EXPECT_EQ(BaseType(BuiltInType::INT), tid->baseType);
         EXPECT_EQ(1, tid->pointerLevel);
     }
 
@@ -402,7 +408,7 @@ TEST(ParserTest, SizeofTypeForms) {
 
         const TypeIdentifier* tid = getSizeofTypeId(so->term);
         ASSERT_NE(nullptr, tid);
-        EXPECT_EQ("foo", tid->type);
+        EXPECT_EQ(BaseType("foo"), tid->baseType);
         EXPECT_TRUE(tid->isStruct);
         EXPECT_EQ(0, tid->pointerLevel);
     }
@@ -417,7 +423,7 @@ TEST(ParserTest, SizeofTypeForms) {
 
         const TypeIdentifier* tid = getSizeofTypeId(so->term);
         ASSERT_NE(nullptr, tid);
-        EXPECT_EQ("char", tid->type);
+        EXPECT_EQ(BaseType(BuiltInType::CHAR), tid->baseType);
         EXPECT_TRUE(tid->isConst);
         EXPECT_EQ(2, tid->pointerLevel);
     }
@@ -434,7 +440,7 @@ TEST(ParserTest, SizeofTypeForms) {
         ASSERT_NE(nullptr, so);
         ASSERT_TRUE(holdsType(so->term));
         const TypeIdentifier* tid = getSizeofTypeId(so->term);
-        EXPECT_EQ("int", tid->type);
+        EXPECT_EQ(BaseType(BuiltInType::INT), tid->baseType);
     }
 }
 

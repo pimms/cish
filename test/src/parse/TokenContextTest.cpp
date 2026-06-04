@@ -1,20 +1,22 @@
 #include <gtest/gtest.h>
 
 #include "parse/TokenContext.h"
+#include "lex/Token.h"
+#include "lex/TokenType.h"
 
 using namespace cish::parse;
-using namespace cish::tok;
+using namespace cish::lex;
 
 TEST(TokenContextTest, TestBasicFunctionality)
 {
     std::vector tokens = {
-        Token(TokenType::ABRACE_L, "", 0, 0),
-        Token(TokenType::ABRACE_R, "", 0, 0),
-        Token(TokenType::PAREN_L, "", 0, 0),
-        Token(TokenType::PAREN_R, "", 0, 0),
-        Token(TokenType::PLUS, "", 0, 0),
-        Token(TokenType::STAR, "", 0, 0),
-        Token(TokenType::END_OF_FILE, "", 0, 0),
+        Token(TokenType::ABRACE_L, "", 0, 0, 0),
+        Token(TokenType::ABRACE_R, "", 0, 0, 0),
+        Token(TokenType::PAREN_L, "", 0, 0, 0),
+        Token(TokenType::PAREN_R, "", 0, 0, 0),
+        Token(TokenType::PLUS, "", 0, 0, 0),
+        Token(TokenType::STAR, "", 0, 0, 0),
+        Token(TokenType::END_OF_FILE, "", 0, 0, 0),
     };
 
     TokenContext context(tokens);
@@ -37,11 +39,11 @@ TEST(TokenContextTest, TestBasicFunctionality)
 TEST(TokenContextTest, TestTransactionRevert)
 {
     std::vector tokens = {
-        Token(TokenType::ABRACE_L, "", 0, 0),
-        Token(TokenType::ABRACE_R, "", 0, 0),
-        Token(TokenType::PAREN_L, "", 0, 0),
-        Token(TokenType::PAREN_R, "", 0, 0),
-        Token(TokenType::END_OF_FILE, "", 0, 0),
+        Token(TokenType::ABRACE_L, "", 0, 0, 0),
+        Token(TokenType::ABRACE_R, "", 0, 0, 0),
+        Token(TokenType::PAREN_L, "", 0, 0, 0),
+        Token(TokenType::PAREN_R, "", 0, 0, 0),
+        Token(TokenType::END_OF_FILE, "", 0, 0, 0),
     };
 
     TokenContext context(tokens);
@@ -63,11 +65,11 @@ TEST(TokenContextTest, TestTransactionRevert)
 TEST(TokenContextTest, TestHoldingItWrong)
 {
     std::vector tokens = {
-        Token(TokenType::ABRACE_L, "", 0, 0),
-        Token(TokenType::ABRACE_R, "", 0, 0),
-        Token(TokenType::PAREN_L, "", 0, 0),
-        Token(TokenType::PAREN_R, "", 0, 0),
-        Token(TokenType::END_OF_FILE, "", 0, 0),
+        Token(TokenType::ABRACE_L, "", 0, 0, 0),
+        Token(TokenType::ABRACE_R, "", 0, 0, 0),
+        Token(TokenType::PAREN_L, "", 0, 0, 0),
+        Token(TokenType::PAREN_R, "", 0, 0, 0),
+        Token(TokenType::END_OF_FILE, "", 0, 0, 0),
     };
 
     TokenContext context(tokens);
@@ -94,11 +96,11 @@ TEST(TokenContextTest, TestHoldingItWrong)
 TEST(TokenContextTest, NestedTransactions)
 {
     std::vector tokens = {
-        Token(TokenType::ABRACE_L, "", 0, 0),
-        Token(TokenType::ABRACE_R, "", 0, 0),
-        Token(TokenType::PAREN_L, "", 0, 0),
-        Token(TokenType::PAREN_R, "", 0, 0),
-        Token(TokenType::END_OF_FILE, "", 0, 0),
+        Token(TokenType::ABRACE_L, "", 0, 0, 0),
+        Token(TokenType::ABRACE_R, "", 0, 0, 0),
+        Token(TokenType::PAREN_L, "", 0, 0, 0),
+        Token(TokenType::PAREN_R, "", 0, 0, 0),
+        Token(TokenType::END_OF_FILE, "", 0, 0, 0),
     };
 
     TokenContext context(tokens);

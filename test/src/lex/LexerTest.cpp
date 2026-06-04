@@ -15,10 +15,10 @@ TEST(LexerTest, BasicPrimitives)
     const auto tokens = tokenizer.tokenize();
 
     ASSERT_EQ(4, tokens.size());
-    ASSERT_EQ(Token(TokenType::PAREN_L, "(", 1, 0), tokens[0]);
-    ASSERT_EQ(Token(TokenType::PLUS, "+", 1, 1), tokens[1]);
-    ASSERT_EQ(Token(TokenType::MINUS, "-", 1, 2), tokens[2]);
-    ASSERT_EQ(Token(TokenType::END_OF_FILE, "", 1, 3), tokens[3]);
+    ASSERT_EQ(Token(TokenType::PAREN_L, "(", 1, 0, 0), tokens[0]);
+    ASSERT_EQ(Token(TokenType::PLUS, "+", 1, 1, 1), tokens[1]);
+    ASSERT_EQ(Token(TokenType::MINUS, "-", 1, 2, 2), tokens[2]);
+    ASSERT_EQ(Token(TokenType::END_OF_FILE, "", 1, 3, 3), tokens[3]);
 }
 
 TEST(LexerTest, SimpleLexerTest)
@@ -29,11 +29,11 @@ TEST(LexerTest, SimpleLexerTest)
 
     ASSERT_EQ(5, tokens.size());
 
-    ASSERT_EQ(Token(TokenType::IDENTIFIER, "int", 1, 0), tokens[0]);
-    ASSERT_EQ(Token(TokenType::IDENTIFIER, "a", 1, 4), tokens[1]);
-    ASSERT_EQ(Token(TokenType::EQUAL, "=", 1, 6), tokens[2]);
-    ASSERT_EQ(Token(TokenType::LIT_INT, "5", 1, 8), tokens[3]);
-    ASSERT_EQ(Token(TokenType::END_OF_FILE, "", 1, 9), tokens[4]);
+    ASSERT_EQ(Token(TokenType::INT, "int", 1, 0, 0), tokens[0]);
+    ASSERT_EQ(Token(TokenType::IDENTIFIER, "a", 1, 4, 4), tokens[1]);
+    ASSERT_EQ(Token(TokenType::EQUAL, "=", 1, 6, 6), tokens[2]);
+    ASSERT_EQ(Token(TokenType::LIT_INT, "5", 1, 8, 8), tokens[3]);
+    ASSERT_EQ(Token(TokenType::END_OF_FILE, "", 1, 9, 9), tokens[4]);
 }
 
 TEST(LexerTest, StringLiterals)
@@ -55,10 +55,10 @@ TEST(LexerTest, BlockCommentsAreNotReturned)
     Lexer tokenizer(src);
     const auto tokens = tokenizer.tokenize();
     ASSERT_EQ(3, tokens.size());
-    ASSERT_EQ(Token(TokenType::RETURN, "return", 1, 0), tokens[0]);
-    ASSERT_EQ(Token(TokenType::LIT_INT, "5", 3, 2), tokens[1]);
+    ASSERT_EQ(Token(TokenType::RETURN, "return", 1, 0, 0), tokens[0]);
+    ASSERT_EQ(Token(TokenType::LIT_INT, "5", 3, 2, 33), tokens[1]);
 
-    ASSERT_EQ(Token(TokenType::END_OF_FILE, "", 3, 3), tokens[2]);
+    ASSERT_EQ(Token(TokenType::END_OF_FILE, "", 3, 3, 34), tokens[2]);
 }
 
 TEST(LexerTest, LineCommentsAreNotReturned)
@@ -67,10 +67,10 @@ TEST(LexerTest, LineCommentsAreNotReturned)
     Lexer tokenizer(src);
     const auto tokens = tokenizer.tokenize();
     ASSERT_EQ(3, tokens.size());
-    ASSERT_EQ(Token(TokenType::RETURN, "return", 1, 0), tokens[0]);
-    ASSERT_EQ(Token(TokenType::LIT_INT, "5", 2, 0), tokens[1]);
+    ASSERT_EQ(Token(TokenType::RETURN, "return", 1, 0, 0), tokens[0]);
+    ASSERT_EQ(Token(TokenType::LIT_INT, "5", 2, 0, 22), tokens[1]);
 
-    ASSERT_EQ(Token(TokenType::END_OF_FILE, "", 2, 1), tokens[2]);
+    ASSERT_EQ(Token(TokenType::END_OF_FILE, "", 2, 1, 23), tokens[2]);
 }
 
 TEST(LexerTest, VerifyFullTokenization)
@@ -99,20 +99,20 @@ TEST(LexerTest, VerifyFullTokenization)
 
     std::vector<TokenType> expected = {
         TokenType::INCLUDE_SYS,         // #include <std/_lib.h>
-        TokenType::IDENTIFIER,          // int
+        TokenType::INT,                 // int
         TokenType::IDENTIFIER,          // main
         TokenType::PAREN_L,             // (
         TokenType::CONST,               // const
-        TokenType::IDENTIFIER,          // char
+        TokenType::CHAR,                // char
         TokenType::STAR,                // *
         TokenType::STAR,                // *
         TokenType::IDENTIFIER,          // argv
         TokenType::COMMA,
-        TokenType::IDENTIFIER,          // int
+        TokenType::INT,                 // int
         TokenType::IDENTIFIER,          // argc
         TokenType::PAREN_R,             // )
         TokenType::CBRACE_L,            // {
-        TokenType::IDENTIFIER,          // float
+        TokenType::FLOAT,               // float
         TokenType::IDENTIFIER,          // f
         TokenType::EQUAL,               // =
         TokenType::LIT_FLOAT,           // .4f
@@ -123,7 +123,7 @@ TEST(LexerTest, VerifyFullTokenization)
         TokenType::PLUS,                // +
         TokenType::LIT_FLOAT,           // 0.013f
         TokenType::SEMICOLON,
-        TokenType::IDENTIFIER,          // int
+        TokenType::INT,                 // int
         TokenType::IDENTIFIER,          // n
         TokenType::EQUAL,               // =
         TokenType::LIT_INT,             // 0x14
@@ -180,7 +180,7 @@ TEST(LexerTest, RepeatedSemicolonsAreIgnored)
 
     std::vector expected = {
         TokenType::SEMICOLON,
-        TokenType::IDENTIFIER,
+        TokenType::INT,
         TokenType::LIT_INT,
         TokenType::SEMICOLON,
         TokenType::END_OF_FILE,
