@@ -4,6 +4,8 @@
 #include <regex>
 #include "Lexer.h"
 
+#include "TypeRegistry.h"
+
 namespace cish::lex
 {
 
@@ -159,7 +161,12 @@ std::optional<std::tuple<TokenType,uint32_t>> Lexer::readRegexToken() const
         assert(match.size() < 2 && "The expression should not contain a capture group");
 
         if (match.size() == 1) {
-            return std::tuple { type, match[0].length() };
+            if (type == TokenType::IDENTIFIER && !_tokens.empty() && _tokens.back().getType() == TokenType::STRUCT) {
+                // Hijack the IDENTIFIER if the last token was STRUCT.
+                return std::tuple { TokenType::TYPE_NAME, match[0].length() };
+            } else {
+                return std::tuple { type, match[0].length() };
+            }
         }
     }
     return std::nullopt;
@@ -180,6 +187,16 @@ std::optional<TokenType> Lexer::keywordFromIdentifier(std::string_view identifie
         { TokenType::STRUCT, "struct" },
         { TokenType::CONST, "const" },
         { TokenType::SIZEOF, "sizeof" },
+
+        { TokenType::VOID, "void" },
+        { TokenType::BOOL, "bool" },
+        { TokenType::CHAR, "char" },
+        { TokenType::SHORT, "short" },
+        { TokenType::INT, "int" },
+        { TokenType::LONG, "long" },
+        { TokenType::UNSIGNED, "unsigned" },
+        { TokenType::FLOAT, "float" },
+        { TokenType::DOUBLE, "double" },
     };
 
     for (const auto& [type, keyword]: patterns) {
@@ -271,7 +288,7 @@ char Lexer::peek(int n) const
 
 bool Lexer::match(std::string_view s)
 {
-    const int n = s.size();
+    const size_t n = s.size();
     for (int i=0; i<n; i++) {
         if (peek(i) != s[i]) {
             return false;
@@ -280,4 +297,4 @@ bool Lexer::match(std::string_view s)
     return true;
 }
 
-}
+} // namespace cish::lex

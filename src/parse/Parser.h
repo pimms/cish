@@ -25,7 +25,7 @@ BinaryPrecedence binaryPrecedenceValue(BinaryOperator type);
 
 class Parser {
 public:
-    explicit Parser(std::vector<lex::Token>& tokens);
+    explicit Parser(const std::vector<lex::Token>& tokens);
     ~Parser() = default;
     Parser() = delete;
     Parser(const Parser& o) = delete;
@@ -71,6 +71,7 @@ private:
 
     std::optional<TypeIdentifier> parseTypeCastOperator();
     std::optional<TypeIdentifier> parseTypeIdentifier();
+    std::optional<BaseType> baseTypeFromTokens(const std::vector<const lex::Token*>& tokens);
     std::optional<FunctionParameter> parseFunctionParameter();
 };
 

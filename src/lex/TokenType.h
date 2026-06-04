@@ -80,7 +80,18 @@ enum class TokenType
     LIT_INT,
     LIT_CHAR,
     LIT_FLOAT,
-    
+
+    VOID,
+    BOOL,
+    CHAR,
+    SHORT,
+    INT,
+    LONG,
+    UNSIGNED,
+    FLOAT,
+    DOUBLE,
+    TYPE_NAME,
+
     IDENTIFIER,
     END_OF_FILE,
 };

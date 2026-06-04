@@ -72,11 +72,22 @@ std::ostream& operator<<(std::ostream& s, const TokenType& tokenType)
         case TokenType::LIT_CHAR: return s << "LIT_CHAR";
         case TokenType::LIT_FLOAT: return s << "LIT_FLOAT";
         case TokenType::IDENTIFIER: return s << "IDENTIFIER";
-        case TokenType::END_OF_FILE: return s<< "EOF";
-        default:
-            assert(0);
-            return s << "UNKNOWN";
+        case TokenType::END_OF_FILE: return s << "EOF";
+        case TokenType::VOID: return s << "VOID";
+        case TokenType::BOOL: return s << "BOOL";
+        case TokenType::CHAR: return s << "CHAR";
+        case TokenType::SHORT: return s << "SHORT";
+        case TokenType::INT: return s << "INT";
+        case TokenType::LONG: return s << "LONG";
+        case TokenType::UNSIGNED: return s << "UNSIGNED";
+        case TokenType::FLOAT: return s << "FLOAT";
+        case TokenType::DOUBLE: return s << "DOUBLE";
+        case TokenType::TYPE_NAME: return s << "TYPE_NAME";
+        case TokenType::SIZEOF: return s << "SIZEOF";
     }
+
+    assert(0);
+    return s << "UNHANDLED";
 }
 
 }

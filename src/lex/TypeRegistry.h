@@ -12,7 +12,8 @@ public:
     void registerStruct(const std::string& structName);
 
 private:
-    std::vector<std::vector<std::string>> _types;
+    std::vector<std::vector<std::string>> _primitives;
+    std::vector<std::string> _structs;
 };
 
 }

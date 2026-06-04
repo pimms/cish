@@ -1,6 +1,9 @@
 #include "Parser.h"
-#include "ParseTree.h"
+
+#include <algorithm>
+
 #include "../Exception.h"
+#include "ParseTree.h"
 
 #include <cassert>
 #include <optional>
@@ -126,11 +129,30 @@ bool isAssignmentOperator(BinaryOperator op)
             return false;
     }
 }
+
+bool isTypeToken(const lex::TokenType& t)
+{
+    switch (t) {
+        case lex::TokenType::VOID:
+        case lex::TokenType::BOOL:
+        case lex::TokenType::CHAR:
+        case lex::TokenType::SHORT:
+        case lex::TokenType::INT:
+        case lex::TokenType::LONG:
+        case lex::TokenType::UNSIGNED:
+        case lex::TokenType::FLOAT:
+        case lex::TokenType::DOUBLE:
+        case lex::TokenType::TYPE_NAME:
+            return true;
+        default:
+            return false;
+    }
+}
 }
 
 using namespace internal;
 
-Parser::Parser(std::vector<lex::Token>& tokens)
+Parser::Parser(const std::vector<lex::Token>& tokens)
     : _context(tokens)
 { }
 
@@ -300,7 +322,7 @@ std::optional<StructDeclaration> Parser::parseStructDeclaration()
         return std::nullopt;
     }
 
-    auto structIdentifier = _context.require(lex::TokenType::IDENTIFIER);
+    auto structIdentifier = _context.require(lex::TokenType::TYPE_NAME);
 
     if (!_context.takeIf(lex::TokenType::CBRACE_L)) {
         // This is likely a function returning a struct, not a declaration.
@@ -893,8 +915,6 @@ std::optional<ISizeofTerm> Parser::parseSizeofTerm()
         auto transaction = _context.beginTransaction();
         _context.take();
 
-        // Note: we may still receive variable references here, because we don't
-        // yet have a way of separating "myVar" from "int".
         if (auto type = parseTypeIdentifier(); type.has_value()) {
             if (_context.takeIf(lex::TokenType::PAREN_R)) {
                 transaction.commit();
@@ -987,8 +1007,12 @@ std::optional<TypeIdentifier> Parser::parseTypeIdentifier()
         isStruct = true;
     }
 
-    auto identifier = _context.takeIf(lex::TokenType::IDENTIFIER);
-    if (!identifier) {
+    std::vector<const lex::Token*> typeTokens;
+    while (isTypeToken(_context.peek()->getType())) {
+        typeTokens.push_back(_context.take());
+    }
+    std::optional<BaseType> baseType = baseTypeFromTokens(typeTokens);
+    if (!baseType.has_value()) {
         return std::nullopt;
     }
 
@@ -1002,9 +1026,55 @@ std::optional<TypeIdentifier> Parser::parseTypeIdentifier()
     return TypeIdentifier {
         .isConst = isConst,
         .isStruct = isStruct,
-        .type = identifier->getLexeme(),
+        .baseType = baseType.value(),
         .pointerLevel = pointerLevel
     };
+}
+std::optional<BaseType> Parser::baseTypeFromTokens(const std::vector<const lex::Token*>&tokens)
+{
+    static const std::vector<std::tuple<std::vector<lex::TokenType>, BaseType>> basetypes = {
+        { { lex::TokenType::VOID }, BuiltInType::VOID },
+        { { lex::TokenType::BOOL }, BuiltInType::BOOL },
+
+        { { lex::TokenType::CHAR }, BuiltInType::CHAR },
+        { { lex::TokenType::UNSIGNED, lex::TokenType::CHAR }, BuiltInType::UCHAR },
+
+        { { lex::TokenType::SHORT }, BuiltInType::SHORT },
+        { { lex::TokenType::UNSIGNED, lex::TokenType::SHORT }, BuiltInType::USHORT },
+
+        { { lex::TokenType::INT }, BuiltInType::INT },
+        { { lex::TokenType::UNSIGNED, lex::TokenType::INT }, BuiltInType::UINT },
+
+        { { lex::TokenType::LONG }, BuiltInType::LINT },
+        { { lex::TokenType::LONG, lex::TokenType::INT }, BuiltInType::LINT },
+        { { lex::TokenType::UNSIGNED, lex::TokenType::LONG }, BuiltInType::ULINT },
+        { { lex::TokenType::UNSIGNED, lex::TokenType::LONG, lex::TokenType::INT }, BuiltInType::ULINT },
+
+        { { lex::TokenType::LONG, lex::TokenType::LONG }, BuiltInType::LLINT },
+        { { lex::TokenType::LONG, lex::TokenType::LONG, lex::TokenType::INT }, BuiltInType::LLINT },
+        { { lex::TokenType::UNSIGNED, lex::TokenType::LONG, lex::TokenType::LONG }, BuiltInType::ULLINT },
+        { { lex::TokenType::UNSIGNED, lex::TokenType::LONG, lex::TokenType::LONG, lex::TokenType::INT }, BuiltInType::ULLINT },
+
+        { { lex::TokenType::FLOAT }, BuiltInType::FLOAT },
+        { { lex::TokenType::DOUBLE }, BuiltInType::DOUBLE },
+        { { lex::TokenType::LONG, lex::TokenType::DOUBLE }, BuiltInType::LDOUBLE },
+    };
+
+    std::vector<lex::TokenType> tokenTypes;
+    for (const auto& t: tokens) {
+        tokenTypes.push_back(t->getType());
+    }
+    for (const auto& [definedTokens, baseType]: basetypes) {
+        if (tokenTypes == definedTokens) {
+            return baseType;
+        }
+    }
+
+    if (tokens.size() == 1 && tokens[0]->getType() == lex::TokenType::TYPE_NAME) {
+        return tokens[0]->getLexeme();
+    }
+
+    return std::nullopt;
 }
 
 std::optional<FunctionParameter> Parser::parseFunctionParameter()

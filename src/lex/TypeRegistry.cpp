@@ -5,7 +5,7 @@ namespace cish::lex
 
 TypeRegistry::TypeRegistry()
 {
-    _types = {
+    _primitives = {
         { "char" },
         { "unsigned char" },
         { "short" },
@@ -26,7 +26,7 @@ TypeRegistry::TypeRegistry()
 }
 void TypeRegistry::registerStruct(const std::string &structName)
 {
-    _types.push_back({ "struct", structName });
+    _structs.push_back(structName);
 }
 
 } // namespace cish::lex

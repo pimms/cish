@@ -6,6 +6,7 @@
 #include <variant>
 #include <vector>
 #include "CodeMarker.h"
+#include "../lex/TokenType.h"
 
 namespace cish::parse
 {
@@ -15,11 +16,29 @@ namespace cish::parse
 BUILDING BLOCKS
 ================
 */
+enum class BuiltInType {
+    BOOL,
+    VOID,
+    CHAR,
+    UCHAR,
+    SHORT,
+    USHORT,
+    INT,
+    UINT,
+    LINT,
+    ULINT,
+    LLINT,
+    ULLINT,
+    FLOAT,
+    DOUBLE,
+    LDOUBLE,
+};
+using BaseType = std::variant<BuiltInType, std::string>;
 struct TypeIdentifier {
     bool operator==(const TypeIdentifier& other) const = default;
     bool isConst {};
     bool isStruct {};
-    std::string type;
+    BaseType baseType{};
     // The number of *'s in the type. E.g., for "char**", pointerLevel is 2.
     int pointerLevel {};
 
