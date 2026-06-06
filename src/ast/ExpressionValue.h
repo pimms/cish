@@ -58,11 +58,11 @@ inline ExpressionValue::ExpressionValue(TypeDecl type, T value)
     if (std::is_same<bool,T>()) {
         _value.bval = value;
     } else if (type.isIntegral()) {
-        _value.ival = value;
+        _value.ival = static_cast<uint64_t>(value);
     } else if (type == TypeDecl::STRUCT) {
-        _value.ival = value;
+        _value.ival = static_cast<uint64_t>(value);
     } else if (type.isFloating()) {
-        _value.fval = value;
+        _value.fval = static_cast<float>(value);
     }
 }
 
@@ -74,7 +74,7 @@ inline T ExpressionValue::get() const
 
     if constexpr (std::is_integral_v<T>) {
         if (_type.isFloating()) {
-            return (T)_value.fval;
+            return static_cast<T>(_value.fval);
         }
 
         switch (_type.getType()) {

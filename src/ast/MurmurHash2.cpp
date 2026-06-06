@@ -6,7 +6,7 @@ namespace cish::ast
 
 uint32_t MurmurHash2(const std::string &str, uint32_t seed)
 {
-    return MurmurHash2(str.data(), str.length(), seed);
+    return MurmurHash2(str.data(), static_cast<int>(str.length()), seed);
 }
 
 //-----------------------------------------------------------------------------
