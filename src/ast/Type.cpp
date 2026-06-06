@@ -6,7 +6,12 @@
 
 #include <stack>
 #include <map>
+#include <string.h>
 
+#ifdef _WIN32
+#include <tchar.h>
+#define stpcpy _tcscpy
+#endif
 
 namespace cish::ast
 {

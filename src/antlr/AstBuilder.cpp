@@ -1,4 +1,4 @@
-#include "AstBuilder.h"
+#include "../AstBuilder.h"
 #include "TreeConverter.h"
 
 #include "AntlrContext.h"

@@ -2,8 +2,8 @@
 
 #include "../Exception.h"
 
-#include "antlr/CMLexer.h"
-#include "antlr/CMParser.h"
+#include "gen/CMLexer.h"
+#include "gen/CMParser.h"
 
 #include <string>
 

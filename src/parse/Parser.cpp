@@ -822,7 +822,6 @@ std::unique_ptr<IExpression> Parser::parseCharLiteralExpr()
             case 'v': value = '\v'; break;
             case 'f': value = '\f'; break;
             case 'r': value = '\r'; break;
-            case 'e': value = '\e'; break;
             case '\\': value = '\\'; break;
             default: Throw(ParseError, "Unknown escape sequence: %s", token->toString().c_str())
         }

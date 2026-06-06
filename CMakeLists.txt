@@ -21,7 +21,7 @@ if (use_antlr)
         RESULT_VARIABLE antlr_result
         OUTPUT_VARIABLE antlr_stdout
         ERROR_VARIABLE antlr_stderr
-        COMMAND antlr "${CMAKE_CURRENT_SOURCE_DIR}/grammar/CM.g4" -o ${CMAKE_CURRENT_SOURCE_DIR}/src/ast/antlr -visitor -Dlanguage=Cpp
+        COMMAND antlr "${CMAKE_CURRENT_SOURCE_DIR}/grammar/CM.g4" -o ${CMAKE_CURRENT_SOURCE_DIR}/src/antlr/gen -visitor -Dlanguage=Cpp
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
     if(NOT antlr_result STREQUAL "0")
         message(FATAL_ERROR "antlr generation failed: ${antlr_stdout}\n${antlr_stderr}")
@@ -52,8 +52,18 @@ if (use_antlr)
         message(SEND_ERROR "Failed to locate 'antlr4-runtime.h' (${ANTLR_INCLUDE_ROOT_DIR}, ${ANTLR_INCLUDE_DIR})")
     endif()
 else()
-    file(GLOB_RECURSE CISH_SRCS src/Exception.cpp src/parse/*.cpp src/lex/*.cpp)
-    file(GLOB_RECURSE CISH_HDRS src/Exception.h src/parse/*.h src/lex/*.h)
+    file(GLOB_RECURSE CISH_SRCS
+            src/Exception.cpp
+            src/parse/*.cpp
+            src/lex/*.cpp
+            src/ast/*.cpp
+            src/vm/*.cpp)
+    file(GLOB_RECURSE CISH_HDRS
+            src/Exception.h
+            src/parse/*.h
+            src/lex/*.h
+            src/ast/*.h
+            src/vm/*.h)
 endif()
 
 add_library(cish ${CISH_SRCS} ${CISH_HDRS})

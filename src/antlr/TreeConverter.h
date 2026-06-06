@@ -1,15 +1,15 @@
 #pragma once
 
+#include "AntlrContext.h"
 #include "antlr/CMBaseVisitor.h"
 #include "antlr/CMParser.h"
-#include "AntlrContext.h"
 
-#include "AstNodes.h"
-#include "Lvalue.h"
+#include "../ast/AstNodes.h"
+#include "../ast/Lvalue.h"
 
-#include "BinaryExpression.h"
-#include "Ast.h"
-#include "StringLiteralExpression.h"
+#include "../ast/Ast.h"
+#include "../ast/BinaryExpression.h"
+#include "../ast/StringLiteralExpression.h"
 
 #include "../module/ModuleContext.h"
 
