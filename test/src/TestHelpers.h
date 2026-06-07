@@ -3,8 +3,8 @@
 #include <gtest/gtest.h>
 #include <memory>
 
-#include "ast/AntlrContext.h"
-#include "ast/AstBuilder.h"
+#include "antlr/AntlrContext.h"
+#include "antlr/AstBuilder.h"
 #include "ast/Ast.h"
 
 #include "vm/ExecutionContext.h"

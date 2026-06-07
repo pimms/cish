@@ -1,8 +1,8 @@
 #pragma once
 
 #include "AntlrContext.h"
-#include "antlr/CMBaseVisitor.h"
-#include "antlr/CMParser.h"
+#include "gen/CMBaseVisitor.h"
+#include "gen/CMParser.h"
 
 #include "../ast/AstNodes.h"
 #include "../ast/Lvalue.h"

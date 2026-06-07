@@ -2,8 +2,8 @@
 
 #include "module/ModuleContext.h"
 
-#include "ast/AstBuilder.h"
-#include "ast/AntlrContext.h"
+#include "antlr/AstBuilder.h"
+#include "antlr/AntlrContext.h"
 #include "ast/VariableDeclarationStatement.h"
 
 using namespace cish::vm;

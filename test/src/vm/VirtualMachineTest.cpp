@@ -1,9 +1,7 @@
 #include <gtest/gtest.h>
 
 #include "vm/VirtualMachine.h"
-#include "ast/AntlrContext.h"
-#include "ast/AstBuilder.h"
-#include "ast/LiteralExpression.h"
+#include "antlr/AntlrContext.h"
 #include "ast/Ast.h"
 #include "vm/Variable.h"
 #include "vm/ExecutionContext.h"

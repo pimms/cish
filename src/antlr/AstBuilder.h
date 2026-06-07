@@ -2,7 +2,7 @@
 
 #include "../ast/Ast.h"
 
-#include "../AntlrContext.h"
+#include "AntlrContext.h"
 #include "../module/ModuleContext.h"
 
 namespace cish::ast

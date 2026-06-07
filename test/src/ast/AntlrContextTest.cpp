@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "ast/AntlrContext.h"
+#include "antlr/AntlrContext.h"
 
 using namespace cish::ast;
 

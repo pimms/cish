@@ -1,4 +1,4 @@
-#include "../ast/antlr/AntlrContext.h"
+#include "AntlrContext.h"
 
 
 namespace cish::ast
